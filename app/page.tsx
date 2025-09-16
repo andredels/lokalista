@@ -1,25 +1,9 @@
-import Image from "next/image";
 import MoodLocationCard from "./ui/MoodLocationCard";
 
 export default function Home() {
   return (
     <div className="font-sans">
-      {/* Header */}
-      <header className="border-b border-border/60 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-3">
-            <Image src="/wordmark.svg" alt="Lokalista" width={112} height={20} />
-          </div>
-          <nav className="hidden md:flex items-center gap-6 text-sm">
-            <a href="#features" className="hover:underline underline-offset-4">Features</a>
-            <a href="/how-it-works" className="hover:underline underline-offset-4">How it works</a>
-            <a href="/auth/login" className="hover:underline underline-offset-4">Login</a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <a href="/auth/signup" className="h-9 px-4 rounded-md bg-brand text-white hover:bg-brand-600 transition-colors inline-flex items-center">Start now</a>
-          </div>
-        </div>
-      </header>
+      {/* Global header now lives in app/layout.tsx */}
 
       {/* Hero */}
       <section className="relative">
