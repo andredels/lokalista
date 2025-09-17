@@ -4,13 +4,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/browserClient";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<import("@supabase/supabase-js").User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // Hide header on landing page
+  if (pathname === "/") return null;
 
   useEffect(() => {
     function onScroll() {
@@ -30,9 +35,11 @@ export default function Header() {
       setUser(data.user ?? null);
       setLoadingUser(false);
     })();
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    const { data: sub } = supabase.auth.onAuthStateChange(
+      (_event: import("@supabase/supabase-js").AuthChangeEvent, session: import("@supabase/supabase-js").Session | null) => {
+        setUser(session?.user ?? null);
+      }
+    );
     return () => {
       mounted = false;
       sub.subscription.unsubscribe();
@@ -79,22 +86,40 @@ export default function Header() {
     >
       <div className="container flex items-center justify-between h-14 md:h-16">
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center" aria-label="Lokalista home">
-            <Image src="/wordmark.svg" alt="Lokalista" width={112} height={20} />
+          <Link href="/" className="flex items-center gap-2" aria-label="Lokalista home">
+            <span className="h-8 w-8 rounded-xl bg-gradient-to-r from-fuchsia-500 to-violet-600 grid place-items-center text-white">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M12 21s7-4.5 7-10a7 7 0 10-14 0c0 5.5 7 10 7 10z" stroke="currentColor" strokeWidth="1.6"/>
+                <circle cx="12" cy="11" r="2" fill="currentColor" />
+              </svg>
+            </span>
+            <span className="text-base font-semibold bg-gradient-to-r from-fuchsia-500 to-violet-600 bg-clip-text text-transparent">Lokalista</span>
           </Link>
         </div>
-        <nav className="flex items-center gap-5 text-sm overflow-x-auto">
-          <Link href="/feed" className="hover:underline underline-offset-4 whitespace-nowrap">
-            Feed
+        <nav className="flex items-center gap-3 md:gap-5 text-sm overflow-x-auto">
+          <Link href="/" className="whitespace-nowrap px-3 h-8 rounded-full bg-fuchsia-50 text-fuchsia-600 inline-flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9z" stroke="currentColor" strokeWidth="1.5"/>
+            </svg>
+            Home
           </Link>
-          <Link href="/plan" className="hover:underline underline-offset-4 whitespace-nowrap">
-            Start a plan
+          <Link href="/feed" className="whitespace-nowrap inline-flex items-center gap-2 hover:underline underline-offset-4">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M4 12h8m-8 4h12M4 8h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            AI Assistant
           </Link>
-          <Link href="/journey" className="hover:underline underline-offset-4 whitespace-nowrap">
-            Journey
+          <Link href="/plan" className="whitespace-nowrap inline-flex items-center gap-2 hover:underline underline-offset-4">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M12 2v4m0 12v4m8-8h-4M8 12H4m12.95-6.95l-2.83 2.83M7.05 16.95l-2.83 2.83" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            Map
           </Link>
-          <Link href="/how-it-works" className="hover:underline underline-offset-4 whitespace-nowrap">
-            How it works
+          <Link href="/journey" className="whitespace-nowrap inline-flex items-center gap-2 hover:underline underline-offset-4">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M4 7a3 3 0 106 0 3 3 0 00-6 0zm0 0v10m6-10v10m10-5a3 3 0 11-6 0 3 3 0 016 0zm0 0v5m-6-5v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            Community
           </Link>
         </nav>
         <div className="flex items-center gap-2 relative" ref={menuRef}>
@@ -130,11 +155,15 @@ export default function Header() {
             </div>
           ) : (
             <>
-              <Link href="/auth/login" className="hidden sm:inline-flex h-9 px-3 rounded-md border border-border/60 items-center">
-                Login
+              <Link href="/feed" className="hidden sm:inline-flex h-9 px-3 rounded-md border border-brand text-brand items-center gap-2 hover:bg-brand/5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                Find Places
               </Link>
-              <Link href="/auth/signup" className="h-9 px-4 rounded-md bg-brand text-white hover:bg-brand-600 inline-flex items-center">
-                Get started
+              <Link href="/auth/signup" className="h-9 px-4 rounded-md text-white inline-flex items-center bg-gradient-to-r from-fuchsia-500 to-violet-600 hover:opacity-95">
+                Get Started
               </Link>
             </>
           )}
