@@ -43,7 +43,7 @@ export default function Home() {
               </ul>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <a href="/auth/signup" className="h-11 px-5 rounded-md bg-[#8c52ff] text-white hover:opacity-90 transition-colors inline-flex items-center justify-center">Get Started Free → </a>
+                <a href="/auth/login" className="h-11 px-5 rounded-md bg-[#8c52ff] text-white hover:opacity-90 transition-colors inline-flex items-center justify-center">Get Started Free → </a>
                 <a href="/feed" className="h-11 px-5 rounded-md border border-border/60 bg-white text-[#8c52ff] inline-flex items-center justify-center gap-2">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5"/>
@@ -65,7 +65,7 @@ export default function Home() {
 
             {/* Right: replace with image */}
             <div className="relative">
-              <img src="/Landing.png" alt="Lokalista landing preview" className="w-full h-auto max-w-md md:max-w-lg" />
+              <img src="/Landing2.png" alt="Lokalista landing preview" className="w-full h-auto max-w-md md:max-w-lg" />
             </div>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function Home() {
           <h3 className="h2 mb-2">Ready to Discover Your City?</h3>
           <p className="text-muted mb-6">Join thousands of explorers who use Lokalista to find amazing places every day.</p>
           <div className="flex items-center justify-center gap-3">
-            <a href="/auth/signup" className="h-11 px-5 rounded-md bg-[#8c52ff] text-white hover:opacity-90 inline-flex items-center">Start Exploring</a>
+            <a href="/auth/login" className="h-11 px-5 rounded-md bg-[#8c52ff] text-white hover:opacity-90 inline-flex items-center">Start Exploring</a>
                           <a href="/feed" className="h-11 px-5 rounded-md border border-border/60 bg-white text-[#8c52ff] inline-flex items-center">View Map</a>
           </div>
         </div>

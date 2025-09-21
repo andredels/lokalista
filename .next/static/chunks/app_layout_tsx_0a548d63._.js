@@ -3,8 +3,8 @@
     chunks: [
   "static/chunks/[root-of-the-server]__28bc9c2a._.css",
   "static/chunks/node_modules_@supabase_node-fetch_browser_ebbd8575.js",
-  "static/chunks/node_modules_f415a503._.js",
-  "static/chunks/_ecf5d64c._.js"
+  "static/chunks/node_modules_98a05fdf._.js",
+  "static/chunks/_5d4deb34._.js"
 ],
     source: "dynamic"
 });

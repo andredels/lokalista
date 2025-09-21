@@ -7,15 +7,11 @@ import { createClient } from "@/lib/supabase/browserClient";
 import { usePathname } from "next/navigation";
 
 export default function Header() {
-  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<import("@supabase/supabase-js").User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-
-  // Hide header on landing page
-  if (pathname === "/") return null;
 
   useEffect(() => {
     function onScroll() {
@@ -75,7 +71,8 @@ export default function Header() {
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    // user state will update via onAuthStateChange
+    // Redirect to landing page after sign out
+    window.location.href = "/";
   }
 
   return (
@@ -86,7 +83,7 @@ export default function Header() {
     >
       <div className="container flex items-center justify-between h-14 md:h-16">
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2" aria-label="Lokalista home">
+          <Link href="/dashboard" className="flex items-center gap-2" aria-label="Lokalista home">
             <span className="h-8 w-8 rounded-xl bg-gradient-to-r from-fuchsia-500 to-violet-600 grid place-items-center text-white">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path d="M12 21s7-4.5 7-10a7 7 0 10-14 0c0 5.5 7 10 7 10z" stroke="currentColor" strokeWidth="1.6"/>
@@ -97,7 +94,7 @@ export default function Header() {
           </Link>
         </div>
         <nav className="flex items-center gap-3 md:gap-5 text-sm overflow-x-auto">
-          <Link href="/" className="whitespace-nowrap px-3 h-8 rounded-full bg-fuchsia-50 text-fuchsia-600 inline-flex items-center gap-2">
+          <Link href="/dashboard" className="whitespace-nowrap px-3 h-8 rounded-full bg-fuchsia-50 text-fuchsia-600 inline-flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9z" stroke="currentColor" strokeWidth="1.5"/>
             </svg>
@@ -162,7 +159,7 @@ export default function Header() {
                 </svg>
                 Find Places
               </Link>
-              <Link href="/auth/signup" className="h-9 px-4 rounded-md text-white inline-flex items-center bg-gradient-to-r from-fuchsia-500 to-violet-600 hover:opacity-95">
+              <Link href="/auth/login" className="h-9 px-4 rounded-md text-white inline-flex items-center bg-gradient-to-r from-fuchsia-500 to-violet-600 hover:opacity-95">
                 Get Started
               </Link>
             </>
