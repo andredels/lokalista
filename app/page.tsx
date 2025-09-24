@@ -44,7 +44,7 @@ export default function Home() {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <a href="/auth/login" className="h-11 px-5 rounded-md bg-[#8c52ff] text-white hover:opacity-90 transition-colors inline-flex items-center justify-center">Get Started Free → </a>
-                <a href="/feed" className="h-11 px-5 rounded-md border border-border/60 bg-white text-[#8c52ff] inline-flex items-center justify-center gap-2">
+                <a href="/map" className="h-11 px-5 rounded-md border border-border/60 bg-white text-[#8c52ff] inline-flex items-center justify-center gap-2">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5"/>
                     <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -166,6 +166,7 @@ export default function Home() {
             <a href="/how-it-works" className="hover:underline underline-offset-4">How it works</a>
             <a href="/auth/login" className="hover:underline underline-offset-4">Login</a>
             <a href="/auth/signup" className="hover:underline underline-offset-4">Create account</a>
+            <a href="/map" className="hover:underline underline-offset-4">Map</a>
             <a href="#" className="hover:underline underline-offset-4">Privacy</a>
             <a href="#" className="hover:underline underline-offset-4">Terms</a>
             <a href="#" className="hover:underline underline-offset-4">Contact</a>
