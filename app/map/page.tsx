@@ -8,8 +8,10 @@ export default function MapPage() {
   const mapRef = useRef<any>(null);
   const userMarkerRef = useRef<any>(null);
   const searchMarkerRef = useRef<any>(null);
+  const initializingRef = useRef<boolean>(false);
   const [query, setQuery] = useState("");
   const [mood, setMood] = useState("");
+  const moodRef = useRef<string>("");
   const [loadingLoc, setLoadingLoc] = useState(false);
   const [searching, setSearching] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ display: string; lat: number; lon: number }>>([]);
@@ -20,6 +22,11 @@ export default function MapPage() {
   const [selectedLatLng, setSelectedLatLng] = useState<[number, number] | null>(null);
 
   // Inject Leaflet CSS/JS from CDN to avoid local install
+  useEffect(() => {
+    moodRef.current = mood;
+  }, [mood]);
+
+  // Initialize Leaflet map once. Guard against double init in React StrictMode.
   useEffect(() => {
     const ensureAssets = async () => {
       if (!document.querySelector('link[data-leaflet-css="true"]')) {
@@ -41,6 +48,8 @@ export default function MapPage() {
     };
 
     const init = async () => {
+      if (initializingRef.current || mapRef.current) return;
+      initializingRef.current = true;
       await ensureAssets();
       const L = (window as any).L;
       if (!mapEl.current) return;
@@ -64,10 +73,12 @@ export default function MapPage() {
       // Click to set selection marker and popup placeholder
       mapRef.current.on("click", (e: any) => {
         const latlng = e.latlng;
-        dropSearchMarker(latlng, `This is where we'll recommend places for your mood${mood ? ` (${mood})` : ""}.`);
+        const currentMood = moodRef.current;
+        dropSearchMarker(latlng, `This is where we'll recommend places for your mood${currentMood ? ` (${currentMood})` : ""}.`);
         setSelectedLatLng([latlng.lat, latlng.lng]);
         fetchRecommendations([latlng.lat, latlng.lng]);
       });
+      initializingRef.current = false;
     };
 
     init();
@@ -78,7 +89,7 @@ export default function MapPage() {
         mapRef.current = null;
       }
     };
-  }, [mood]);
+  }, []);
 
   async function locateUser() {
     if (!mapRef.current) return;

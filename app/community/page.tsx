@@ -1,0 +1,325 @@
+"use client";
+
+// Clone of journey page but with /community redirects
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/browserClient";
+
+type Profile = {
+  id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+};
+
+type Post = {
+  id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  profiles?: Profile | null;
+  likes_count?: number;
+  comments_count?: number;
+  liked_by_me?: boolean;
+  image_url?: string | null;
+};
+
+type Comment = {
+  id: string;
+  post_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  profiles?: Profile | null;
+};
+
+export default function CommunityPage() {
+  const supabase = useMemo(() => createClient(), []);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [content, setContent] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
+  const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
+  const [newCommentContent, setNewCommentContent] = useState<Record<string, string>>({});
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!mounted) return;
+      const uid = data.user?.id ?? null;
+      setUserId(uid);
+      await loadPosts(uid);
+      setLoading(false);
+    })();
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
+      const uid = session?.user?.id ?? null;
+      setUserId(uid);
+      await loadPosts(uid);
+    });
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function loadPosts(currentUserId: string | null = userId) {
+    const { data, error } = await supabase
+      .from("posts")
+      .select(
+        `id, user_id, content, image_url, created_at, profiles:profiles!posts_user_id_fkey(id, first_name, last_name),
+         likes_count:likes(count), comments_count:comments(count)`
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const normalized = (data as any[]).map((row) => ({
+      ...row,
+      likes_count: Array.isArray(row.likes_count) ? row.likes_count[0]?.count ?? 0 : row.likes_count ?? 0,
+      comments_count: Array.isArray(row.comments_count) ? row.comments_count[0]?.count ?? 0 : row.comments_count ?? 0,
+      liked_by_me: false,
+    })) as Post[];
+
+    if (currentUserId && normalized.length) {
+      const postIds = normalized.map((p) => p.id);
+      const { data: myLikes, error: likesErr } = await supabase
+        .from("likes")
+        .select("post_id")
+        .eq("user_id", currentUserId)
+        .in("post_id", postIds);
+      if (!likesErr && myLikes) {
+        const likedSet = new Set(myLikes.map((l: any) => l.post_id));
+        for (const p of normalized) p.liked_by_me = likedSet.has(p.id);
+      }
+    }
+
+    setPosts(normalized);
+  }
+
+  async function submitPost(e: React.FormEvent) {
+    e.preventDefault();
+    if (!userId) {
+      window.location.href = "/auth/login?next=/community";
+      return;
+    }
+    if (!content.trim()) return;
+    setSubmitting(true);
+    let imageUrl: string | null = null;
+    try {
+      if (imageFile) {
+        const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("post-images").upload(path, imageFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: imageFile.type || "image/jpeg",
+        });
+        if (upErr) throw upErr;
+        const { data: pub } = supabase.storage.from("post-images").getPublicUrl(path);
+        imageUrl = pub.publicUrl;
+      }
+      const { error } = await supabase.from("posts").insert({ content, image_url: imageUrl });
+      if (error) throw error;
+      setContent("");
+      setImageFile(null);
+      setImagePreview(null);
+      await loadPosts();
+    } catch (err: any) {
+      alert(err?.message || "Failed to post.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function toggleLike(post: Post) {
+    if (!userId) {
+      window.location.href = "/auth/login?next=/community";
+      return;
+    }
+    if (post.liked_by_me) {
+      const { error } = await supabase.from("likes").delete().match({ post_id: post.id, user_id: userId });
+      if (error) return alert(error.message);
+    } else {
+      // Upsert to avoid duplicate key conflicts on refresh/race conditions
+      const { error } = await supabase
+        .from("likes")
+        .upsert({ post_id: post.id, user_id: userId }, { onConflict: "post_id,user_id" });
+      if (error) return alert(error.message);
+    }
+    await loadPosts(userId);
+  }
+
+  async function loadComments(postId: string) {
+    const { data, error } = await supabase
+      .from("comments")
+      .select("id, post_id, user_id, content, created_at, profiles:profiles!comments_user_id_fkey(id, first_name, last_name)")
+      .eq("post_id", postId)
+      .order("created_at", { ascending: true });
+    if (error) return alert(error.message);
+    setCommentsByPost((prev) => ({ ...prev, [postId]: (data as Comment[]) || [] }));
+  }
+
+  async function submitComment(postId: string) {
+    if (!userId) {
+      window.location.href = "/auth/login?next=/community";
+      return;
+    }
+    const text = (newCommentContent[postId] || "").trim();
+    if (!text) return;
+    const { error } = await supabase.from("comments").insert({ post_id: postId, content: text, user_id: userId });
+    if (error) return alert(error.message);
+    setNewCommentContent((p) => ({ ...p, [postId]: "" }));
+    await loadComments(postId);
+    await loadPosts();
+  }
+
+  function toggleExpanded(postId: string) {
+    setExpandedPostIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(postId)) next.delete(postId);
+      else next.add(postId);
+      return next;
+    });
+    if (!commentsByPost[postId]) void loadComments(postId);
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="container max-w-2xl py-6">
+        <h1 className="text-2xl font-semibold mb-4">Community</h1>
+
+        {/* Composer */}
+        <form onSubmit={submitPost} className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder={userId ? "Share something with the community..." : "Sign in to post"}
+            className="w-full resize-none outline-none min-h-[90px]"
+            disabled={!userId || submitting}
+          />
+          {imagePreview && (
+            <div className="mt-3">
+              <img src={imagePreview} alt="Selected" className="max-h-64 rounded-lg border" />
+            </div>
+          )}
+          <div className="flex items-center justify-between mt-3">
+            <span className="text-sm text-gray-500">{content.length}/280</span>
+            <button
+              type="submit"
+              disabled={!userId || submitting || !content.trim() || content.length > 280}
+              className="px-4 h-9 rounded-full bg-[#8c52ff] text-white disabled:opacity-50"
+            >
+              {submitting ? "Posting..." : "Post"}
+            </button>
+          </div>
+          <div className="mt-3">
+            <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={!userId || submitting}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setImageFile(file);
+                  setImagePreview(file ? URL.createObjectURL(file) : null);
+                }}
+              />
+              <span className="px-3 h-9 inline-flex items-center rounded-md border border-gray-300 hover:bg-gray-50">Add image</span>
+              {imageFile && <span className="text-gray-500">{imageFile.name}</span>}
+            </label>
+          </div>
+        </form>
+
+        {/* Feed */}
+        {loading ? (
+          <div className="text-center text-gray-500">Loading…</div>
+        ) : posts.length === 0 ? (
+          <div className="text-center text-gray-500">No posts yet. Be the first!</div>
+        ) : (
+          <ul className="space-y-3">
+            {posts.map((post) => (
+              <li key={post.id} className="bg-white border border-gray-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium">
+                    {(((post.profiles?.first_name || "") + (post.profiles?.last_name ? ` ${post.profiles.last_name}` : "")) || post.user_id || "?").slice(0, 1).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className="font-medium text-gray-900">{(post.profiles?.first_name || "").toString() + (post.profiles?.last_name ? ` ${post.profiles.last_name}` : "") || "Anonymous"}</span>
+                      <span>·</span>
+                      <time dateTime={post.created_at}>{new Date(post.created_at).toLocaleString()}</time>
+                    </div>
+                    <p className="mt-2 whitespace-pre-wrap break-words">{post.content}</p>
+                    {post.image_url && (
+                      <div className="mt-3">
+                        <img src={post.image_url} alt="Post image" className="rounded-lg border max-h-96" />
+                      </div>
+                    )}
+                    <div className="mt-3 flex items-center gap-4 text-sm text-gray-600">
+                      <button onClick={() => toggleLike(post)} className={`inline-flex items-center gap-1 ${post.liked_by_me ? "text-fuchsia-600" : "hover:text-gray-900"}`}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                          <path d="M12 21s-7-4.5-7-10a7 7 0 0114 0c0 5.5-7 10-7 10z" stroke="currentColor" strokeWidth="1.6"/>
+                        </svg>
+                        <span>{post.likes_count ?? 0}</span>
+                      </button>
+                      <button onClick={() => toggleExpanded(post.id)} className="inline-flex items-center gap-1 hover:text-gray-900">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                          <path d="M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2v10z" stroke="currentColor" strokeWidth="1.6"/>
+                        </svg>
+                        <span>{post.comments_count ?? 0}</span>
+                      </button>
+                    </div>
+
+                    {expandedPostIds.has(post.id) && (
+                      <div className="mt-3 border-t border-gray-200 pt-3">
+                        <div className="space-y-3">
+                          {(commentsByPost[post.id] || []).map((c) => (
+                            <div key={c.id} className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium">
+                                {(((c.profiles?.first_name || "") + (c.profiles?.last_name ? ` ${c.profiles.last_name}` : "")) || c.user_id || "?").slice(0, 1).toUpperCase()}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 text-xs text-gray-600">
+                                  <span className="font-medium text-gray-900">{(c.profiles?.first_name || "") + (c.profiles?.last_name ? ` ${c.profiles.last_name}` : "") || "Anonymous"}</span>
+                                  <span>·</span>
+                                  <time dateTime={c.created_at}>{new Date(c.created_at).toLocaleString()}</time>
+                                </div>
+                                <p className="mt-1 whitespace-pre-wrap break-words text-sm">{c.content}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="mt-3 flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder={userId ? "Write a comment…" : "Sign in to comment"}
+                            value={newCommentContent[post.id] || ""}
+                            onChange={(e) => setNewCommentContent((p) => ({ ...p, [post.id]: e.target.value }))}
+                            className="flex-1 h-9 px-3 rounded-md border border-gray-300"
+                            disabled={!userId}
+                          />
+                          <button onClick={() => submitComment(post.id)} disabled={!userId || !(newCommentContent[post.id] || "").trim()} className="px-3 h-9 rounded-md bg-gray-900 text-white disabled:opacity-50">Post</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+

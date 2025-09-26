@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/browserClient";
 import { usePathname } from "next/navigation";
 
 export default function Header() {
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<import("@supabase/supabase-js").User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -94,25 +95,57 @@ export default function Header() {
           </Link>
         </div>
         <nav className="flex items-center gap-3 md:gap-5 text-sm overflow-x-auto">
-          <Link href="/dashboard" className="whitespace-nowrap px-3 h-8 rounded-full bg-fuchsia-50 text-fuchsia-600 inline-flex items-center gap-2">
+          <Link
+            href="/dashboard"
+            className={`whitespace-nowrap px-3 h-8 rounded-full inline-flex items-center gap-2 transition-colors ${
+              pathname?.startsWith("/dashboard")
+                ? "bg-fuchsia-50 text-fuchsia-600"
+                : "text-foreground/90 hover:bg-fuchsia-50 hover:text-fuchsia-600"
+            }`}
+            aria-current={pathname?.startsWith("/dashboard") ? "page" : undefined}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9z" stroke="currentColor" strokeWidth="1.5"/>
             </svg>
             Home
           </Link>
-          <Link href="/feed" className="whitespace-nowrap inline-flex items-center gap-2 hover:underline underline-offset-4">
+          <Link
+            href="/feed"
+            className={`whitespace-nowrap px-3 h-8 rounded-full inline-flex items-center gap-2 transition-colors ${
+              pathname?.startsWith("/feed")
+                ? "bg-fuchsia-50 text-fuchsia-600"
+                : "text-foreground/90 hover:bg-fuchsia-50 hover:text-fuchsia-600"
+            }`}
+            aria-current={pathname?.startsWith("/feed") ? "page" : undefined}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M4 12h8m-8 4h12M4 8h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
             AI Assistant
           </Link>
-          <Link href="/plan" className="whitespace-nowrap inline-flex items-center gap-2 hover:underline underline-offset-4">
+          <Link
+            href="/map"
+            className={`whitespace-nowrap px-3 h-8 rounded-full inline-flex items-center gap-2 transition-colors ${
+              pathname?.startsWith("/map")
+                ? "bg-fuchsia-50 text-fuchsia-600"
+                : "text-foreground/90 hover:bg-fuchsia-50 hover:text-fuchsia-600"
+            }`}
+            aria-current={pathname?.startsWith("/map") ? "page" : undefined}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M12 2v4m0 12v4m8-8h-4M8 12H4m12.95-6.95l-2.83 2.83M7.05 16.95l-2.83 2.83" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
             Map
           </Link>
-          <Link href="/journey" className="whitespace-nowrap inline-flex items-center gap-2 hover:underline underline-offset-4">
+          <Link
+            href="/community"
+            className={`whitespace-nowrap px-3 h-8 rounded-full inline-flex items-center gap-2 transition-colors ${
+              pathname?.startsWith("/community")
+                ? "bg-fuchsia-50 text-fuchsia-600"
+                : "text-foreground/90 hover:bg-fuchsia-50 hover:text-fuchsia-600"
+            }`}
+            aria-current={pathname?.startsWith("/community") ? "page" : undefined}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M4 7a3 3 0 106 0 3 3 0 00-6 0zm0 0v10m6-10v10m10-5a3 3 0 11-6 0 3 3 0 016 0zm0 0v5m-6-5v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
