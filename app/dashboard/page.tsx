@@ -96,12 +96,12 @@ export default function DashboardPage() {
           
           {/* Action Buttons */}
           <div className="flex justify-center gap-3 mb-12">
-            <button className="flex items-center gap-2 px-6 py-3 bg-[#8c52ff] text-white rounded-full hover:opacity-90 transition-opacity">
+            <a href="/feed" className="flex items-center gap-2 px-6 py-3 bg-[#8c52ff] text-white rounded-full hover:opacity-90 transition-opacity">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
               Ask AI
-            </button>
+            </a>
             <a href="/map" className="flex items-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -188,3 +188,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+

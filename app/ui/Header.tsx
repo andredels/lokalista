@@ -135,7 +135,7 @@ export default function Header() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M12 2v4m0 12v4m8-8h-4M8 12H4m12.95-6.95l-2.83 2.83M7.05 16.95l-2.83 2.83" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
-            Map
+            Food Map
           </Link>
           <Link
             href="/community"

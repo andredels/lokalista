@@ -147,7 +147,7 @@ export default function Home() {
           <p className="text-muted mb-6">Join thousands of explorers who use Lokalista to find amazing places every day.</p>
           <div className="flex items-center justify-center gap-3">
             <a href="/auth/login" className="h-11 px-5 rounded-md bg-[#8c52ff] text-white hover:opacity-90 inline-flex items-center">Start Exploring</a>
-                          <a href="/feed" className="h-11 px-5 rounded-md border border-border/60 bg-white text-[#8c52ff] inline-flex items-center">View Map</a>
+                          <a href="/feed" className="h-11 px-5 rounded-md border border-border/60 bg-white text-[#8c52ff] inline-flex items-center">Try AI Assistant</a>
           </div>
         </div>
       </section>

@@ -1,32 +1,43 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/browserClient";
 
-export default function MapPage() {
+interface FoodPlace {
+  id: string;
+  name: string;
+  category: string;
+  rating: number;
+  price_range: string;
+  latitude: number;
+  longitude: number;
+  description: string;
+  image_url?: string;
+  cuisine_type?: string;
+  is_open?: boolean;
+  features?: string[];
+}
+
+export default function FoodMapPage() {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const userMarkerRef = useRef<any>(null);
-  const searchMarkerRef = useRef<any>(null);
+  const foodMarkersRef = useRef<any[]>([]);
   const initializingRef = useRef<boolean>(false);
   const [query, setQuery] = useState("");
-  const [mood, setMood] = useState("");
-  const moodRef = useRef<string>("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [featureFilter, setFeatureFilter] = useState("");
   const [loadingLoc, setLoadingLoc] = useState(false);
   const [searching, setSearching] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ display: string; lat: number; lon: number }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const debounceRef = useRef<any>(null);
-  const [results, setResults] = useState<Array<any>>([]);
-  const [loadingRecs, setLoadingRecs] = useState(false);
-  const [selectedLatLng, setSelectedLatLng] = useState<[number, number] | null>(null);
+  const [foodPlaces, setFoodPlaces] = useState<FoodPlace[]>([]);
+  const [loadingPlaces, setLoadingPlaces] = useState(false);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<FoodPlace | null>(null);
 
-  // Inject Leaflet CSS/JS from CDN to avoid local install
-  useEffect(() => {
-    moodRef.current = mood;
-  }, [mood]);
-
-  // Initialize Leaflet map once. Guard against double init in React StrictMode.
+  // Initialize Leaflet map with satellite view focused on food places
   useEffect(() => {
     const ensureAssets = async () => {
       if (!document.querySelector('link[data-leaflet-css="true"]')) {
@@ -54,30 +65,101 @@ export default function MapPage() {
       const L = (window as any).L;
       if (!mapEl.current) return;
 
-      // Default to Manila center if geolocation unavailable
-      const defaultCenter: [number, number] = [14.5995, 120.9842];
+      // Default to Cebu City center (similar to your reference image)
+      const defaultCenter: [number, number] = [10.3157, 123.8854];
       mapRef.current = L.map(mapEl.current, {
         center: defaultCenter,
-        zoom: 13,
+        zoom: 14,
+        zoomControl: true,
+        zoomControlOptions: {
+          position: 'topleft'
+        },
+        // Modern map settings for better performance
+        preferCanvas: true,
+        zoomSnap: 0.25,
+        zoomDelta: 0.5,
+        wheelPxPerZoomLevel: 120,
+        // Enable smooth zooming
+        zoomAnimation: true,
+        fadeAnimation: true,
+        markerZoomAnimation: true,
+        // Modern attribution control
+        attributionControl: true,
+        attributionControlOptions: {
+          position: 'bottomright'
+        }
       });
 
-      // Clean light basemap without POI labels (no dark mode)
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
+      // Modern high-resolution satellite imagery with latest data
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 22,
+        attribution: '&copy; Esri, Maxar, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community',
+        subdomains: ['server', 'services'],
+      }).addTo(mapRef.current);
+
+      // Latest street overlay with high detail
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 22,
+        attribution: '&copy; Esri',
+        opacity: 0.7,
+        subdomains: ['server', 'services'],
+      }).addTo(mapRef.current);
+
+      // Add modern OpenStreetMap layer as alternative (latest data)
+      const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors, &copy; CARTO',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        subdomains: ['a', 'b', 'c'],
+      });
+
+      // Add layer control for switching between map types
+      const baseMaps = {
+        "Satellite": L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+          maxZoom: 22,
+          attribution: '&copy; Esri, Maxar, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community',
+          subdomains: ['server', 'services'],
+        }),
+        "Street Map": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          subdomains: ['a', 'b', 'c'],
+        }),
+        "Hybrid": L.layerGroup([
+          L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+            maxZoom: 22,
+            attribution: '&copy; Esri, Maxar, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community',
+            subdomains: ['server', 'services'],
+          }),
+          L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", {
+            maxZoom: 22,
+            attribution: '&copy; Esri',
+            opacity: 0.7,
+            subdomains: ['server', 'services'],
+          })
+        ])
+      };
+
+      // Add layer control to map
+      L.control.layers(baseMaps, {}, {
+        position: 'topright',
+        collapsed: true
       }).addTo(mapRef.current);
 
       // Ask for geolocation and center
       locateUser();
 
-      // Click to set selection marker and popup placeholder
+      // Click to show coordinates (but don't search automatically to prevent markers from moving)
       mapRef.current.on("click", (e: any) => {
         const latlng = e.latlng;
-        const currentMood = moodRef.current;
-        dropSearchMarker(latlng, `This is where we'll recommend places for your mood${currentMood ? ` (${currentMood})` : ""}.`);
-        setSelectedLatLng([latlng.lat, latlng.lng]);
-        fetchRecommendations([latlng.lat, latlng.lng]);
+        console.log('Map clicked at:', [latlng.lat, latlng.lng]);
+        // Don't automatically search on click to prevent markers from moving
       });
+
+      // Load initial food places around default center
+      setTimeout(() => {
+        searchFoodPlaces(defaultCenter);
+      }, 1000);
+
       initializingRef.current = false;
     };
 
@@ -104,22 +186,23 @@ export default function MapPage() {
         });
       });
       const latlng: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+      setUserLocation(latlng);
+      
       const L = (window as any).L;
       if (userMarkerRef.current) {
         userMarkerRef.current.setLatLng(latlng);
       } else {
         const youIcon = L.divIcon({
-          html: '<div style="background:#2563eb;color:#fff;border-radius:9999px;padding:6px 10px;box-shadow:0 2px 6px rgba(0,0,0,.25)">You</div>',
-          className: '', iconSize: [36, 24], iconAnchor: [18, 12]
+          html: '<div style="background:#ef4444;color:#fff;border-radius:9999px;padding:6px 10px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold">📍 You</div>',
+          className: '', iconSize: [50, 24], iconAnchor: [25, 12]
         });
         userMarkerRef.current = L.marker(latlng, { icon: youIcon });
         userMarkerRef.current.addTo(mapRef.current);
       }
       mapRef.current.setView(latlng, 15);
       userMarkerRef.current.bindPopup("You are here").openPopup();
-      // Auto-load nearby venues around current location
-      setSelectedLatLng(latlng);
-      fetchRecommendations(latlng);
+      
+      // Don't auto-search - let user click "Search Food Places" button instead
     } catch (_) {
       // ignore; user may deny permission
     } finally {
@@ -127,17 +210,620 @@ export default function MapPage() {
     }
   }
 
-  function dropSearchMarker(latlng: { lat: number; lng: number } | [number, number], popupText?: string) {
-    const L = (window as any).L;
-    const ll = Array.isArray(latlng) ? latlng : [latlng.lat, latlng.lng];
-    if (searchMarkerRef.current) {
-      searchMarkerRef.current.setLatLng(ll);
-    } else {
-      searchMarkerRef.current = L.marker(ll);
-      searchMarkerRef.current.addTo(mapRef.current);
+  // Fixed sample food places data for demonstration (Cebu City area)
+  const getSampleFoodPlaces = (centerLatLng: [number, number]) => {
+    // Use fixed coordinates around Cebu City instead of relative to click
+    const samplePlaces: FoodPlace[] = [
+      {
+        id: "1",
+        name: "Jollibee",
+        category: "Fast Foods",
+        rating: 4.2,
+        price_range: "$$",
+        latitude: 10.3157,
+        longitude: 123.8854,
+        description: "Popular Filipino fast food chain",
+        cuisine_type: "Local Cuisine",
+        is_open: true,
+        features: ["Budget-Friendly", "Family-Friendly"]
+      },
+      {
+        id: "2",
+        name: "McDonald's",
+        category: "Fast Foods",
+        rating: 4.0,
+        price_range: "$$",
+        latitude: 10.3167,
+        longitude: 123.8864,
+        description: "International fast food chain",
+        cuisine_type: "International Cuisine",
+        is_open: true,
+        features: ["Budget-Friendly", "Family-Friendly", "Open 24 Hours"]
+      },
+      {
+        id: "3",
+        name: "Starbucks Coffee",
+        category: "Cafes",
+        rating: 4.3,
+        price_range: "$$$",
+        latitude: 10.3147,
+        longitude: 123.8844,
+        description: "Premium coffee and pastries",
+        cuisine_type: "International Cuisine",
+        is_open: true,
+        features: ["Pet-Friendly"]
+      },
+      {
+        id: "4",
+        name: "Chowking",
+        category: "Local Cuisine",
+        rating: 4.1,
+        price_range: "$$",
+        latitude: 10.3177,
+        longitude: 123.8874,
+        description: "Chinese-Filipino cuisine",
+        cuisine_type: "Local Cuisine",
+        is_open: true,
+        features: ["Budget-Friendly", "Family-Friendly"]
+      },
+      {
+        id: "5",
+        name: "KFC",
+        category: "Fast Foods",
+        rating: 4.0,
+        price_range: "$$",
+        latitude: 10.3137,
+        longitude: 123.8834,
+        description: "Fried chicken and sides",
+        cuisine_type: "International Cuisine",
+        is_open: true,
+        features: ["Budget-Friendly", "Family-Friendly"]
+      },
+      {
+        id: "6",
+        name: "Greenwich Pizza",
+        category: "Fast Foods",
+        rating: 3.9,
+        price_range: "$$",
+        latitude: 10.3187,
+        longitude: 123.8884,
+        description: "Pizza and pasta",
+        cuisine_type: "International Cuisine",
+        is_open: true,
+        features: ["Budget-Friendly", "Family-Friendly"]
+      },
+      {
+        id: "7",
+        name: "Mang Inasal",
+        category: "Local Cuisine",
+        rating: 4.4,
+        price_range: "$$",
+        latitude: 10.3127,
+        longitude: 123.8824,
+        description: "Grilled chicken and Filipino dishes",
+        cuisine_type: "Local Cuisine",
+        is_open: true,
+        features: ["Budget-Friendly", "Family-Friendly"]
+      },
+      {
+        id: "8",
+        name: "Coffee Bean & Tea Leaf",
+        category: "Cafes",
+        rating: 4.2,
+        price_range: "$$$",
+        latitude: 10.3197,
+        longitude: 123.8894,
+        description: "Coffee, tea, and light meals",
+        cuisine_type: "International Cuisine",
+        is_open: true,
+        features: ["Pet-Friendly"]
+      },
+      {
+        id: "9",
+        name: "Pizza Hut",
+        category: "Fine Dining",
+        rating: 4.1,
+        price_range: "$$$",
+        latitude: 10.3117,
+        longitude: 123.8814,
+        description: "Pizza, pasta, and wings",
+        cuisine_type: "International Cuisine",
+        is_open: true,
+        features: ["Family-Friendly"]
+      },
+      {
+        id: "10",
+        name: "Subway",
+        category: "Fast Foods",
+        rating: 4.0,
+        price_range: "$$",
+        latitude: 10.3207,
+        longitude: 123.8904,
+        description: "Fresh sandwiches and salads",
+        cuisine_type: "International Cuisine",
+        is_open: true,
+        features: ["Budget-Friendly", "Family-Friendly"]
+      },
+      {
+        id: "11",
+        name: "Goldilocks",
+        category: "Bakeries/Pastries",
+        rating: 4.3,
+        price_range: "$$",
+        latitude: 10.3107,
+        longitude: 123.8804,
+        description: "Filipino bakery and cakes",
+        cuisine_type: "Local Cuisine",
+        is_open: true,
+        features: ["Budget-Friendly", "Family-Friendly"]
+      },
+      {
+        id: "12",
+        name: "Red Ribbon",
+        category: "Bakeries/Pastries",
+        rating: 4.1,
+        price_range: "$$",
+        latitude: 10.3217,
+        longitude: 123.8914,
+        description: "Cakes and pastries",
+        cuisine_type: "Local Cuisine",
+        is_open: true,
+        features: ["Budget-Friendly", "Family-Friendly"]
+      },
+      {
+        id: "13",
+        name: "Yellow Cab Pizza",
+        category: "Fine Dining",
+        rating: 4.2,
+        price_range: "$$$",
+        latitude: 10.3097,
+        longitude: 123.8794,
+        description: "New York style pizza",
+        cuisine_type: "International Cuisine",
+        is_open: true,
+        features: ["Family-Friendly"]
+      },
+      {
+        id: "14",
+        name: "Tokyo Tokyo",
+        category: "Fast Foods",
+        rating: 4.0,
+        price_range: "$$",
+        latitude: 10.3227,
+        longitude: 123.8924,
+        description: "Japanese fast food",
+        cuisine_type: "International Cuisine",
+        is_open: true,
+        features: ["Budget-Friendly", "Family-Friendly"]
+      },
+      {
+        id: "15",
+        name: "Bonchon",
+        category: "Fine Dining",
+        rating: 4.4,
+        price_range: "$$$",
+        latitude: 10.3087,
+        longitude: 123.8784,
+        description: "Korean fried chicken",
+        cuisine_type: "International Cuisine",
+        is_open: true,
+        features: ["Family-Friendly"]
+      }
+    ];
+
+    // Filter by category if selected
+    let filtered = samplePlaces;
+    if (categoryFilter) {
+      filtered = filtered.filter(place => 
+        place.category === categoryFilter
+      );
     }
-    if (popupText) searchMarkerRef.current.bindPopup(popupText).openPopup();
-    mapRef.current.setView(ll, 16);
+
+    // Filter by features if selected
+    if (featureFilter) {
+      filtered = filtered.filter(place => 
+        place.features?.includes(featureFilter)
+      );
+    }
+
+    return filtered;
+  };
+
+  async function searchFoodPlaces(centerLatLng: [number, number]) {
+    setLoadingPlaces(true);
+    try {
+      console.log("Searching for real food places at:", centerLatLng);
+      
+      // Use OpenStreetMap Overpass API for real restaurant data
+      const places = await fetchRealFoodPlaces(centerLatLng);
+      
+      console.log("Found", places.length, "real places");
+      setFoodPlaces(places);
+      
+      // Wait a bit to ensure map is ready
+      setTimeout(() => {
+        plotFoodMarkers(places);
+      }, 100);
+      
+    } catch (error) {
+      console.error("Error fetching food places:", error);
+      // Fallback to sample data if real data fails
+      console.log("Falling back to sample data");
+      const places = getSampleFoodPlaces(centerLatLng);
+      setFoodPlaces(places);
+      setTimeout(() => {
+        plotFoodMarkers(places);
+      }, 100);
+    } finally {
+      setLoadingPlaces(false);
+    }
+  }
+
+  // Load initial food places only once
+  const loadInitialFoodPlaces = useMemo(() => {
+    return () => {
+      searchFoodPlaces(defaultCenter);
+    };
+  }, []);
+
+  async function fetchRealFoodPlaces(centerLatLng: [number, number]) {
+    const [lat, lon] = centerLatLng;
+    const radius = 1000; // 1km radius
+    
+    // OpenStreetMap Overpass API query for restaurants, cafes, and fast food
+    const query = `
+[out:json][timeout:25];
+(
+  node["amenity"="restaurant"](around:${radius},${lat},${lon});
+  node["amenity"="cafe"](around:${radius},${lat},${lon});
+  node["amenity"="fast_food"](around:${radius},${lat},${lon});
+  node["amenity"="bar"](around:${radius},${lat},${lon});
+  node["amenity"="pub"](around:${radius},${lat},${lon});
+  node["amenity"="food_court"](around:${radius},${lat},${lon});
+  node["shop"="bakery"](around:${radius},${lat},${lon});
+  node["shop"="confectionery"](around:${radius},${lat},${lon});
+);
+out;
+`;
+
+    const response = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: query,
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Transform OpenStreetMap data to our format
+    const places: FoodPlace[] = data.elements.map((element: any, index: number) => {
+      const tags = element.tags || {};
+      
+      // Determine category and cuisine type
+      let category = 'Restaurant';
+      let cuisineType = 'International';
+      
+      if (tags.amenity === 'cafe') {
+        category = 'Cafe';
+        cuisineType = 'Coffee';
+      } else if (tags.amenity === 'fast_food') {
+        category = 'Fast Food';
+        cuisineType = 'Fast Food';
+      } else if (tags.amenity === 'bar' || tags.amenity === 'pub') {
+        category = 'Bar';
+        cuisineType = 'International';
+      } else if (tags.shop === 'bakery') {
+        category = 'Bakery';
+        cuisineType = 'Bakery';
+      }
+      
+      // Determine cuisine type from tags
+      if (tags.cuisine) {
+        cuisineType = tags.cuisine;
+      } else if (tags.brand) {
+        const brand = tags.brand.toLowerCase();
+        if (brand.includes('jollibee') || brand.includes('chowking') || brand.includes('mang inasal')) {
+          cuisineType = 'Filipino';
+        } else if (brand.includes('mcdonalds') || brand.includes('kfc') || brand.includes('subway')) {
+          cuisineType = 'American';
+        } else if (brand.includes('starbucks') || brand.includes('coffee bean')) {
+          cuisineType = 'Coffee';
+        }
+      }
+      
+      // Generate random rating (since OSM doesn't have ratings)
+      const rating = 3.5 + Math.random() * 1.5; // 3.5 to 5.0
+      
+      // Determine price range
+      let priceRange = '$$';
+      if (tags.amenity === 'cafe' && tags.brand && tags.brand.toLowerCase().includes('starbucks')) {
+        priceRange = '$$$';
+      } else if (tags.amenity === 'restaurant' && !tags.amenity === 'fast_food') {
+        priceRange = Math.random() > 0.5 ? '$$$' : '$$';
+      }
+      
+      return {
+        id: `osm_${element.id || index}`,
+        name: tags.name || tags.brand || 'Unnamed Place',
+        category: category,
+        rating: Math.round(rating * 10) / 10,
+        price_range: priceRange,
+        latitude: element.lat,
+        longitude: element.lon,
+        description: tags.description || tags.cuisine || category,
+        cuisine_type: cuisineType,
+        is_open: true
+      };
+    });
+
+    // Filter by category if selected
+    let filtered = places;
+    if (categoryFilter) {
+      filtered = filtered.filter(place => 
+        place.category === categoryFilter
+      );
+    }
+
+    // Filter by features if selected
+    if (featureFilter) {
+      filtered = filtered.filter(place => 
+        place.features?.includes(featureFilter)
+      );
+    }
+
+    return filtered;
+  }
+
+  function plotFoodMarkers(places: FoodPlace[]) {
+    const L = (window as any).L;
+    
+    // Check if Leaflet is loaded and map is ready
+    if (!L || !mapRef.current) {
+      console.log("Leaflet not loaded or map not ready yet");
+      return;
+    }
+    
+    // Clear existing food markers and custom popups
+    foodMarkersRef.current.forEach(marker => {
+      try { 
+        // Call cleanup function if it exists
+        if ((marker as any).cleanup) {
+          (marker as any).cleanup();
+        }
+        marker.remove(); 
+      } catch {}
+    });
+    foodMarkersRef.current = [];
+    
+    // Also remove any remaining custom popups
+    const customPopups = document.querySelectorAll('.custom-popup');
+    customPopups.forEach(popup => popup.remove());
+
+    console.log("Plotting", places.length, "food places");
+
+    // Add markers for each food place with modern styling
+    places.forEach((place) => {
+      const getCategoryIcon = (category: string) => {
+        const cat = category.toLowerCase();
+        if (cat.includes("restaurant") || cat.includes("food")) return "🍽️";
+        if (cat.includes("cafe") || cat.includes("coffee")) return "☕";
+        if (cat.includes("bar")) return "🍺";
+        if (cat.includes("fast")) return "🍔";
+        if (cat.includes("pizza")) return "🍕";
+        if (cat.includes("bakery")) return "🥖";
+        return "🍴";
+      };
+
+      const getCategoryColor = (category: string) => {
+        const cat = category.toLowerCase();
+        if (cat.includes("cafe") || cat.includes("coffee")) return "#059669";
+        if (cat.includes("fast")) return "#dc2626";
+        if (cat.includes("bar")) return "#7c3aed";
+        if (cat.includes("bakery")) return "#d97706";
+        return "#8c52ff";
+      };
+
+      const iconHtml = `
+        <div style="
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: linear-gradient(135deg, ${getCategoryColor(place.category)}, ${getCategoryColor(place.category)}dd);
+          color: #fff;
+          border-radius: 25px;
+          padding: 8px 14px;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+          font-size: 13px;
+          font-weight: 700;
+          border: 3px solid #fff;
+          cursor: pointer;
+          min-width: 60px;
+          justify-content: center;
+        ">
+          <span style="font-size: 16px;">${getCategoryIcon(place.category)}</span>
+          <span>${place.rating ? place.rating.toFixed(1) : "★"}</span>
+        </div>
+      `;
+
+      const customIcon = L.divIcon({ 
+        html: iconHtml, 
+        className: "modern-food-marker", 
+        iconSize: [80, 35], 
+        iconAnchor: [40, 17.5],
+        popupAnchor: [0, -25]
+      });
+
+      const marker = L.marker([place.latitude, place.longitude], { 
+        icon: customIcon
+      });
+      
+      // Modern popup with better styling
+      const popupContent = `
+        <div style="min-width: 240px; font-family: system-ui, -apple-system, sans-serif; padding: 4px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <span style="font-size: 20px;">${getCategoryIcon(place.category)}</span>
+            <div>
+              <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #111827; line-height: 1.2;">${place.name}</h3>
+              <p style="margin: 2px 0 0 0; font-size: 13px; color: #6b7280; font-weight: 500;">${place.category}</p>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 2px; background: #fef3c7; padding: 3px 8px; border-radius: 12px;">
+              <span style="color: #f59e0b; font-size: 12px;">⭐</span>
+              <span style="font-weight: 600; font-size: 12px; color: #92400e;">${place.rating ? place.rating.toFixed(1) : "N/A"}</span>
+            </div>
+            ${place.price_range ? `
+            <div style="background: #e0e7ff; padding: 3px 8px; border-radius: 12px;">
+              <span style="color: #3730a3; font-size: 12px; font-weight: 500;">${place.price_range}</span>
+            </div>
+            ` : ''}
+            ${place.cuisine_type ? `
+            <div style="background: #f3f4f6; padding: 3px 8px; border-radius: 12px;">
+              <span style="color: #374151; font-size: 12px; font-weight: 500;">${place.cuisine_type}</span>
+            </div>
+            ` : ''}
+          </div>
+          ${place.description ? `
+          <p style="margin: 0; font-size: 14px; color: #4b5563; line-height: 1.4; margin-bottom: 10px;">${place.description}</p>
+          ` : ''}
+          <div style="padding-top: 8px; border-top: 1px solid #e5e7eb;">
+            <div style="display: flex; align-items: center; gap: 4px; font-size: 11px; color: #9ca3af;">
+              <span>📍</span>
+              <span>${place.latitude.toFixed(6)}, ${place.longitude.toFixed(6)}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Create a custom popup element that won't interfere with hover detection
+      const popupElement = document.createElement('div');
+      popupElement.innerHTML = popupContent;
+      popupElement.className = 'custom-popup';
+      popupElement.style.cssText = `
+        position: absolute;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 0;
+        z-index: 1000;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.2s ease;
+        min-width: 240px;
+        max-width: 300px;
+      `;
+      
+      // Add popup to map container
+      if (mapRef.current) {
+        mapRef.current.getContainer().appendChild(popupElement);
+      }
+      
+      // Position popup relative to marker with improved accuracy
+      const updatePopupPosition = () => {
+        if (mapRef.current && popupElement) {
+          try {
+            const markerPoint = mapRef.current.latLngToContainerPoint([place.latitude, place.longitude]);
+            const containerRect = mapRef.current.getContainer().getBoundingClientRect();
+            
+            // Get actual popup dimensions
+            const popupRect = popupElement.getBoundingClientRect();
+            const popupWidth = popupRect.width || 240; // fallback to min-width
+            const popupHeight = popupRect.height || 120; // fallback to estimated height
+            
+            // Calculate position relative to the map container
+            const offsetX = markerPoint.x - (popupWidth / 2);
+            const offsetY = markerPoint.y - popupHeight - 25; // 25px above marker
+            
+            // Ensure popup stays within map bounds with padding
+            const padding = 10;
+            const left = Math.max(padding, Math.min(offsetX, containerRect.width - popupWidth - padding));
+            const top = Math.max(padding, Math.min(offsetY, containerRect.height - popupHeight - padding));
+            
+            // Only update if position actually changed to avoid unnecessary reflows
+            const currentLeft = parseFloat(popupElement.style.left) || 0;
+            const currentTop = parseFloat(popupElement.style.top) || 0;
+            
+            if (Math.abs(currentLeft - left) > 1 || Math.abs(currentTop - top) > 1) {
+              popupElement.style.left = left + 'px';
+              popupElement.style.top = top + 'px';
+            }
+          } catch (error) {
+            console.warn('Error updating popup position:', error);
+          }
+        }
+      };
+      
+      // Add hover effects with custom popup
+      let hoverTimeout: NodeJS.Timeout;
+      let isHovering = false;
+      let isPopupVisible = false;
+      
+      marker.on('mouseover', function() {
+        clearTimeout(hoverTimeout);
+        isHovering = true;
+        if (!isPopupVisible) {
+          updatePopupPosition();
+          popupElement.style.opacity = '1';
+          popupElement.style.transform = 'translateY(0)';
+          isPopupVisible = true;
+        }
+      });
+      
+      marker.on('mouseout', function() {
+        isHovering = false;
+        hoverTimeout = setTimeout(() => {
+          if (!isHovering && isPopupVisible) {
+            popupElement.style.opacity = '0';
+            popupElement.style.transform = 'translateY(10px)';
+            isPopupVisible = false;
+          }
+        }, 150);
+      });
+      
+      // Update popup position on map events with throttling
+      let positionUpdateTimeout: NodeJS.Timeout;
+      const throttledUpdatePosition = () => {
+        clearTimeout(positionUpdateTimeout);
+        positionUpdateTimeout = setTimeout(() => {
+          if (isPopupVisible) {
+            updatePopupPosition();
+          }
+        }, 16); // ~60fps
+      };
+      
+      // Update popup position on map move/zoom
+      if (mapRef.current) {
+        mapRef.current.on('move', throttledUpdatePosition);
+        mapRef.current.on('zoom', throttledUpdatePosition);
+        mapRef.current.on('moveend', updatePopupPosition);
+        mapRef.current.on('zoomend', updatePopupPosition);
+      }
+      
+      marker.on('click', () => setSelectedPlace(place));
+      
+      // Store cleanup function for this marker
+      (marker as any).cleanup = () => {
+        if (popupElement && popupElement.parentNode) {
+          popupElement.parentNode.removeChild(popupElement);
+        }
+        if (mapRef.current) {
+          mapRef.current.off('move', throttledUpdatePosition);
+          mapRef.current.off('zoom', throttledUpdatePosition);
+          mapRef.current.off('moveend', updatePopupPosition);
+          mapRef.current.off('zoomend', updatePopupPosition);
+        }
+      };
+      
+      marker.addTo(mapRef.current);
+      foodMarkersRef.current.push(marker);
+    });
   }
 
   async function geocodeSearch(e: React.FormEvent) {
@@ -153,9 +839,13 @@ export default function MapPage() {
         const best = data[0];
         const lat = parseFloat(best.lat);
         const lon = parseFloat(best.lon);
-        dropSearchMarker({ lat, lng: lon }, `This is where we'll recommend places for your mood${mood ? ` (${mood})` : ""}.`);
-        setSelectedLatLng([lat, lon]);
-        fetchRecommendations([lat, lon]);
+        const latlng: [number, number] = [lat, lon];
+        
+        // Center map on search result
+        mapRef.current.setView(latlng, 15);
+        // Only search for food places when explicitly searching for a location
+        searchFoodPlaces(latlng);
+        
         setSuggestions(
           data.map((d: any) => ({ display: d.display_name, lat: parseFloat(d.lat), lon: parseFloat(d.lon) }))
         );
@@ -163,7 +853,7 @@ export default function MapPage() {
       } else {
         setSuggestions([]);
         setShowSuggestions(false);
-        alert("No results found.");
+        alert("No results found in the Philippines.");
       }
     } finally {
       setSearching(false);
@@ -192,110 +882,118 @@ export default function MapPage() {
     }, 400);
   }
 
-  async function fetchRecommendations(centerLatLng: [number, number]) {
-    setLoadingRecs(true);
-    try {
-      const [lat, lon] = centerLatLng;
-      // Define a rough bounding box around the point (~15km) for better coverage
-      const delta = 0.15;
-      const minLat = lat - delta;
-      const maxLat = lat + delta;
-      const minLon = lon - delta;
-      const maxLon = lon + delta;
 
-      const supabase = createClient();
+  // Test function to verify sample data works
+  useEffect(() => {
+    console.log("Food places state:", foodPlaces);
+  }, [foodPlaces]);
 
-      // Optional mood filter - matches category or name for demo
-      let queryBuilder = supabase
-        .from("places")
-        .select("id,name,description,latitude,longitude,category,price_range,rating,image_url")
-        .gte("latitude", minLat)
-        .lte("latitude", maxLat)
-        .gte("longitude", minLon)
-        .lte("longitude", maxLon)
-        .limit(50);
-
-      if (mood) {
-        // naive filter: category ilike mood OR name/description contains mood
-        queryBuilder = queryBuilder.or(
-          `category.ilike.%${mood}%,name.ilike.%${mood}%,description.ilike.%${mood}%`
-        );
-      }
-
-      const { data, error } = await queryBuilder;
-      if (error) throw error;
-      // filter to relevant venue types, but if filtering yields nothing, fall back to raw results
-      const allowed = ["restaurant","restaurants","cafe","coffee","event","events","bar","food","eatery"]; 
-      let filtered = (data || []).filter((p: any) => {
-        const cat = (p.category || "").toLowerCase();
-        const name = (p.name || "").toLowerCase();
-        const desc = (p.description || "").toLowerCase();
-        const categoryMatch = allowed.some((a) => cat.includes(a));
-        const moodMatch = !mood || cat.includes(mood.toLowerCase()) || name.includes(mood.toLowerCase()) || desc.includes(mood.toLowerCase());
-        return categoryMatch && moodMatch;
-      });
-      if (filtered.length === 0) filtered = data || [];
-      setResults(filtered);
-
-      // Plot markers
-      const L = (window as any).L;
-      // Remove old search marker popup text and re-add
-      if (searchMarkerRef.current) {
-        searchMarkerRef.current.bindPopup(`Found ${filtered.length} places${mood ? ` for "${mood}"` : ""} near here.`);
-      }
-
-      // Remove previous result markers
-      if (!(window as any).__resultMarkers) (window as any).__resultMarkers = [];
-      ((window as any).__resultMarkers as any[]).forEach((m) => { try { m.remove(); } catch {} });
-      (window as any).__resultMarkers = [];
-
-      // Add individual markers
-      filtered.forEach((p: any) => {
-        if (typeof p.latitude !== "number" || typeof p.longitude !== "number") return;
-        const iconHtml = `
-          <div style="display:flex;align-items:center;gap:4px;background:#1f2937;color:#fff;border-radius:9999px;padding:4px 8px;box-shadow:0 2px 6px rgba(0,0,0,.25)">
-            <span style="font-size:12px">${typeof p.rating === "number" ? p.rating.toFixed(1) : ""}</span>
-            <span style="width:20px;height:20px;display:inline-grid;place-items:center;background:#ef4444;border-radius:9999px">☕</span>
-          </div>`;
-        const customIcon = L.divIcon({ html: iconHtml, className: "", iconSize: [40, 24], iconAnchor: [20, 12] });
-        const m = L.marker([p.latitude, p.longitude], { icon: customIcon });
-        m.addTo(mapRef.current);
-        m.bindPopup(`<strong>${p.name}</strong><br/>${p.category || ""}${p.price_range ? ` • ${p.price_range}` : ""}`);
-        (window as any).__resultMarkers.push(m);
-      });
-    } catch (_) {
-      setResults([]);
-    } finally {
-      setLoadingRecs(false);
+  // Filter food places when filters change
+  useEffect(() => {
+    if (mapRef.current && foodPlaces.length > 0) {
+      const filteredPlaces = getSampleFoodPlaces([10.3157, 123.8854]);
+      setFoodPlaces(filteredPlaces);
+      plotFoodMarkers(filteredPlaces);
     }
-  }
+  }, [categoryFilter, featureFilter]);
+
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#ffffff" }}>
+    <div className="min-h-screen bg-gray-50">
+      {/* Custom CSS for modern map styling */}
+      <style jsx global>{`
+        .modern-food-marker {
+          transition: box-shadow 0.2s ease !important;
+          position: relative !important;
+        }
+        
+        .modern-food-marker:hover {
+          box-shadow: 0 8px 25px rgba(0,0,0,0.35) !important;
+          transform: none !important;
+        }
+        
+        .leaflet-marker-icon {
+          position: absolute !important;
+        }
+        
+        .leaflet-marker-icon:hover {
+          z-index: 1000 !important;
+        }
+        
+        .custom-popup {
+          font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        .leaflet-control-layers {
+          border-radius: 8px !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
+        
+        .leaflet-control-layers-toggle {
+          background: white !important;
+          border-radius: 8px !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+        
+        .leaflet-control-zoom a {
+          background: white !important;
+          border-radius: 6px !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+          color: #374151 !important;
+          font-weight: 600 !important;
+        }
+        
+        .leaflet-control-zoom a:hover {
+          background: #f9fafb !important;
+          color: #111827 !important;
+        }
+      `}</style>
+      
       <div className="container py-4">
-        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <form onSubmit={geocodeSearch} className="relative flex-1 flex gap-2">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">🍽️ Food Discovery Map</h1>
+          <p className="text-gray-600">Find the best restaurants, cafes, and food places in the Philippines</p>
+          <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-700">
+              <strong>Real Data Mode:</strong> Now showing real restaurants and cafes from OpenStreetMap! Use "My Location" to center the map, then click "Search Food Places" to find restaurants in the current view area.
+            </p>
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="mb-4 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search Bar */}
+            <form onSubmit={geocodeSearch} className="relative flex-1">
+              <div className="relative">
             <input
               value={query}
               onChange={(e) => onQueryChange(e.target.value)}
               onFocus={() => suggestions.length && setShowSuggestions(true)}
-              placeholder="Search a place (restaurant, café, event space)"
-              className="h-10 w-full px-3 rounded-md border border-gray-300"
-            />
-            <button type="submit" className="h-10 px-4 rounded-md bg-[#8c52ff] text-white">{searching ? "Searching…" : "Search"}</button>
+                  placeholder="Search for restaurants, cafes, or food places..."
+                  className="h-12 w-full px-4 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent outline-none"
+                />
+                <button 
+                  type="submit" 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 px-4 rounded-md bg-[#8c52ff] text-white text-sm hover:opacity-90"
+                >
+                  {searching ? "..." : "Search"}
+                </button>
+              </div>
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-11 left-0 right-0 z-10 bg-white border border-gray-200 rounded-md shadow">
+                <div className="absolute top-14 left-0 right-0 z-20 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                 {suggestions.map((s, i) => (
                   <button
                     type="button"
                     key={`${s.lat}-${s.lon}-${i}`}
                     onClick={() => {
-                      dropSearchMarker({ lat: s.lat, lng: s.lon }, `This is where we'll recommend places for your mood${mood ? ` (${mood})` : ""}.`);
-                      setSelectedLatLng([s.lat, s.lon]);
-                      fetchRecommendations([s.lat, s.lon]);
+                        const latlng: [number, number] = [s.lat, s.lon];
+                        mapRef.current.setView(latlng, 15);
+                        searchFoodPlaces(latlng);
                       setShowSuggestions(false);
                     }}
-                    className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                      className="block w-full text-left px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-b-0"
                   >
                     {s.display}
                   </button>
@@ -303,32 +1001,132 @@ export default function MapPage() {
               </div>
             )}
           </form>
-          <div className="flex gap-2">
-            <select value={mood} onChange={(e) => setMood(e.target.value)} className="h-10 px-3 rounded-md border border-gray-300">
-              <option value="">Mood: Any</option>
-              <option value="chill">Chill</option>
-              <option value="adventurous">Adventurous</option>
-              <option value="romantic">Romantic</option>
-              <option value="social">Social</option>
+
+            {/* Filters */}
+            <div className="flex gap-3">
+              <select 
+                value={categoryFilter} 
+                onChange={(e) => setCategoryFilter(e.target.value)} 
+                className="h-12 px-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent outline-none"
+              >
+                <option value="">All Categories</option>
+                <option value="Cafes">Cafes</option>
+                <option value="Bakeries/Pastries">Bakeries/Pastries</option>
+                <option value="Bars/Pubs">Bars/Pubs</option>
+                <option value="Fine Dining">Fine Dining</option>
+                <option value="Fast Foods">Fast Foods</option>
+                <option value="Local Cuisine">Local Cuisine</option>
+                <option value="International Cuisine">International Cuisine</option>
+              </select>
+              
+              <select 
+                value={featureFilter} 
+                onChange={(e) => setFeatureFilter(e.target.value)} 
+                className="h-12 px-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent outline-none"
+              >
+                <option value="">All Features</option>
+                <option value="Budget-Friendly">Budget-Friendly</option>
+                <option value="Family-Friendly">Family-Friendly</option>
+                <option value="Open 24 Hours">Open 24 Hours</option>
+                <option value="Pet-Friendly">Pet-Friendly</option>
             </select>
-            <button onClick={locateUser} disabled={loadingLoc} className="h-10 px-4 rounded-md border border-gray-300">{loadingLoc ? "Locating…" : "Use my location"}</button>
+              
+              <button
+                onClick={locateUser} 
+                disabled={loadingLoc} 
+                className="h-12 px-6 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                {loadingLoc ? "Locating..." : "My Location"}
+              </button>
+              <button
+                onClick={() => {
+                  if (mapRef.current) {
+                    const center = mapRef.current.getCenter();
+                    searchFoodPlaces([center.lat, center.lng]);
+                  }
+                }}
+                disabled={loadingPlaces}
+                className="h-12 px-6 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                {loadingPlaces ? "Searching..." : "Search Food Places"}
+              </button>
+            </div>
           </div>
         </div>
-        <div ref={mapEl} style={{ width: "100%", height: "60vh", borderRadius: 12, overflow: "hidden", border: "1px solid #e5e7eb" }} />
 
-        <div className="mt-4">
-          <h2 className="text-lg font-semibold mb-2">Recommendations {loadingRecs ? "(loading…)" : ""}</h2>
-          {results.length === 0 && !loadingRecs && (
-            <div className="text-sm text-gray-600">Search a place or click the map to see nearby restaurants, cafes, and events.</div>
+        {/* Map Container */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div ref={mapEl} style={{ width: "100%", height: "70vh" }} />
+        </div>
+
+        {/* Food Places List */}
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              🍴 Food Places {loadingPlaces ? "(loading...)" : `(${foodPlaces.length})`}
+            </h2>
+            {userLocation && (
+              <p className="text-sm text-gray-500">
+                📍 Showing places near your location
+              </p>
+            )}
+          </div>
+          
+          {foodPlaces.length === 0 && !loadingPlaces && (
+            <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+              <div className="text-6xl mb-4">🍽️</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No food places found</h3>
+              <p className="text-gray-600">Try searching for a different area or adjust your filters</p>
+            </div>
           )}
-          <div className="grid md:grid-cols-2 gap-3">
-            {results.map((r: any) => (
-              <div key={r.id} className="rounded-md border border-gray-200 p-3">
-                <div className="font-medium">{r.name}</div>
-                <div className="text-sm text-gray-600">{r.category || ""}{r.price_range ? ` • ${r.price_range}` : ""}</div>
-                {typeof r.rating === "number" && (
-                  <div className="text-sm">Rating: {r.rating}</div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {foodPlaces.map((place) => (
+              <div 
+                key={place.id} 
+                className={`bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer ${
+                  selectedPlace?.id === place.id ? 'ring-2 ring-[#8c52ff]' : ''
+                }`}
+                onClick={() => setSelectedPlace(place)}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-semibold text-gray-900 text-lg">{place.name}</h3>
+                  {place.rating && (
+                    <div className="flex items-center gap-1 text-yellow-500">
+                      <span className="text-sm">⭐</span>
+                      <span className="text-sm font-medium">{place.rating.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+                
+                <p className="text-gray-600 text-sm mb-2">{place.category}</p>
+                
+                {place.cuisine_type && (
+                  <p className="text-gray-500 text-xs mb-2">{place.cuisine_type}</p>
                 )}
+                
+                <div className="flex items-center justify-between">
+                  {place.price_range && (
+                    <span className="text-green-600 font-medium text-sm">{place.price_range}</span>
+                  )}
+                  <button 
+                    className="text-[#8c52ff] text-sm font-medium hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Center map on this place
+                      mapRef.current.setView([place.latitude, place.longitude], 16);
+                    }}
+                  >
+                    View on Map
+                  </button>
+                </div>
               </div>
             ))}
           </div>

@@ -328,7 +328,7 @@ function Header() {
                                     lineNumber: 135,
                                     columnNumber: 13
                                 }, this),
-                                "Map"
+                                "Food Map"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/ui/Header.tsx",
