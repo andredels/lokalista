@@ -16,6 +16,7 @@ interface FoodPlace {
   cuisine_type?: string;
   is_open?: boolean;
   features?: string[];
+  distance?: number; // Distance in kilometers from clicked location
 }
 
 export default function FoodMapPage() {
@@ -36,6 +37,10 @@ export default function FoodMapPage() {
   const [loadingPlaces, setLoadingPlaces] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<FoodPlace | null>(null);
+  const [nearbyPlaces, setNearbyPlaces] = useState<FoodPlace[]>([]);
+  const [clickedLocation, setClickedLocation] = useState<[number, number] | null>(null);
+  const [showNearbyPlaces, setShowNearbyPlaces] = useState(false);
+  const [clickMarker, setClickMarker] = useState<any>(null);
 
   // Initialize Leaflet map with satellite view focused on food places
   useEffect(() => {
@@ -148,11 +153,65 @@ export default function FoodMapPage() {
       // Ask for geolocation and center
       locateUser();
 
-      // Click to show coordinates (but don't search automatically to prevent markers from moving)
-      mapRef.current.on("click", (e: any) => {
+      // Click anywhere on map to show nearby places
+      mapRef.current.on("click", async (e: any) => {
         const latlng = e.latlng;
-        console.log('Map clicked at:', [latlng.lat, latlng.lng]);
-        // Don't automatically search on click to prevent markers from moving
+        const clickedLatLng: [number, number] = [latlng.lat, latlng.lng];
+        console.log('Map clicked at:', clickedLatLng);
+        
+        // Remove previous click marker if it exists
+        if (clickMarker) {
+          mapRef.current.removeLayer(clickMarker);
+        }
+        
+        // Add a visual marker for the clicked location
+        const L = (window as any).L;
+        const clickIcon = L.divIcon({
+          html: '<div style="background:#ef4444;color:#fff;border-radius:9999px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold;font-size:12px">📍 Clicked</div>',
+          className: '', iconSize: [60, 28], iconAnchor: [30, 14]
+        });
+        
+        const newClickMarker = L.marker(clickedLatLng, { icon: clickIcon });
+        newClickMarker.addTo(mapRef.current);
+        newClickMarker.bindPopup(`Clicked location<br>${clickedLatLng[0].toFixed(6)}, ${clickedLatLng[1].toFixed(6)}`).openPopup();
+        
+        setClickMarker(newClickMarker);
+        
+        // Set loading state for nearby places
+        setLoadingPlaces(true);
+        setClickedLocation(clickedLatLng);
+        setShowNearbyPlaces(true);
+        setSelectedPlace(null); // Clear any selected place
+        
+        try {
+          // Fetch new places around the clicked location using Places API
+          console.log('Fetching new places for clicked location...');
+          const newPlaces = await fetchRealFoodPlaces(clickedLatLng);
+          console.log('Found', newPlaces.length, 'new places for clicked location');
+          
+          // Update the main food places state with the new places
+          setFoodPlaces(newPlaces);
+          
+          // Clear existing markers and plot the new markers on the map
+          plotFoodMarkers([]); // Clear existing markers first
+          setTimeout(() => {
+            plotFoodMarkers(newPlaces);
+          }, 100);
+          
+          // Find nearby places around the clicked location from the newly fetched places
+          const nearby = findNearbyPlaces(clickedLatLng, newPlaces, 1); // 1km radius
+          console.log('Found nearby places from new data:', nearby.length);
+          setNearbyPlaces(nearby);
+          
+        } catch (error) {
+          console.error("Error fetching places for clicked location:", error);
+          // Fallback: find nearby places from existing foodPlaces
+          const nearby = findNearbyPlaces(clickedLatLng, foodPlaces, 1);
+          console.log('Using fallback nearby places:', nearby.length);
+          setNearbyPlaces(nearby);
+        } finally {
+          setLoadingPlaces(false);
+        }
       });
 
       // Load initial food places around default center
@@ -167,6 +226,10 @@ export default function FoodMapPage() {
 
     return () => {
       if (mapRef.current) {
+        // Clean up click marker
+        if (clickMarker) {
+          mapRef.current.removeLayer(clickMarker);
+        }
         mapRef.current.remove();
         mapRef.current = null;
       }
@@ -883,6 +946,38 @@ out;
   }
 
 
+  // Calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in kilometers
+  };
+
+  // Find nearby places within a specified radius from a clicked location
+  const findNearbyPlaces = (clickedLatLng: [number, number], allPlaces: FoodPlace[], radiusKm: number = 1): FoodPlace[] => {
+    const [clickLat, clickLon] = clickedLatLng;
+    
+    return allPlaces
+      .map(place => ({
+        ...place,
+        distance: calculateDistance(
+          clickLat,
+          clickLon,
+          place.latitude,
+          place.longitude
+        )
+      }))
+      .filter(place => place.distance <= radiusKm)
+      .sort((a, b) => a.distance - b.distance) // Sort by distance
+      .slice(0, 15); // Limit to 15 nearby places
+  };
+
   // Test function to verify sample data works
   useEffect(() => {
     console.log("Food places state:", foodPlaces);
@@ -957,6 +1052,11 @@ out;
           <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-sm text-green-700">
               <strong>Real Data Mode:</strong> Now showing real restaurants and cafes from OpenStreetMap! Use "My Location" to center the map, then click "Search Food Places" to find restaurants in the current view area.
+            </p>
+          </div>
+          <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-700">
+              <strong>🗺️ Click to Explore:</strong> Click anywhere on the map to automatically find and display nearby restaurants and cafes! The map will refresh with new places from the Places API around your clicked location.
             </p>
           </div>
         </div>
@@ -1131,6 +1231,126 @@ out;
             ))}
           </div>
         </div>
+
+        {/* Nearby Places Section - Shows when clicking on map */}
+        {showNearbyPlaces && clickedLocation && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">
+                🗺️ Food Places Near Clicked Location
+                {loadingPlaces && <span className="text-sm text-gray-500 ml-2">(Loading...)</span>}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowNearbyPlaces(false);
+                  setNearbyPlaces([]);
+                  setClickedLocation(null);
+                  // Remove click marker
+                  if (clickMarker && mapRef.current) {
+                    mapRef.current.removeLayer(clickMarker);
+                    setClickMarker(null);
+                  }
+                }}
+                className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Close
+              </button>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-700">
+                <strong>📍 Clicked Location:</strong> {clickedLocation[0].toFixed(6)}, {clickedLocation[1].toFixed(6)}
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                {loadingPlaces ? (
+                  "Fetching nearby places from Places API..."
+                ) : (
+                  `Showing ${nearbyPlaces.length} food places within 1km radius • Places automatically fetched from Places API`
+                )}
+              </p>
+            </div>
+            
+            {loadingPlaces ? (
+              <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+                <div className="text-4xl mb-4">🔍</div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Finding nearby places...</h3>
+                <p className="text-gray-600">Searching for restaurants and cafes around the clicked location</p>
+                <div className="mt-4 flex justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              </div>
+            ) : nearbyPlaces.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {nearbyPlaces.map((place) => (
+                <div 
+                  key={place.id} 
+                  className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => {
+                    // Center map on this nearby place and select it
+                    mapRef.current.setView([place.latitude, place.longitude], 16);
+                    setSelectedPlace(place);
+                    setShowNearbyPlaces(false); // Hide nearby places when selecting a specific place
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900 text-lg">{place.name}</h3>
+                    <div className="text-right">
+                      {place.rating && (
+                        <div className="flex items-center gap-1 text-yellow-500 mb-1">
+                          <span className="text-sm">⭐</span>
+                          <span className="text-sm font-medium">{place.rating.toFixed(1)}</span>
+                        </div>
+                      )}
+                      {place.distance && (
+                        <div className="text-xs text-gray-500">
+                          📏 {(place.distance * 1000).toFixed(0)}m away
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-600 text-sm mb-2">{place.category}</p>
+                  
+                  {place.cuisine_type && (
+                    <p className="text-gray-500 text-xs mb-2">{place.cuisine_type}</p>
+                  )}
+                  
+                  <div className="flex items-center justify-between">
+                    {place.price_range && (
+                      <span className="text-green-600 font-medium text-sm">{place.price_range}</span>
+                    )}
+                    <button 
+                      className="text-[#8c52ff] text-sm font-medium hover:underline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Center map on this place and select it
+                        mapRef.current.setView([place.latitude, place.longitude], 16);
+                        setSelectedPlace(place);
+                        setShowNearbyPlaces(false);
+                      }}
+                    >
+                      View on Map
+                    </button>
+                  </div>
+                </div>
+              ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+                <div className="text-6xl mb-4">🗺️</div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No food places found nearby</h3>
+                <p className="text-gray-600">No food places found within 1km of the clicked location</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Try clicking on a different area or use the "Search Food Places" button to load more places
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
   );
