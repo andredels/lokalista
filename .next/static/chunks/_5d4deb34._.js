@@ -30,6 +30,7 @@ __turbopack_context__.s([
     ()=>Header
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabase$2f$browserClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/supabase/browserClient.ts [app-client] (ecmascript)");
@@ -41,11 +42,13 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
+;
 function Header() {
     _s();
     const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"])();
     const [isScrolled, setIsScrolled] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [profile, setProfile] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [loadingUser, setLoadingUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
     const [menuOpen, setMenuOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const menuRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
@@ -67,19 +70,56 @@ function Header() {
         "Header.useEffect": ()=>{
             const supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabase$2f$browserClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["createClient"])();
             let mounted = true;
+            const loadProfileData = {
+                "Header.useEffect.loadProfileData": async (userId)=>{
+                    try {
+                        const { data: profileData, error } = await supabase.from('profiles').select('first_name, avatar_url').eq('id', userId).single();
+                        if (!mounted) return;
+                        if (error && error.code !== 'PGRST116') {
+                            console.error('Error loading profile:', error);
+                        }
+                        setProfile(profileData || null);
+                    } catch (error) {
+                        console.error('Error loading profile:', error);
+                        if (mounted) {
+                            setProfile(null);
+                            // Set loading to false even if profile loading fails
+                            setLoadingUser(false);
+                        }
+                    }
+                }
+            }["Header.useEffect.loadProfileData"];
             ({
                 "Header.useEffect": async ()=>{
-                    const { data } = await supabase.auth.getUser();
-                    if (!mounted) return;
-                    var _data_user;
-                    setUser((_data_user = data.user) !== null && _data_user !== void 0 ? _data_user : null);
-                    setLoadingUser(false);
+                    try {
+                        const { data } = await supabase.auth.getUser();
+                        if (!mounted) return;
+                        var _data_user;
+                        setUser((_data_user = data.user) !== null && _data_user !== void 0 ? _data_user : null);
+                        // Do not block UI on profile fetch
+                        if (data.user) {
+                            loadProfileData(data.user.id);
+                        }
+                    } catch (error) {
+                        console.error('Error in auth initialization:', error);
+                    } finally{
+                        if (mounted) {
+                            setLoadingUser(false);
+                        }
+                    }
                 }
             })["Header.useEffect"]();
             const { data: sub } = supabase.auth.onAuthStateChange({
-                "Header.useEffect": (_event, session)=>{
+                "Header.useEffect": async (_event, session)=>{
+                    if (!mounted) return;
                     var _session_user;
                     setUser((_session_user = session === null || session === void 0 ? void 0 : session.user) !== null && _session_user !== void 0 ? _session_user : null);
+                    if (session === null || session === void 0 ? void 0 : session.user) {
+                        // Fire and forget profile refresh
+                        loadProfileData(session.user.id);
+                    } else {
+                        setProfile(null);
+                    }
                 }
             }["Header.useEffect"]);
             return ({
@@ -115,14 +155,23 @@ function Header() {
     ]);
     const firstName = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
         "Header.useMemo[firstName]": ()=>{
+            // Use first_name from profile if available
+            if (profile === null || profile === void 0 ? void 0 : profile.first_name) {
+                return profile.first_name;
+            }
+            // Fallback to user metadata
             const meta = user === null || user === void 0 ? void 0 : user.user_metadata;
             const fullName = (meta === null || meta === void 0 ? void 0 : meta.full_name) || (meta === null || meta === void 0 ? void 0 : meta.name) || (meta === null || meta === void 0 ? void 0 : meta.first_name);
-            if (fullName) return fullName.split(" ")[0];
+            if (fullName) {
+                return fullName.split(" ")[0];
+            }
+            // Final fallback to email
             const email = (user === null || user === void 0 ? void 0 : user.email) || "";
             return email.includes("@") ? email.split("@")[0] : "";
         }
     }["Header.useMemo[firstName]"], [
-        user
+        user,
+        profile
     ]);
     async function handleSignOut() {
         const supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabase$2f$browserClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["createClient"])();
@@ -157,7 +206,7 @@ function Header() {
                                             strokeWidth: "1.6"
                                         }, void 0, false, {
                                             fileName: "[project]/app/ui/Header.tsx",
-                                            lineNumber: 90,
+                                            lineNumber: 147,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
@@ -167,18 +216,18 @@ function Header() {
                                             fill: "currentColor"
                                         }, void 0, false, {
                                             fileName: "[project]/app/ui/Header.tsx",
-                                            lineNumber: 91,
+                                            lineNumber: 148,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/ui/Header.tsx",
-                                    lineNumber: 89,
+                                    lineNumber: 146,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/ui/Header.tsx",
-                                lineNumber: 88,
+                                lineNumber: 145,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -186,18 +235,18 @@ function Header() {
                                 children: "Lokalista"
                             }, void 0, false, {
                                 fileName: "[project]/app/ui/Header.tsx",
-                                lineNumber: 94,
+                                lineNumber: 151,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/ui/Header.tsx",
-                        lineNumber: 87,
+                        lineNumber: 144,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/ui/Header.tsx",
-                    lineNumber: 86,
+                    lineNumber: 143,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
@@ -220,19 +269,19 @@ function Header() {
                                         strokeWidth: "1.5"
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 108,
+                                        lineNumber: 165,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/ui/Header.tsx",
-                                    lineNumber: 107,
+                                    lineNumber: 164,
                                     columnNumber: 13
                                 }, this),
                                 "Home"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/ui/Header.tsx",
-                            lineNumber: 98,
+                            lineNumber: 155,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -253,19 +302,19 @@ function Header() {
                                         strokeLinecap: "round"
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 122,
+                                        lineNumber: 179,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/ui/Header.tsx",
-                                    lineNumber: 121,
+                                    lineNumber: 178,
                                     columnNumber: 13
                                 }, this),
                                 "AI Assistant"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/ui/Header.tsx",
-                            lineNumber: 112,
+                            lineNumber: 169,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -286,19 +335,19 @@ function Header() {
                                         strokeLinecap: "round"
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 136,
+                                        lineNumber: 193,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/ui/Header.tsx",
-                                    lineNumber: 135,
+                                    lineNumber: 192,
                                     columnNumber: 13
                                 }, this),
                                 "Food Map"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/ui/Header.tsx",
-                            lineNumber: 126,
+                            lineNumber: 183,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -319,31 +368,37 @@ function Header() {
                                         strokeLinecap: "round"
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 150,
+                                        lineNumber: 207,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/ui/Header.tsx",
-                                    lineNumber: 149,
+                                    lineNumber: 206,
                                     columnNumber: 13
                                 }, this),
                                 "Community"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/ui/Header.tsx",
-                            lineNumber: 140,
+                            lineNumber: 197,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/ui/Header.tsx",
-                    lineNumber: 97,
+                    lineNumber: 154,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "flex items-center gap-2 relative",
                     ref: menuRef,
-                    children: loadingUser ? null : user ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    children: loadingUser ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: "Loading..."
+                    }, void 0, false, {
+                        fileName: "[project]/app/ui/Header.tsx",
+                        lineNumber: 214,
+                        columnNumber: 13
+                    }, this) : user ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex items-center gap-2",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -352,20 +407,30 @@ function Header() {
                                 onClick: ()=>setMenuOpen((v)=>!v),
                                 className: "h-9 pl-1 pr-2 rounded-md border border-border/60 inline-flex items-center gap-2 hover:bg-muted",
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    (profile === null || profile === void 0 ? void 0 : profile.avatar_url) ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                                        src: profile.avatar_url,
+                                        alt: "".concat(firstName || 'User', "'s profile picture"),
+                                        width: 32,
+                                        height: 32,
+                                        className: "w-8 h-8 rounded-full object-cover"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/ui/Header.tsx",
+                                        lineNumber: 224,
+                                        columnNumber: 19
+                                    }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium",
                                         children: (firstName || user.email || "?").slice(0, 1).toUpperCase()
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 164,
-                                        columnNumber: 17
+                                        lineNumber: 232,
+                                        columnNumber: 19
                                     }, this),
                                     firstName && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "text-sm font-medium hidden sm:inline",
                                         children: firstName
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 167,
+                                        lineNumber: 236,
                                         columnNumber: 31
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
@@ -382,18 +447,18 @@ function Header() {
                                             strokeLinejoin: "round"
                                         }, void 0, false, {
                                             fileName: "[project]/app/ui/Header.tsx",
-                                            lineNumber: 169,
+                                            lineNumber: 238,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 168,
+                                        lineNumber: 237,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/ui/Header.tsx",
-                                lineNumber: 158,
+                                lineNumber: 217,
                                 columnNumber: 15
                             }, this),
                             menuOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -401,14 +466,14 @@ function Header() {
                                 className: "absolute right-0 top-[calc(100%+8px)] w-48 rounded-md border border-border/60 bg-background shadow-md p-1 text-sm",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                        href: "/account/profile",
+                                        href: "/profile/edit",
                                         className: "block px-3 py-2 rounded hover:bg-muted",
                                         role: "menuitem",
                                         onClick: ()=>setMenuOpen(false),
                                         children: "Edit Profile"
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 174,
+                                        lineNumber: 243,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -419,7 +484,7 @@ function Header() {
                                         children: "Account Settings"
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 177,
+                                        lineNumber: 246,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -432,19 +497,19 @@ function Header() {
                                         children: "Sign out"
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 180,
+                                        lineNumber: 249,
                                         columnNumber: 19
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/ui/Header.tsx",
-                                lineNumber: 173,
+                                lineNumber: 242,
                                 columnNumber: 17
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/ui/Header.tsx",
-                        lineNumber: 157,
+                        lineNumber: 216,
                         columnNumber: 13
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                         children: [
@@ -467,7 +532,7 @@ function Header() {
                                                 strokeWidth: "1.5"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/ui/Header.tsx",
-                                                lineNumber: 190,
+                                                lineNumber: 259,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -477,20 +542,20 @@ function Header() {
                                                 strokeLinecap: "round"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/ui/Header.tsx",
-                                                lineNumber: 191,
+                                                lineNumber: 260,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 189,
+                                        lineNumber: 258,
                                         columnNumber: 17
                                     }, this),
                                     "Find Places"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/ui/Header.tsx",
-                                lineNumber: 188,
+                                lineNumber: 257,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -499,29 +564,29 @@ function Header() {
                                 children: "Get Started"
                             }, void 0, false, {
                                 fileName: "[project]/app/ui/Header.tsx",
-                                lineNumber: 195,
+                                lineNumber: 264,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true)
                 }, void 0, false, {
                     fileName: "[project]/app/ui/Header.tsx",
-                    lineNumber: 155,
+                    lineNumber: 212,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/ui/Header.tsx",
-            lineNumber: 85,
+            lineNumber: 142,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/ui/Header.tsx",
-        lineNumber: 80,
+        lineNumber: 137,
         columnNumber: 5
     }, this);
 }
-_s(Header, "KJfuQpY1fpX47J2gJSwVN/R3xkY=", false, function() {
+_s(Header, "v8XwvW5ephYT+99qsZxKucYPO20=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"]
     ];

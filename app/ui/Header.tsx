@@ -10,6 +10,7 @@ export default function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<import("@supabase/supabase-js").User | null>(null);
+  const [profile, setProfile] = useState<{ first_name?: string; avatar_url?: string } | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -26,17 +27,63 @@ export default function Header() {
   useEffect(() => {
     const supabase = createClient();
     let mounted = true;
+    
+    const loadProfileData = async (userId: string) => {
+      try {
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('first_name, avatar_url')
+          .eq('id', userId)
+          .single();
+        
+        if (!mounted) return;
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error loading profile:', error);
+        }
+        
+        setProfile(profileData || null);
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        if (mounted) {
+          setProfile(null);
+          // Set loading to false even if profile loading fails
+          setLoadingUser(false);
+        }
+      }
+    };
+    
     (async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!mounted) return;
-      setUser(data.user ?? null);
-      setLoadingUser(false);
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!mounted) return;
+        setUser(data.user ?? null);
+        // Do not block UI on profile fetch
+        if (data.user) {
+          loadProfileData(data.user.id);
+        }
+      } catch (error) {
+        console.error('Error in auth initialization:', error);
+      } finally {
+        if (mounted) {
+          setLoadingUser(false);
+        }
+      }
     })();
+    
     const { data: sub } = supabase.auth.onAuthStateChange(
-      (_event: import("@supabase/supabase-js").AuthChangeEvent, session: import("@supabase/supabase-js").Session | null) => {
+      async (_event: import("@supabase/supabase-js").AuthChangeEvent, session: import("@supabase/supabase-js").Session | null) => {
+        if (!mounted) return;
         setUser(session?.user ?? null);
+        if (session?.user) {
+          // Fire and forget profile refresh
+          loadProfileData(session.user.id);
+        } else {
+          setProfile(null);
+        }
       }
     );
+    
     return () => {
       mounted = false;
       sub.subscription.unsubscribe();
@@ -62,12 +109,22 @@ export default function Header() {
   }, [menuOpen]);
 
   const firstName = useMemo(() => {
+    // Use first_name from profile if available
+    if (profile?.first_name) {
+      return profile.first_name;
+    }
+    
+    // Fallback to user metadata
     const meta = user?.user_metadata as Record<string, unknown> | undefined;
     const fullName = (meta?.full_name as string) || (meta?.name as string) || (meta?.first_name as string);
-    if (fullName) return fullName.split(" ")[0];
+    if (fullName) {
+      return fullName.split(" ")[0];
+    }
+    
+    // Final fallback to email
     const email = user?.email || "";
     return email.includes("@") ? email.split("@")[0] : "";
-  }, [user]);
+  }, [user, profile]);
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -153,7 +210,9 @@ export default function Header() {
           </Link>
         </nav>
         <div className="flex items-center gap-2 relative" ref={menuRef}>
-          {loadingUser ? null : user ? (
+          {loadingUser ? (
+            <div>Loading...</div>
+          ) : user ? (
             <div className="flex items-center gap-2">
               <button
                 aria-haspopup="menu"
@@ -161,9 +220,19 @@ export default function Header() {
                 onClick={() => setMenuOpen((v) => !v)}
                 className="h-9 pl-1 pr-2 rounded-md border border-border/60 inline-flex items-center gap-2 hover:bg-muted"
               >
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-                  {(firstName || user.email || "?").slice(0, 1).toUpperCase()}
-                </div>
+                {profile?.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={`${firstName || 'User'}'s profile picture`}
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
+                    {(firstName || user.email || "?").slice(0, 1).toUpperCase()}
+                  </div>
+                )}
                 {firstName && <span className="text-sm font-medium hidden sm:inline">{firstName}</span>}
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden>
                   <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -171,7 +240,7 @@ export default function Header() {
               </button>
               {menuOpen && (
                 <div role="menu" className="absolute right-0 top-[calc(100%+8px)] w-48 rounded-md border border-border/60 bg-background shadow-md p-1 text-sm">
-                  <Link href="/account/profile" className="block px-3 py-2 rounded hover:bg-muted" role="menuitem" onClick={() => setMenuOpen(false)}>
+                  <Link href="/profile/edit" className="block px-3 py-2 rounded hover:bg-muted" role="menuitem" onClick={() => setMenuOpen(false)}>
                     Edit Profile
                   </Link>
                   <Link href="/account/settings" className="block px-3 py-2 rounded hover:bg-muted" role="menuitem" onClick={() => setMenuOpen(false)}>
