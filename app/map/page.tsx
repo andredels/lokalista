@@ -41,6 +41,7 @@ export default function FoodMapPage() {
   const [clickedLocation, setClickedLocation] = useState<[number, number] | null>(null);
   const [showNearbyPlaces, setShowNearbyPlaces] = useState(false);
   const [clickMarker, setClickMarker] = useState<any>(null);
+  const clickMarkersRef = useRef<any[]>([]);
 
   // Initialize Leaflet map with satellite view focused on food places
   useEffect(() => {
@@ -159,9 +160,17 @@ export default function FoodMapPage() {
         const clickedLatLng: [number, number] = [latlng.lat, latlng.lng];
         console.log('Map clicked at:', clickedLatLng);
         
-        // Remove previous click marker if it exists
-        if (clickMarker) {
-          mapRef.current.removeLayer(clickMarker);
+        // Remove ALL previous click markers
+        if (mapRef.current) {
+          clickMarkersRef.current.forEach(marker => {
+            try {
+              mapRef.current.removeLayer(marker);
+            } catch (error) {
+              console.warn('Error removing click marker:', error);
+            }
+          });
+          clickMarkersRef.current = [];
+          setClickMarker(null);
         }
         
         // Add a visual marker for the clicked location
@@ -175,6 +184,8 @@ export default function FoodMapPage() {
         newClickMarker.addTo(mapRef.current);
         newClickMarker.bindPopup(`Clicked location<br>${clickedLatLng[0].toFixed(6)}, ${clickedLatLng[1].toFixed(6)}`).openPopup();
         
+        // Track the new marker
+        clickMarkersRef.current.push(newClickMarker);
         setClickMarker(newClickMarker);
         
         // Set loading state for nearby places
@@ -226,10 +237,16 @@ export default function FoodMapPage() {
 
     return () => {
       if (mapRef.current) {
-        // Clean up click marker
-        if (clickMarker) {
-          mapRef.current.removeLayer(clickMarker);
-        }
+        // Clean up ALL click markers
+        clickMarkersRef.current.forEach(marker => {
+          try {
+            mapRef.current.removeLayer(marker);
+          } catch (error) {
+            console.warn('Error removing click marker during cleanup:', error);
+          }
+        });
+        clickMarkersRef.current = [];
+        
         mapRef.current.remove();
         mapRef.current = null;
       }
@@ -1245,9 +1262,16 @@ out;
                   setShowNearbyPlaces(false);
                   setNearbyPlaces([]);
                   setClickedLocation(null);
-                  // Remove click marker
-                  if (clickMarker && mapRef.current) {
-                    mapRef.current.removeLayer(clickMarker);
+                  // Remove ALL click markers
+                  if (mapRef.current) {
+                    clickMarkersRef.current.forEach(marker => {
+                      try {
+                        mapRef.current.removeLayer(marker);
+                      } catch (error) {
+                        console.warn('Error removing click marker:', error);
+                      }
+                    });
+                    clickMarkersRef.current = [];
                     setClickMarker(null);
                   }
                 }}
