@@ -1,4 +1,3 @@
-import MoodLocationCard from "./ui/MoodLocationCard";
 
 export default function Home() {
   return (
@@ -24,12 +23,12 @@ export default function Home() {
                 <span className="bg-gradient-to-r from-fuchsia-500 to-violet-600 bg-clip-text text-transparent">Hidden Gems</span>
               </h1>
               <p className="text-muted mb-6 text-lg max-w-2xl">
-                Let our AI recommend the perfect restaurants, cafes, and events based on your mood and location. Explore like a local, discover like an explorer.
+                Let our AI recommend the perfect restaurants, cafes, and events based on your preferences and location. Explore like a local, discover like an explorer.
               </p>
 
               <ul className="space-y-3 mb-6">
                 {[
-                  { label: "AI-powered recommendations based on your mood", icon: "/aipowered.png" },
+                  { label: "AI-powered recommendations based on your preferences", icon: "/aipowered.png" },
                   { label: "Discover hidden gems near you", icon: "/gps.png" },
                   { label: "Smart search for restaurants, cafes & events", icon: "/search.png" },
                 ].map((i) => (
@@ -76,14 +75,14 @@ export default function Home() {
         <div className="container py-16 md:py-20">
           <div className="text-center max-w-3xl mx-auto mb-10">
             <h2 className="h2 mb-2">Discover Like Never Before</h2>
-            <p className="text-muted">Our AI-powered platform combines intelligent recommendations with interactive discovery to help you find the perfect places for any mood or occasion.</p>
+            <p className="text-muted">Our AI-powered platform combines intelligent recommendations with interactive discovery to help you find the perfect places for any occasion.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
                 title: "AI-Powered Recommendations",
-                desc: "Get personalized suggestions based on your mood, preferences, and location. Our AI learns what you love.",
-                bullets: ["Mood-based matching", "Learning preferences", "Real-time updates"],
+                desc: "Get personalized suggestions based on your preferences and location. Our AI learns what you love.",
+                bullets: ["Preference-based matching", "Learning preferences", "Real-time updates"],
                 icon: "/brain.png",
               },
               {
@@ -94,7 +93,7 @@ export default function Home() {
               },
               {
                 title: "Smart Filters & Search",
-                desc: "Find exactly what you're looking for with advanced filters for cuisine, mood, price, and distance.",
+                desc: "Find exactly what you're looking for with advanced filters for cuisine, price, and distance.",
                 bullets: ["Advanced filtering", "Quick search", "Saved preferences"],
                 icon: "/search.png",
               },

@@ -1,9 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getTrendingRestaurants, type FoodPlace } from "@/lib/restaurants";
 
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [trendingRestaurants, setTrendingRestaurants] = useState<FoodPlace[]>([]);
+  const [loadingTrending, setLoadingTrending] = useState(true);
+  const router = useRouter();
+  
+  // Load real trending restaurants on component mount
+  useEffect(() => {
+    const loadTrendingRestaurants = async () => {
+      setLoadingTrending(true);
+      try {
+        // Use Cebu City center coordinates as default
+        const cebuCenter: [number, number] = [10.3157, 123.8854];
+        const trending = await getTrendingRestaurants(cebuCenter);
+        setTrendingRestaurants(trending);
+      } catch (error) {
+        console.error('Error loading trending restaurants:', error);
+        setTrendingRestaurants([]);
+      } finally {
+        setLoadingTrending(false);
+      }
+    };
+
+    loadTrendingRestaurants();
+  }, []);
+  
+  const handleTrendingClick = (item: FoodPlace) => {
+    // Navigate to map page with real restaurant location
+    const url = `/map?lat=${item.latitude}&lng=${item.longitude}&restaurant=${encodeURIComponent(item.name)}`;
+    router.push(url);
+  };
+
+  const getCategoryIcon = (category: string) => {
+    const icons: { [key: string]: string } = {
+      'Cafe': '☕',
+      'Japanese': '🍣',
+      'Farm-to-Table': '🥗',
+      'Mexican': '🌮',
+      'Italian': '🍕',
+      'Beverages': '🧋',
+      'American': '🍔',
+      'Asian': '🍜'
+    };
+    return icons[category] || '🍽️';
+  };
 
   const recommendations = [
     {
@@ -14,8 +59,6 @@ export default function DashboardPage() {
       status: "Open",
       price: "$$$$",
       rating: 4.8,
-      tag: "adventurous",
-      tagColor: "bg-purple-100 text-purple-800",
       image: "/restaurant1.jpg"
     },
     {
@@ -26,8 +69,6 @@ export default function DashboardPage() {
       status: "Open",
       price: "$$",
       rating: 4.6,
-      tag: "chill",
-      tagColor: "bg-blue-100 text-blue-800",
       image: "/cafe1.jpg"
     },
     {
@@ -38,8 +79,6 @@ export default function DashboardPage() {
       status: "Closed",
       price: "$$$",
       rating: 4.9,
-      tag: "romantic",
-      tagColor: "bg-pink-100 text-pink-800",
       image: "/rooftop1.jpg"
     },
     {
@@ -50,18 +89,10 @@ export default function DashboardPage() {
       status: "Open",
       price: "$",
       rating: 4.7,
-      tag: "social",
-      tagColor: "bg-green-100 text-green-800",
       image: "/festival1.jpg"
     }
   ];
 
-  const trending = [
-    { id: 1, name: "Trending Spot #1", image: "/trending1.jpg" },
-    { id: 2, name: "Trending Spot #2", image: "/trending2.jpg" },
-    { id: 3, name: "Trending Spot #3", image: "/trending3.jpg" },
-    { id: 4, name: "Trending Spot #4", image: "/trending4.jpg" }
-  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -157,9 +188,6 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${item.tagColor}`}>
-                      {item.tag}
-                    </span>
                   </div>
                 </div>
               </div>
@@ -169,19 +197,92 @@ export default function DashboardPage() {
       </section>
 
       {/* Trending Section */}
-      <section className="bg-white py-12">
+      <section className="bg-gray-50 py-12">
         <div className="container">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Trending in your area</h2>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Trending in your area</h2>
+              <p className="text-sm text-gray-600 mt-1">Based on recent visits and ratings</p>
+            </div>
+            <button className="text-[#8c52ff] hover:text-[#7c42ef] font-medium transition-colors">
+              View all →
+            </button>
+          </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {trending.map((item) => (
-              <div key={item.id} className="relative group cursor-pointer">
-                <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-400 text-sm">#{item.id}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {loadingTrending ? (
+              // Loading skeleton
+              Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
+                  <div className="aspect-video bg-gray-200"></div>
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-3"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-8 bg-gray-200 rounded"></div>
+                  </div>
                 </div>
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200"></div>
+              ))
+            ) : trendingRestaurants.length > 0 ? (
+              trendingRestaurants.map((item) => (
+              <div 
+                key={item.id} 
+                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group transform hover:-translate-y-1"
+                onClick={() => handleTrendingClick(item)}
+              >
+                <div className="aspect-video bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center relative">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-2 mx-auto shadow-sm">
+                      <span className="text-2xl">{getCategoryIcon(item.category)}</span>
+                    </div>
+                    <div className="text-xs font-medium text-gray-600">{item.category}</div>
+                  </div>
+                  <div className="absolute top-2 right-2">
+                    <span className="bg-white px-2 py-1 rounded-full text-xs font-medium text-gray-700 shadow-sm">
+                      {item.trend}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900 text-sm group-hover:text-[#8c52ff] transition-colors">
+                      {item.name}
+                    </h3>
+                    <div className="flex items-center gap-1 ml-2">
+                      <span className="text-yellow-400 text-xs">★</span>
+                      <span className="text-xs font-medium text-gray-600">{item.rating}</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-gray-600 mb-3 line-clamp-2">{item.description}</p>
+                  
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                    <div className="flex items-center gap-3">
+                      <span>{item.distance ? `${item.distance.toFixed(1)} km` : 'Nearby'}</span>
+                      <span className="font-medium text-green-600">{item.is_open ? 'Open' : 'Closed'}</span>
+                    </div>
+                    <span className="font-medium">{item.price_range}</span>
+                  </div>
+                  
+                  <button 
+                    className="w-full text-xs bg-[#8c52ff] text-white py-2 px-3 rounded-lg hover:bg-[#7c42ef] transition-colors font-medium"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTrendingClick(item);
+                    }}
+                  >
+                    View on Map
+                  </button>
+                </div>
               </div>
-            ))}
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">No trending restaurants found in your area.</p>
+                <p className="text-sm text-gray-400 mt-1">Try refreshing the page or check back later.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

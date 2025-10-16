@@ -110,11 +110,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$ui$2f$ConditionalHead
 ;
 ;
 const metadata = {
-    title: "Lokalista — Find spots that match your mood",
-    description: "Lokalista is an AI-powered guide to nearby restaurants, cafes, and events based on your mood and location. Open access; no payment needed.",
+    title: "Lokalista — Find the perfect local spots",
+    description: "Lokalista is an AI-powered guide to nearby restaurants, cafes, and events based on your preferences and location. Open access; no payment needed.",
     metadataBase: new URL("https://lokalista.app"),
     openGraph: {
-        title: "Lokalista — Find spots that match your mood",
+        title: "Lokalista — Find the perfect local spots",
         description: "Open access; no payment needed. Discover hidden gems around you with AI-tailored picks for food, coffee, and events.",
         url: "https://lokalista.app",
         siteName: "Lokalista",
@@ -122,7 +122,7 @@ const metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "Lokalista — Find spots that match your mood",
+        title: "Lokalista — Find the perfect local spots",
         description: "Open access; no payment needed. Discover hidden gems around you with AI-tailored picks for food, coffee, and events."
     },
     icons: {

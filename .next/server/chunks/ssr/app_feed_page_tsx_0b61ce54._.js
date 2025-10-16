@@ -15,7 +15,7 @@ function AIAssistantPage() {
     const [messages, setMessages] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([
         {
             id: "1",
-            content: "Hello! I'm your AI assistant for Lokalista. I can help you find the perfect restaurants, cafes, and events based on your mood and location. What would you like to discover today?",
+            content: "Hello! I'm your AI assistant for Lokalista. I can help you find the perfect restaurants, cafes, and events based on your preferences and location. What would you like to discover today?",
             isUser: false,
             timestamp: new Date()
         }
@@ -65,7 +65,7 @@ function AIAssistantPage() {
     const generateAIResponse = (userInput)=>{
         const input = userInput.toLowerCase();
         if (input.includes("restaurant") || input.includes("food") || input.includes("eat")) {
-            return "I'd be happy to help you find great restaurants! Based on your preferences, I recommend checking out our Food Map to discover local dining options. You can filter by cuisine type, price range, and features like 'Budget-Friendly' or 'Family-Friendly'. What type of cuisine are you in the mood for?";
+            return "I'd be happy to help you find great restaurants! Based on your preferences, I recommend checking out our Food Map to discover local dining options. You can filter by cuisine type, price range, and features like 'Budget-Friendly' or 'Family-Friendly'. What type of cuisine are you looking for?";
         }
         if (input.includes("cafe") || input.includes("coffee") || input.includes("drink")) {
             return "Great choice! For cafes and coffee shops, I suggest exploring our map with the 'Cafes' filter. You'll find everything from cozy local coffee shops to modern cafes with great ambiance. Many of our featured cafes are also pet-friendly! Would you like recommendations for a specific area?";
@@ -660,7 +660,7 @@ function AIAssistantPage() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                         className: "text-gray-600 text-sm",
-                                        children: "Get recommendations tailored to your mood, budget, and dining preferences."
+                                        children: "Get recommendations tailored to your preferences, budget, and dining preferences."
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
                                         lineNumber: 269,

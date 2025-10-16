@@ -1,25 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/browserClient";
+import { fetchRealFoodPlaces, type FoodPlace } from "@/lib/restaurants";
 
-interface FoodPlace {
-  id: string;
-  name: string;
-  category: string;
-  rating: number;
-  price_range: string;
-  latitude: number;
-  longitude: number;
-  description: string;
-  image_url?: string;
-  cuisine_type?: string;
-  is_open?: boolean;
-  features?: string[];
-  distance?: number; // Distance in kilometers from clicked location
-}
+// FoodPlace interface is now imported from lib/restaurants
 
 export default function FoodMapPage() {
+  const searchParams = useSearchParams();
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const userMarkerRef = useRef<any>(null);
@@ -252,6 +241,54 @@ export default function FoodMapPage() {
       }
     };
   }, []);
+
+  // Handle URL parameters for restaurant navigation
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    const restaurant = searchParams.get('restaurant');
+    
+    if (lat && lng) {
+      const coordinates: [number, number] = [parseFloat(lat), parseFloat(lng)];
+      console.log('Centering map on restaurant:', restaurant, 'at', coordinates);
+      
+      // Center map on the restaurant location
+      mapRef.current.setView(coordinates, 16);
+      
+      // Add a special marker for the restaurant
+      const L = (window as any).L;
+      if (L) {
+        const restaurantIcon = L.divIcon({
+          html: `<div style="background:#8c52ff;color:#fff;border-radius:9999px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold;font-size:12px;border:3px solid white">📍 ${restaurant || 'Restaurant'}</div>`,
+          className: '', 
+          iconSize: [80, 32], 
+          iconAnchor: [40, 16]
+        });
+        
+        const restaurantMarker = L.marker(coordinates, { icon: restaurantIcon });
+        restaurantMarker.addTo(mapRef.current);
+        
+        // Show popup with restaurant info
+        restaurantMarker.bindPopup(`
+          <div style="text-align: center; padding: 8px;">
+            <h3 style="margin: 0 0 8px 0; color: #8c52ff; font-weight: bold;">${restaurant || 'Selected Restaurant'}</h3>
+            <p style="margin: 0; color: #666; font-size: 14px;">Click on the map to explore nearby places!</p>
+          </div>
+        `).openPopup();
+        
+        // Clean up the marker when component unmounts or params change
+        return () => {
+          try {
+            mapRef.current?.removeLayer(restaurantMarker);
+          } catch (error) {
+            console.warn('Error removing restaurant marker:', error);
+          }
+        };
+      }
+    }
+  }, [searchParams, mapRef.current]);
 
   async function locateUser() {
     if (!mapRef.current) return;
@@ -546,118 +583,6 @@ export default function FoodMapPage() {
     };
   }, []);
 
-  async function fetchRealFoodPlaces(centerLatLng: [number, number]) {
-    const [lat, lon] = centerLatLng;
-    const radius = 1000; // 1km radius
-    
-    // OpenStreetMap Overpass API query for restaurants, cafes, and fast food
-    const query = `
-[out:json][timeout:25];
-(
-  node["amenity"="restaurant"](around:${radius},${lat},${lon});
-  node["amenity"="cafe"](around:${radius},${lat},${lon});
-  node["amenity"="fast_food"](around:${radius},${lat},${lon});
-  node["amenity"="bar"](around:${radius},${lat},${lon});
-  node["amenity"="pub"](around:${radius},${lat},${lon});
-  node["amenity"="food_court"](around:${radius},${lat},${lon});
-  node["shop"="bakery"](around:${radius},${lat},${lon});
-  node["shop"="confectionery"](around:${radius},${lat},${lon});
-);
-out;
-`;
-
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      body: query,
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    // Transform OpenStreetMap data to our format
-    const places: FoodPlace[] = data.elements.map((element: any, index: number) => {
-      const tags = element.tags || {};
-      
-      // Determine category and cuisine type
-      let category = 'Restaurant';
-      let cuisineType = 'International';
-      
-      if (tags.amenity === 'cafe') {
-        category = 'Cafe';
-        cuisineType = 'Coffee';
-      } else if (tags.amenity === 'fast_food') {
-        category = 'Fast Food';
-        cuisineType = 'Fast Food';
-      } else if (tags.amenity === 'bar' || tags.amenity === 'pub') {
-        category = 'Bar';
-        cuisineType = 'International';
-      } else if (tags.shop === 'bakery') {
-        category = 'Bakery';
-        cuisineType = 'Bakery';
-      }
-      
-      // Determine cuisine type from tags
-      if (tags.cuisine) {
-        cuisineType = tags.cuisine;
-      } else if (tags.brand) {
-        const brand = tags.brand.toLowerCase();
-        if (brand.includes('jollibee') || brand.includes('chowking') || brand.includes('mang inasal')) {
-          cuisineType = 'Filipino';
-        } else if (brand.includes('mcdonalds') || brand.includes('kfc') || brand.includes('subway')) {
-          cuisineType = 'American';
-        } else if (brand.includes('starbucks') || brand.includes('coffee bean')) {
-          cuisineType = 'Coffee';
-        }
-      }
-      
-      // Generate random rating (since OSM doesn't have ratings)
-      const rating = 3.5 + Math.random() * 1.5; // 3.5 to 5.0
-      
-      // Determine price range
-      let priceRange = '$$';
-      if (tags.amenity === 'cafe' && tags.brand && tags.brand.toLowerCase().includes('starbucks')) {
-        priceRange = '$$$';
-      } else if (tags.amenity === 'restaurant' && !tags.amenity === 'fast_food') {
-        priceRange = Math.random() > 0.5 ? '$$$' : '$$';
-      }
-      
-      return {
-        id: `osm_${element.id || index}`,
-        name: tags.name || tags.brand || 'Unnamed Place',
-        category: category,
-        rating: Math.round(rating * 10) / 10,
-        price_range: priceRange,
-        latitude: element.lat,
-        longitude: element.lon,
-        description: tags.description || tags.cuisine || category,
-        cuisine_type: cuisineType,
-        is_open: true
-      };
-    });
-
-    // Filter by category if selected
-    let filtered = places;
-    if (categoryFilter) {
-      filtered = filtered.filter(place => 
-        place.category === categoryFilter
-      );
-    }
-
-    // Filter by features if selected
-    if (featureFilter) {
-      filtered = filtered.filter(place => 
-        place.features?.includes(featureFilter)
-      );
-    }
-
-    return filtered;
-  }
 
   function plotFoodMarkers(places: FoodPlace[]) {
     const L = (window as any).L;

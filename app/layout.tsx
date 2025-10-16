@@ -14,12 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lokalista — Find spots that match your mood",
+  title: "Lokalista — Find the perfect local spots",
   description:
-    "Lokalista is an AI-powered guide to nearby restaurants, cafes, and events based on your mood and location. Open access; no payment needed.",
+    "Lokalista is an AI-powered guide to nearby restaurants, cafes, and events based on your preferences and location. Open access; no payment needed.",
   metadataBase: new URL("https://lokalista.app"),
   openGraph: {
-    title: "Lokalista — Find spots that match your mood",
+    title: "Lokalista — Find the perfect local spots",
     description:
       "Open access; no payment needed. Discover hidden gems around you with AI-tailored picks for food, coffee, and events.",
     url: "https://lokalista.app",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Lokalista — Find spots that match your mood",
+    title: "Lokalista — Find the perfect local spots",
     description:
       "Open access; no payment needed. Discover hidden gems around you with AI-tailored picks for food, coffee, and events.",
   },

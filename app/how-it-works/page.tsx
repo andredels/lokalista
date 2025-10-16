@@ -2,13 +2,13 @@ export default function HowItWorks() {
   return (
     <div className="container py-12">
       <h1 className="h1 mb-3">How recommendations work</h1>
-      <p className="text-muted mb-8 max-w-2xl">We surface nearby restaurants, cafes, and events that match your mood and context. To personalize results and save your preferences, you'll need an account. No payment is required.</p>
+      <p className="text-muted mb-8 max-w-2xl">We surface nearby restaurants, cafes, and events that match your preferences and context. To personalize results and save your preferences, you'll need an account. No payment is required.</p>
 
       <div className="grid md:grid-cols-3 gap-6 mb-10">
         <div className="p-5 rounded-lg border border-border/60 bg-background">
           <div className="text-xs font-mono text-muted mb-2">Step 1</div>
           <div className="h2 mb-1">Capture your vibe</div>
-          <p className="text-muted">Choose mood(s) or describe what you’re in the mood for. We encode this into intent signals.</p>
+          <p className="text-muted">Choose your preferences or describe what you're looking for. We encode this into intent signals.</p>
         </div>
         <div className="p-5 rounded-lg border border-border/60 bg-background">
           <div className="text-xs font-mono text-muted mb-2">Step 2</div>
@@ -31,7 +31,7 @@ export default function HowItWorks() {
             </linearGradient>
           </defs>
           <rect x="10" y="30" width="220" height="70" rx="10" fill="url(#g)" stroke="var(--color-border)" />
-          <text x="120" y="70" textAnchor="middle" dominantBaseline="middle" fontSize="14">Mood & intent</text>
+          <text x="120" y="70" textAnchor="middle" dominantBaseline="middle" fontSize="14">Preferences & intent</text>
 
           <rect x="290" y="30" width="220" height="70" rx="10" fill="url(#g)" stroke="var(--color-border)" />
           <text x="400" y="70" textAnchor="middle" dominantBaseline="middle" fontSize="14">Context (time • location)</text>

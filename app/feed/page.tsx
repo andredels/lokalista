@@ -14,7 +14,7 @@ export default function AIAssistantPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      content: "Hello! I'm your AI assistant for Lokalista. I can help you find the perfect restaurants, cafes, and events based on your mood and location. What would you like to discover today?",
+      content: "Hello! I'm your AI assistant for Lokalista. I can help you find the perfect restaurants, cafes, and events based on your preferences and location. What would you like to discover today?",
       isUser: false,
       timestamp: new Date(),
     },
@@ -62,7 +62,7 @@ export default function AIAssistantPage() {
     const input = userInput.toLowerCase();
     
     if (input.includes("restaurant") || input.includes("food") || input.includes("eat")) {
-      return "I'd be happy to help you find great restaurants! Based on your preferences, I recommend checking out our Food Map to discover local dining options. You can filter by cuisine type, price range, and features like 'Budget-Friendly' or 'Family-Friendly'. What type of cuisine are you in the mood for?";
+      return "I'd be happy to help you find great restaurants! Based on your preferences, I recommend checking out our Food Map to discover local dining options. You can filter by cuisine type, price range, and features like 'Budget-Friendly' or 'Family-Friendly'. What type of cuisine are you looking for?";
     }
     
     if (input.includes("cafe") || input.includes("coffee") || input.includes("drink")) {
@@ -266,7 +266,7 @@ export default function AIAssistantPage() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Personalized</h3>
-            <p className="text-gray-600 text-sm">Get recommendations tailored to your mood, budget, and dining preferences.</p>
+            <p className="text-gray-600 text-sm">Get recommendations tailored to your preferences, budget, and dining preferences.</p>
           </div>
           </div>
       </div>
