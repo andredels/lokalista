@@ -31,8 +31,10 @@ export default function FoodMapPage() {
   const [showNearbyPlaces, setShowNearbyPlaces] = useState(false);
   const [clickMarker, setClickMarker] = useState<any>(null);
   const clickMarkersRef = useRef<any[]>([]);
+  const restaurantMarkerRef = useRef<any>(null);
   const [currentZoom, setCurrentZoom] = useState<number>(14);
   const [filteredPlaces, setFilteredPlaces] = useState<FoodPlace[]>([]);
+  const [mapReady, setMapReady] = useState<boolean>(false);
 
   // Initialize Leaflet map with satellite view focused on food places
   useEffect(() => {
@@ -228,6 +230,11 @@ export default function FoodMapPage() {
       }, 1000);
 
       initializingRef.current = false;
+      
+      // Wait a bit longer to ensure map is fully ready
+      setTimeout(() => {
+        setMapReady(true); // Map is now ready!
+      }, 500);
     };
 
     init();
@@ -247,12 +254,14 @@ export default function FoodMapPage() {
         mapRef.current.remove();
         mapRef.current = null;
       }
+      setMapReady(false);
     };
   }, []);
 
   // Handle URL parameters for restaurant navigation
   useEffect(() => {
-    if (!mapRef.current) return;
+    // Wait for map to be ready before processing URL params
+    if (!mapRef.current || !mapReady) return;
     
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');
@@ -262,41 +271,136 @@ export default function FoodMapPage() {
       const coordinates: [number, number] = [parseFloat(lat), parseFloat(lng)];
       console.log('Centering map on restaurant:', restaurant, 'at', coordinates);
       
-      // Center map on the restaurant location
-      mapRef.current.setView(coordinates, 16);
+      // Remove previous marker if exists
+      if (restaurantMarkerRef.current) {
+        try {
+          mapRef.current.removeLayer(restaurantMarkerRef.current);
+        } catch (error) {
+          console.warn('Error removing previous marker:', error);
+        }
+      }
       
-      // Add a special marker for the restaurant
-      const L = (window as any).L;
-      if (L) {
-        const restaurantIcon = L.divIcon({
-          html: `<div style="background:#8c52ff;color:#fff;border-radius:9999px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold;font-size:12px;border:3px solid white">📍 ${restaurant || 'Restaurant'}</div>`,
-          className: '', 
-          iconSize: [80, 32], 
-          iconAnchor: [40, 16]
-        });
-        
-        const restaurantMarker = L.marker(coordinates, { icon: restaurantIcon });
-        restaurantMarker.addTo(mapRef.current);
-        
-        // Show popup with restaurant info
-        restaurantMarker.bindPopup(`
-          <div style="text-align: center; padding: 8px;">
-            <h3 style="margin: 0 0 8px 0; color: #8c52ff; font-weight: bold;">${restaurant || 'Selected Restaurant'}</h3>
-            <p style="margin: 0; color: #666; font-size: 14px;">Click on the map to explore nearby places!</p>
-          </div>
-        `).openPopup();
-        
-        // Clean up the marker when component unmounts or params change
-        return () => {
-          try {
-            mapRef.current?.removeLayer(restaurantMarker);
-          } catch (error) {
-            console.warn('Error removing restaurant marker:', error);
+      // Get user's current location first
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userCoords: [number, number] = [position.coords.latitude, position.coords.longitude];
+            
+            // Add "You are here" marker at user's location
+            const L = (window as any).L;
+            if (L) {
+              const youIcon = L.divIcon({
+                html: '<div style="background:#ef4444;color:#fff;border-radius:9999px;padding:6px 10px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold">📍 You are here</div>',
+                className: '',
+                iconSize: [50, 24],
+                iconAnchor: [25, 12]
+              });
+              
+              if (!userMarkerRef.current) {
+                userMarkerRef.current = L.marker(userCoords, { icon: youIcon });
+                userMarkerRef.current.addTo(mapRef.current);
+                setUserLocation(userCoords);
+              }
+              
+              // Calculate distance
+              const distance = calculateDistance(userCoords[0], userCoords[1], coordinates[0], coordinates[1]);
+              
+              // Center map to show both user and restaurant
+              const bounds = L.latLngBounds([userCoords, coordinates]);
+              mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+              
+              // Add restaurant marker
+              const restaurantIcon = L.divIcon({
+                html: `<div style="background:#8c52ff;color:#fff;border-radius:9999px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold;font-size:12px;border:3px solid white">📍 ${restaurant || 'Restaurant'}</div>`,
+                className: '',
+                iconSize: [80, 32],
+                iconAnchor: [40, 16]
+              });
+              
+              restaurantMarkerRef.current = L.marker(coordinates, { icon: restaurantIcon });
+              restaurantMarkerRef.current.addTo(mapRef.current);
+              
+              // Show popup with distance
+              setTimeout(() => {
+                restaurantMarkerRef.current?.bindPopup(`
+                  <div style="text-align: center; padding: 8px;">
+                    <h3 style="margin: 0 0 8px 0; color: #8c52ff; font-weight: bold;">${restaurant || 'Selected Restaurant'}</h3>
+                    <p style="margin: 0; color: #666; font-size: 14px; margin-bottom: 4px;">${distance.toFixed(2)} km away</p>
+                    <p style="margin: 0; color: #666; font-size: 14px;">Click on the map to explore nearby places!</p>
+                  </div>
+                `).openPopup();
+              }, 1600);
+              
+              // Search for food places around the restaurant
+              setTimeout(() => {
+                searchFoodPlaces(coordinates);
+              }, 2000);
+            }
+          },
+          (error) => {
+            console.warn('Could not get user location:', error);
+            
+            // If location denied, just show restaurant
+            const L = (window as any).L;
+            if (L) {
+              // Center map on the restaurant location
+              mapRef.current.setView(coordinates, 18, { animate: true, duration: 1.5 });
+              
+              // Add restaurant marker
+              const restaurantIcon = L.divIcon({
+                html: `<div style="background:#8c52ff;color:#fff;border-radius:9999px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold;font-size:12px;border:3px solid white">📍 ${restaurant || 'Restaurant'}</div>`,
+                className: '',
+                iconSize: [80, 32],
+                iconAnchor: [40, 16]
+              });
+              
+              restaurantMarkerRef.current = L.marker(coordinates, { icon: restaurantIcon });
+              restaurantMarkerRef.current.addTo(mapRef.current);
+              
+              setTimeout(() => {
+                restaurantMarkerRef.current?.bindPopup(`
+                  <div style="text-align: center; padding: 8px;">
+                    <h3 style="margin: 0 0 8px 0; color: #8c52ff; font-weight: bold;">${restaurant || 'Selected Restaurant'}</h3>
+                    <p style="margin: 0; color: #666; font-size: 14px;">Click on the map to explore nearby places!</p>
+                  </div>
+                `).openPopup();
+              }, 1600);
+              
+              // Search for food places around the restaurant
+              setTimeout(() => {
+                searchFoodPlaces(coordinates);
+              }, 2000);
+            }
           }
-        };
+        );
+      }
+      
+      // Calculate distance function
+      function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+        const R = 6371; // Earth's radius in kilometers
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
       }
     }
-  }, [searchParams, mapRef.current]);
+    
+    // Clean up when params change
+    return () => {
+      if (restaurantMarkerRef.current && mapRef.current) {
+        try {
+          mapRef.current.removeLayer(restaurantMarkerRef.current);
+          restaurantMarkerRef.current = null;
+        } catch (error) {
+          console.warn('Error removing restaurant marker:', error);
+        }
+      }
+    };
+  }, [searchParams, mapReady]);
 
   async function locateUser() {
     if (!mapRef.current) return;

@@ -8,16 +8,19 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
 ;
+;
 function AIAssistantPage() {
     _s();
+    const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const [messages, setMessages] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([
         {
             id: "1",
-            content: "Hello! I'm your AI assistant for Lokalista. I can help you find the perfect restaurants, cafes, and events based on your preferences and location. What would you like to discover today?",
+            content: "Hello! I'm your AI assistant for Lokalista. I can help you find the perfect restaurants, cafes, and events based on your preferences and current location. What would you like to discover today?",
             isUser: false,
             timestamp: new Date()
         }
@@ -25,6 +28,7 @@ function AIAssistantPage() {
     const [inputMessage, setInputMessage] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const messagesEndRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const [userLocation, setUserLocation] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const scrollToBottom = ()=>{
         var _messagesEndRef_current;
         (_messagesEndRef_current = messagesEndRef.current) === null || _messagesEndRef_current === void 0 ? void 0 : _messagesEndRef_current.scrollIntoView({
@@ -38,6 +42,176 @@ function AIAssistantPage() {
     }["AIAssistantPage.useEffect"], [
         messages
     ]);
+    // Get user's current location on mount
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "AIAssistantPage.useEffect": ()=>{
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition({
+                    "AIAssistantPage.useEffect": (position)=>{
+                        setUserLocation([
+                            position.coords.latitude,
+                            position.coords.longitude
+                        ]);
+                    }
+                }["AIAssistantPage.useEffect"], {
+                    "AIAssistantPage.useEffect": (error)=>{
+                        console.warn('Geolocation error:', error);
+                        // Default to a generic location if permission denied
+                        setUserLocation([
+                            14.5995,
+                            120.9842
+                        ]); // Manila, Philippines
+                    }
+                }["AIAssistantPage.useEffect"]);
+            } else {
+                // Fallback if geolocation not supported
+                setUserLocation([
+                    14.5995,
+                    120.9842
+                ]);
+            }
+        }
+    }["AIAssistantPage.useEffect"], []);
+    // Restaurant database for recommendations
+    const restaurantDatabase = [
+        {
+            id: "bintana",
+            name: "Bintana Coffee House",
+            category: "Filipino Restaurant",
+            rating: 4.4,
+            price_range: "$$",
+            location: "181 K Elizabeth Pond St., Camputhaw, Cebu City",
+            vibe: "Art-filled and quiet, ideal for relaxing or working",
+            menu: [
+                "Cold Coffee",
+                "Sagada Beans",
+                "Tea and Juice",
+                "Pork Dishes",
+                "Beef (Bintana Scent Beef)",
+                "Fish"
+            ],
+            image: "/Landing.png",
+            tip: "Visit during off-peak hours for a more peaceful session.",
+            latitude: 10.3157,
+            longitude: 123.8854
+        },
+        {
+            id: "starbucks",
+            name: "Starbucks Coffee",
+            category: "Cafe",
+            rating: 4.3,
+            price_range: "$$$",
+            location: "Ayala Center Cebu",
+            vibe: "Modern and bustling, great for meetings",
+            menu: [
+                "Premium Coffee",
+                "Frappuccinos",
+                "Pastries",
+                "Light Meals"
+            ],
+            image: "/Landing2.png",
+            tip: "Peak hours are lunch and afternoon, try early morning for a quieter experience.",
+            latitude: 10.3147,
+            longitude: 123.8844
+        },
+        {
+            id: "jollibee",
+            name: "Jollibee",
+            category: "Fast Food",
+            rating: 4.2,
+            price_range: "$",
+            location: "Multiple locations in Cebu City",
+            vibe: "Family-friendly and cheerful",
+            menu: [
+                "Chickenjoy",
+                "Jolly Spaghetti",
+                "Burger Steak",
+                "Burgers"
+            ],
+            image: "/wordmark.svg",
+            tip: "Most locations are open until late, great for quick meals.",
+            latitude: 10.3157,
+            longitude: 123.8854
+        },
+        {
+            id: "mang-inasal",
+            name: "Mang Inasal",
+            category: "Local Cuisine",
+            rating: 4.4,
+            price_range: "$",
+            location: "SM City Cebu",
+            vibe: "Authentic Filipino street food experience",
+            menu: [
+                "Grilled Chicken",
+                "Pork BBQ",
+                "Sinigang",
+                "Unlimited Rice"
+            ],
+            image: "/favorite.png",
+            tip: "Arrive hungry! Rice and soup are unlimited.",
+            latitude: 10.3177,
+            longitude: 123.8874
+        },
+        {
+            id: "coffee-bean",
+            name: "Coffee Bean & Tea Leaf",
+            category: "Cafe",
+            rating: 4.2,
+            price_range: "$$$",
+            location: "Robinsons Galleria Cebu",
+            vibe: "Cozy and pet-friendly",
+            menu: [
+                "Specialty Coffee",
+                "Tea Blends",
+                "Smoothies",
+                "Pastries"
+            ],
+            image: "/clock.png",
+            tip: "Pet-friendly outdoor seating available.",
+            latitude: 10.3197,
+            longitude: 123.8894
+        },
+        {
+            id: "chowking",
+            name: "Chowking",
+            category: "Fast Food",
+            rating: 4.1,
+            price_range: "$",
+            location: "Colon Street, Cebu City",
+            vibe: "Quick and budget-friendly",
+            menu: [
+                "Dimsum",
+                "Noodles",
+                "Fried Rice",
+                "BBQ"
+            ],
+            image: "/social.png",
+            tip: "Popular at lunch hours, order ahead if possible.",
+            latitude: 10.3177,
+            longitude: 123.8874
+        }
+    ];
+    const generateRecommendations = (userInput)=>{
+        const input = userInput.toLowerCase();
+        // Find matching restaurants based on keywords
+        let matches = [];
+        if (input.includes("coffee") || input.includes("cafe") || input.includes("cozy")) {
+            matches = restaurantDatabase.filter((r)=>r.category.toLowerCase().includes("cafe") || r.vibe.toLowerCase().includes("cozy") || r.name.toLowerCase().includes("coffee"));
+        } else if (input.includes("fast food") || input.includes("quick") || input.includes("cheap")) {
+            matches = restaurantDatabase.filter((r)=>r.category.toLowerCase().includes("fast") || r.price_range === "$");
+        } else if (input.includes("budget") || input.includes("affordable")) {
+            matches = restaurantDatabase.filter((r)=>r.price_range === "$");
+        } else if (input.includes("local") || input.includes("filipino")) {
+            matches = restaurantDatabase.filter((r)=>r.category.toLowerCase().includes("local") || r.category.toLowerCase().includes("filipino"));
+        } else if (input.includes("cebu") || input.includes("restaurant")) {
+            matches = restaurantDatabase.slice(0, 3); // Show top 3
+        }
+        // If no specific matches, return all
+        if (matches.length === 0) {
+            matches = restaurantDatabase.slice(0, 3);
+        }
+        return matches;
+    };
     const handleSendMessage = async ()=>{
         if (!inputMessage.trim() || isLoading) return;
         const userMessage = {
@@ -52,11 +226,13 @@ function AIAssistantPage() {
             ]);
         setInputMessage("");
         setIsLoading(true);
-        // Simulate AI response
+        // Simulate AI response with recommendations
         setTimeout(()=>{
+            const restaurants = generateRecommendations(inputMessage.trim());
             const aiResponse = {
                 id: (Date.now() + 1).toString(),
-                content: generateAIResponse(inputMessage.trim()),
+                content: restaurants.length > 0 ? "Here are ".concat(restaurants.length, " ").concat(inputMessage.trim().toLowerCase().includes('cozy') ? 'cozy coffee spot' : 'recommendations', " in Cebu City you should try:") : "Let me help you find great places!",
+                restaurants: restaurants,
                 isUser: false,
                 timestamp: new Date()
             };
@@ -67,27 +243,10 @@ function AIAssistantPage() {
             setIsLoading(false);
         }, 1500);
     };
-    const generateAIResponse = (userInput)=>{
-        const input = userInput.toLowerCase();
-        if (input.includes("restaurant") || input.includes("food") || input.includes("eat")) {
-            return "I'd be happy to help you find great restaurants! Based on your preferences, I recommend checking out our Food Map to discover local dining options. You can filter by cuisine type, price range, and features like 'Budget-Friendly' or 'Family-Friendly'. What type of cuisine are you looking for?";
+    const handleViewOnMap = (restaurant)=>{
+        if (restaurant.latitude && restaurant.longitude) {
+            router.push("/map?lat=".concat(restaurant.latitude, "&lng=").concat(restaurant.longitude, "&restaurant=").concat(encodeURIComponent(restaurant.name)));
         }
-        if (input.includes("cafe") || input.includes("coffee") || input.includes("drink")) {
-            return "Great choice! For cafes and coffee shops, I suggest exploring our map with the 'Cafes' filter. You'll find everything from cozy local coffee shops to modern cafes with great ambiance. Many of our featured cafes are also pet-friendly! Would you like recommendations for a specific area?";
-        }
-        if (input.includes("location") || input.includes("where") || input.includes("near")) {
-            return "I can help you find places near your location! Use the 'Use my location' button on our Food Map to automatically center the map on your current position. Then you can search for restaurants, cafes, or any food places within walking distance. What's your preferred distance?";
-        }
-        if (input.includes("budget") || input.includes("cheap") || input.includes("affordable")) {
-            return "Perfect! I can help you find budget-friendly options. On our Food Map, use the 'Budget-Friendly' filter to see all affordable dining options. You'll find great value restaurants, food courts, and local eateries that won't break the bank. What type of cuisine are you looking for?";
-        }
-        if (input.includes("family") || input.includes("kids") || input.includes("children")) {
-            return "Family-friendly dining is important! Use the 'Family-Friendly' filter on our map to find restaurants that welcome families with children. These places typically have kid-friendly menus, high chairs, and a comfortable atmosphere for all ages. What age range are your children?";
-        }
-        if (input.includes("help") || input.includes("how") || input.includes("what can you do")) {
-            return "I'm here to help you discover amazing food experiences! I can assist you with:\n\n• Finding restaurants and cafes by cuisine type\n• Locating budget-friendly or family-friendly options\n• Discovering pet-friendly establishments\n• Getting recommendations based on your location\n• Exploring different dining categories\n\nTry asking me about specific cuisines, locations, or dining preferences!";
-        }
-        return "That's interesting! I'd love to help you find the perfect dining experience. You can explore our Food Map to discover restaurants, cafes, and food places near you. Try asking me about specific cuisines, your budget preferences, or what type of dining experience you're looking for!";
     };
     const handleKeyPress = (e)=>{
         if (e.key === "Enter" && !e.shiftKey) {
@@ -96,12 +255,12 @@ function AIAssistantPage() {
         }
     };
     const quickActions = [
-        "Find restaurants near me",
-        "Show me budget-friendly cafes",
-        "Family-friendly dining options",
-        "Pet-friendly places",
-        "Best local cuisine",
-        "Open 24 hours"
+        "Good coffee spot with cozy vibes in Cebu",
+        "Budget-friendly restaurants",
+        "Family-friendly places",
+        "Local Filipino cuisine",
+        "Fast food options",
+        "Cafes for working"
     ];
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50",
@@ -127,17 +286,17 @@ function AIAssistantPage() {
                                         d: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 115,
+                                        lineNumber: 258,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/feed/page.tsx",
-                                    lineNumber: 114,
+                                    lineNumber: 257,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/feed/page.tsx",
-                                lineNumber: 113,
+                                lineNumber: 256,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -147,7 +306,7 @@ function AIAssistantPage() {
                                         children: "AI Assistant"
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 119,
+                                        lineNumber: 262,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -155,29 +314,29 @@ function AIAssistantPage() {
                                         children: "Your personal food discovery companion"
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 120,
+                                        lineNumber: 263,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/feed/page.tsx",
-                                lineNumber: 118,
+                                lineNumber: 261,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/feed/page.tsx",
-                        lineNumber: 112,
+                        lineNumber: 255,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/feed/page.tsx",
-                    lineNumber: 111,
+                    lineNumber: 254,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/feed/page.tsx",
-                lineNumber: 110,
+                lineNumber: 253,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -187,111 +346,322 @@ function AIAssistantPage() {
                         className: "bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "h-96 overflow-y-auto p-6 space-y-4",
+                                className: "h-[600px] overflow-y-auto p-6 space-y-4",
                                 children: [
                                     messages.map((message)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex ".concat(message.isUser ? "justify-end" : "justify-start"),
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ".concat(message.isUser ? "bg-gradient-to-br from-purple-500 to-pink-500 text-white" : "bg-gray-100 text-gray-900"),
-                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex items-start gap-3",
-                                                    children: [
-                                                        !message.isUser && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0",
-                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
-                                                                className: "w-4 h-4 text-white",
-                                                                fill: "none",
-                                                                stroke: "currentColor",
-                                                                viewBox: "0 0 24 24",
-                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
-                                                                    strokeLinecap: "round",
-                                                                    strokeLinejoin: "round",
-                                                                    strokeWidth: 2,
-                                                                    d: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/feed/page.tsx",
-                                                                    lineNumber: 146,
-                                                                    columnNumber: 27
-                                                                }, this)
+                                            className: "space-y-4",
+                                            children: [
+                                                message.isUser && message.content && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex justify-end",
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 text-white",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                className: "text-sm whitespace-pre-wrap",
+                                                                children: message.content
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/feed/page.tsx",
-                                                                lineNumber: 145,
+                                                                lineNumber: 279,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                className: "text-xs mt-1 text-purple-100",
+                                                                children: message.timestamp.toLocaleTimeString([], {
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                })
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/feed/page.tsx",
+                                                                lineNumber: 280,
+                                                                columnNumber: 23
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/feed/page.tsx",
+                                                        lineNumber: 278,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/feed/page.tsx",
+                                                    lineNumber: 277,
+                                                    columnNumber: 19
+                                                }, this),
+                                                !message.isUser && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "space-y-4",
+                                                    children: [
+                                                        message.content && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex justify-start",
+                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                className: "max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-gray-100 text-gray-900",
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                        className: "text-sm whitespace-pre-wrap",
+                                                                        children: message.content
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/app/feed/page.tsx",
+                                                                        lineNumber: 293,
+                                                                        columnNumber: 27
+                                                                    }, this),
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                        className: "text-xs mt-1 text-gray-500",
+                                                                        children: message.timestamp.toLocaleTimeString([], {
+                                                                            hour: '2-digit',
+                                                                            minute: '2-digit'
+                                                                        })
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/app/feed/page.tsx",
+                                                                        lineNumber: 294,
+                                                                        columnNumber: 27
+                                                                    }, this)
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/app/feed/page.tsx",
+                                                                lineNumber: 292,
                                                                 columnNumber: 25
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/feed/page.tsx",
-                                                            lineNumber: 144,
+                                                            lineNumber: 291,
                                                             columnNumber: 23
                                                         }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "flex-1",
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-sm whitespace-pre-wrap",
-                                                                    children: message.content
-                                                                }, void 0, false, {
+                                                        message.restaurants && message.restaurants.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "grid grid-cols-1 md:grid-cols-2 gap-4",
+                                                            children: message.restaurants.map((restaurant)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            className: "aspect-video overflow-hidden bg-gray-100",
+                                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                                                                src: restaurant.image,
+                                                                                alt: restaurant.name,
+                                                                                className: "w-full h-full object-cover",
+                                                                                onError: (e)=>{
+                                                                                    const target = e.target;
+                                                                                    target.src = "/Landing.png";
+                                                                                }
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/app/feed/page.tsx",
+                                                                                lineNumber: 308,
+                                                                                columnNumber: 31
+                                                                            }, this)
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                            lineNumber: 307,
+                                                                            columnNumber: 29
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            className: "p-4 space-y-3",
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                    children: [
+                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                            className: "flex items-start justify-between mb-2",
+                                                                                            children: [
+                                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                                    children: [
+                                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                                                                            className: "font-semibold text-gray-900",
+                                                                                                            children: restaurant.name
+                                                                                                        }, void 0, false, {
+                                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                                            lineNumber: 324,
+                                                                                                            columnNumber: 37
+                                                                                                        }, this),
+                                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                                            className: "text-sm text-gray-500",
+                                                                                                            children: restaurant.category
+                                                                                                        }, void 0, false, {
+                                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                                            lineNumber: 325,
+                                                                                                            columnNumber: 37
+                                                                                                        }, this)
+                                                                                                    ]
+                                                                                                }, void 0, true, {
+                                                                                                    fileName: "[project]/app/feed/page.tsx",
+                                                                                                    lineNumber: 323,
+                                                                                                    columnNumber: 35
+                                                                                                }, this),
+                                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                                    className: "flex items-center gap-1 text-sm",
+                                                                                                    children: [
+                                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                            className: "text-yellow-500",
+                                                                                                            children: "⭐"
+                                                                                                        }, void 0, false, {
+                                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                                            lineNumber: 328,
+                                                                                                            columnNumber: 37
+                                                                                                        }, this),
+                                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                            className: "font-medium",
+                                                                                                            children: restaurant.rating
+                                                                                                        }, void 0, false, {
+                                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                                            lineNumber: 329,
+                                                                                                            columnNumber: 37
+                                                                                                        }, this)
+                                                                                                    ]
+                                                                                                }, void 0, true, {
+                                                                                                    fileName: "[project]/app/feed/page.tsx",
+                                                                                                    lineNumber: 327,
+                                                                                                    columnNumber: 35
+                                                                                                }, this)
+                                                                                            ]
+                                                                                        }, void 0, true, {
+                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                            lineNumber: 322,
+                                                                                            columnNumber: 33
+                                                                                        }, this),
+                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                            className: "text-xs text-gray-400",
+                                                                                            children: "Closed"
+                                                                                        }, void 0, false, {
+                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                            lineNumber: 332,
+                                                                                            columnNumber: 33
+                                                                                        }, this)
+                                                                                    ]
+                                                                                }, void 0, true, {
+                                                                                    fileName: "[project]/app/feed/page.tsx",
+                                                                                    lineNumber: 321,
+                                                                                    columnNumber: 31
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                    className: "space-y-2 text-sm text-gray-700",
+                                                                                    children: [
+                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                            children: [
+                                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                    className: "font-medium",
+                                                                                                    children: "📍 Location:"
+                                                                                                }, void 0, false, {
+                                                                                                    fileName: "[project]/app/feed/page.tsx",
+                                                                                                    lineNumber: 337,
+                                                                                                    columnNumber: 35
+                                                                                                }, this),
+                                                                                                " ",
+                                                                                                restaurant.location
+                                                                                            ]
+                                                                                        }, void 0, true, {
+                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                            lineNumber: 336,
+                                                                                            columnNumber: 33
+                                                                                        }, this),
+                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                            children: [
+                                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                    className: "font-medium",
+                                                                                                    children: "✨ Vibe:"
+                                                                                                }, void 0, false, {
+                                                                                                    fileName: "[project]/app/feed/page.tsx",
+                                                                                                    lineNumber: 340,
+                                                                                                    columnNumber: 35
+                                                                                                }, this),
+                                                                                                " ",
+                                                                                                restaurant.vibe
+                                                                                            ]
+                                                                                        }, void 0, true, {
+                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                            lineNumber: 339,
+                                                                                            columnNumber: 33
+                                                                                        }, this),
+                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                            children: [
+                                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                    className: "font-medium",
+                                                                                                    children: "💰 Price:"
+                                                                                                }, void 0, false, {
+                                                                                                    fileName: "[project]/app/feed/page.tsx",
+                                                                                                    lineNumber: 343,
+                                                                                                    columnNumber: 35
+                                                                                                }, this),
+                                                                                                " ",
+                                                                                                restaurant.price_range
+                                                                                            ]
+                                                                                        }, void 0, true, {
+                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                            lineNumber: 342,
+                                                                                            columnNumber: 33
+                                                                                        }, this),
+                                                                                        restaurant.menu && restaurant.menu.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                            children: [
+                                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                    className: "font-medium",
+                                                                                                    children: "🍽️ Menu:"
+                                                                                                }, void 0, false, {
+                                                                                                    fileName: "[project]/app/feed/page.tsx",
+                                                                                                    lineNumber: 347,
+                                                                                                    columnNumber: 37
+                                                                                                }, this),
+                                                                                                " ",
+                                                                                                restaurant.menu.slice(0, 3).join(", ")
+                                                                                            ]
+                                                                                        }, void 0, true, {
+                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                            lineNumber: 346,
+                                                                                            columnNumber: 35
+                                                                                        }, this),
+                                                                                        restaurant.tip && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                                            className: "bg-amber-50 border border-amber-200 rounded-lg p-2",
+                                                                                            children: [
+                                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                    className: "font-medium text-amber-800",
+                                                                                                    children: "💡 Tip:"
+                                                                                                }, void 0, false, {
+                                                                                                    fileName: "[project]/app/feed/page.tsx",
+                                                                                                    lineNumber: 352,
+                                                                                                    columnNumber: 37
+                                                                                                }, this),
+                                                                                                " ",
+                                                                                                restaurant.tip
+                                                                                            ]
+                                                                                        }, void 0, true, {
+                                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                                            lineNumber: 351,
+                                                                                            columnNumber: 35
+                                                                                        }, this)
+                                                                                    ]
+                                                                                }, void 0, true, {
+                                                                                    fileName: "[project]/app/feed/page.tsx",
+                                                                                    lineNumber: 335,
+                                                                                    columnNumber: 31
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                                    onClick: ()=>handleViewOnMap(restaurant),
+                                                                                    className: "w-full mt-3 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-medium",
+                                                                                    children: "View on Map"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/app/feed/page.tsx",
+                                                                                    lineNumber: 357,
+                                                                                    columnNumber: 31
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/feed/page.tsx",
+                                                                            lineNumber: 320,
+                                                                            columnNumber: 29
+                                                                        }, this)
+                                                                    ]
+                                                                }, restaurant.id, true, {
                                                                     fileName: "[project]/app/feed/page.tsx",
-                                                                    lineNumber: 151,
-                                                                    columnNumber: 23
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                    className: "text-xs mt-1 ".concat(message.isUser ? "text-purple-100" : "text-gray-500"),
-                                                                    children: message.timestamp.toLocaleTimeString([], {
-                                                                        hour: '2-digit',
-                                                                        minute: '2-digit'
-                                                                    })
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/feed/page.tsx",
-                                                                    lineNumber: 152,
-                                                                    columnNumber: 23
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/app/feed/page.tsx",
-                                                            lineNumber: 150,
-                                                            columnNumber: 21
-                                                        }, this),
-                                                        message.isUser && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0",
-                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
-                                                                className: "w-4 h-4 text-white",
-                                                                fill: "none",
-                                                                stroke: "currentColor",
-                                                                viewBox: "0 0 24 24",
-                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
-                                                                    strokeLinecap: "round",
-                                                                    strokeLinejoin: "round",
-                                                                    strokeWidth: 2,
-                                                                    d: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/feed/page.tsx",
-                                                                    lineNumber: 161,
+                                                                    lineNumber: 305,
                                                                     columnNumber: 27
-                                                                }, this)
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/feed/page.tsx",
-                                                                lineNumber: 160,
-                                                                columnNumber: 25
-                                                            }, this)
+                                                                }, this))
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/feed/page.tsx",
-                                                            lineNumber: 159,
+                                                            lineNumber: 303,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/feed/page.tsx",
-                                                    lineNumber: 142,
+                                                    lineNumber: 289,
                                                     columnNumber: 19
                                                 }, this)
-                                            }, void 0, false, {
-                                                fileName: "[project]/app/feed/page.tsx",
-                                                lineNumber: 135,
-                                                columnNumber: 17
-                                            }, this)
-                                        }, message.id, false, {
+                                            ]
+                                        }, message.id, true, {
                                             fileName: "[project]/app/feed/page.tsx",
-                                            lineNumber: 131,
+                                            lineNumber: 274,
                                             columnNumber: 15
                                         }, this)),
                                     isLoading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -315,17 +685,17 @@ function AIAssistantPage() {
                                                                 d: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/feed/page.tsx",
-                                                                lineNumber: 176,
+                                                                lineNumber: 379,
                                                                 columnNumber: 25
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/feed/page.tsx",
-                                                            lineNumber: 175,
+                                                            lineNumber: 378,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/feed/page.tsx",
-                                                        lineNumber: 174,
+                                                        lineNumber: 377,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -335,7 +705,7 @@ function AIAssistantPage() {
                                                                 className: "w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/feed/page.tsx",
-                                                                lineNumber: 180,
+                                                                lineNumber: 383,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -345,7 +715,7 @@ function AIAssistantPage() {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/feed/page.tsx",
-                                                                lineNumber: 181,
+                                                                lineNumber: 384,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -355,42 +725,42 @@ function AIAssistantPage() {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/feed/page.tsx",
-                                                                lineNumber: 182,
+                                                                lineNumber: 385,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/feed/page.tsx",
-                                                        lineNumber: 179,
+                                                        lineNumber: 382,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/feed/page.tsx",
-                                                lineNumber: 173,
+                                                lineNumber: 376,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/feed/page.tsx",
-                                            lineNumber: 172,
+                                            lineNumber: 375,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 171,
+                                        lineNumber: 374,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         ref: messagesEndRef
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 188,
+                                        lineNumber: 391,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/feed/page.tsx",
-                                lineNumber: 129,
+                                lineNumber: 272,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -401,7 +771,7 @@ function AIAssistantPage() {
                                         children: "Quick actions:"
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 193,
+                                        lineNumber: 396,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -412,18 +782,18 @@ function AIAssistantPage() {
                                                 children: action
                                             }, index, false, {
                                                 fileName: "[project]/app/feed/page.tsx",
-                                                lineNumber: 196,
+                                                lineNumber: 399,
                                                 columnNumber: 17
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 194,
+                                        lineNumber: 397,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/feed/page.tsx",
-                                lineNumber: 192,
+                                lineNumber: 395,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -438,17 +808,17 @@ function AIAssistantPage() {
                                                 value: inputMessage,
                                                 onChange: (e)=>setInputMessage(e.target.value),
                                                 onKeyPress: handleKeyPress,
-                                                placeholder: "Ask me about restaurants, cafes, or food places...",
+                                                placeholder: "Ask anything about places, restaurants, or cafes...",
                                                 className: "w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent",
                                                 disabled: isLoading
                                             }, void 0, false, {
                                                 fileName: "[project]/app/feed/page.tsx",
-                                                lineNumber: 211,
+                                                lineNumber: 414,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/feed/page.tsx",
-                                            lineNumber: 210,
+                                            lineNumber: 413,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -460,7 +830,7 @@ function AIAssistantPage() {
                                                     className: "w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/feed/page.tsx",
-                                                    lineNumber: 227,
+                                                    lineNumber: 430,
                                                     columnNumber: 19
                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                                     className: "w-4 h-4",
@@ -474,36 +844,36 @@ function AIAssistantPage() {
                                                         d: "M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/feed/page.tsx",
-                                                        lineNumber: 230,
+                                                        lineNumber: 433,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/feed/page.tsx",
-                                                    lineNumber: 229,
+                                                    lineNumber: 432,
                                                     columnNumber: 19
                                                 }, this),
                                                 "Send"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/feed/page.tsx",
-                                            lineNumber: 221,
+                                            lineNumber: 424,
                                             columnNumber: 13
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/feed/page.tsx",
-                                    lineNumber: 209,
+                                    lineNumber: 412,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/feed/page.tsx",
-                                lineNumber: 208,
+                                lineNumber: 411,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/feed/page.tsx",
-                        lineNumber: 127,
+                        lineNumber: 270,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -527,7 +897,7 @@ function AIAssistantPage() {
                                                     d: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/feed/page.tsx",
-                                                    lineNumber: 244,
+                                                    lineNumber: 447,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -537,18 +907,18 @@ function AIAssistantPage() {
                                                     d: "M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/feed/page.tsx",
-                                                    lineNumber: 245,
+                                                    lineNumber: 448,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/feed/page.tsx",
-                                            lineNumber: 243,
+                                            lineNumber: 446,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 242,
+                                        lineNumber: 445,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -556,7 +926,7 @@ function AIAssistantPage() {
                                         children: "Location-Based"
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 248,
+                                        lineNumber: 451,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -564,13 +934,13 @@ function AIAssistantPage() {
                                         children: "Find restaurants and cafes near your current location with precise recommendations."
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 249,
+                                        lineNumber: 452,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/feed/page.tsx",
-                                lineNumber: 241,
+                                lineNumber: 444,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -590,17 +960,17 @@ function AIAssistantPage() {
                                                 d: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/feed/page.tsx",
-                                                lineNumber: 255,
+                                                lineNumber: 458,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/feed/page.tsx",
-                                            lineNumber: 254,
+                                            lineNumber: 457,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 253,
+                                        lineNumber: 456,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -608,7 +978,7 @@ function AIAssistantPage() {
                                         children: "Smart Filtering"
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 258,
+                                        lineNumber: 461,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -616,13 +986,13 @@ function AIAssistantPage() {
                                         children: "Filter by cuisine, price range, features, and preferences to find exactly what you want."
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 259,
+                                        lineNumber: 462,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/feed/page.tsx",
-                                lineNumber: 252,
+                                lineNumber: 455,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -642,17 +1012,17 @@ function AIAssistantPage() {
                                                 d: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/feed/page.tsx",
-                                                lineNumber: 265,
+                                                lineNumber: 468,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/feed/page.tsx",
-                                            lineNumber: 264,
+                                            lineNumber: 467,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 263,
+                                        lineNumber: 466,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -660,7 +1030,7 @@ function AIAssistantPage() {
                                         children: "Personalized"
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 268,
+                                        lineNumber: 471,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -668,35 +1038,39 @@ function AIAssistantPage() {
                                         children: "Get recommendations tailored to your preferences, budget, and dining preferences."
                                     }, void 0, false, {
                                         fileName: "[project]/app/feed/page.tsx",
-                                        lineNumber: 269,
+                                        lineNumber: 472,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/feed/page.tsx",
-                                lineNumber: 262,
+                                lineNumber: 465,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/feed/page.tsx",
-                        lineNumber: 240,
+                        lineNumber: 443,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/feed/page.tsx",
-                lineNumber: 126,
+                lineNumber: 269,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/feed/page.tsx",
-        lineNumber: 108,
+        lineNumber: 251,
         columnNumber: 5
     }, this);
 }
-_s(AIAssistantPage, "WR2HCLJVbiSyueDSPicsV/l5vD8=");
+_s(AIAssistantPage, "a1yXS7v2rLWECug58uWmePm0Zr8=", false, function() {
+    return [
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
+    ];
+});
 _c = AIAssistantPage;
 var _c;
 __turbopack_context__.k.register(_c, "AIAssistantPage");

@@ -1,27 +1,40 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { fetchRealFoodPlaces, type FoodPlace } from "@/lib/restaurants";
+
+interface Restaurant {
+  id: string;
+  name: string;
+  category: string;
+  rating: number;
+  price_range: string;
+  location: string;
+  vibe: string;
+  menu?: string[];
+  image: string;
+  tip?: string;
+  latitude?: number;
+  longitude?: number;
+}
 
 interface Message {
   id: string;
-  content: string;
+  content?: string;
   isUser: boolean;
   timestamp: Date;
+  restaurants?: Restaurant[];
   isTyping?: boolean;
 }
 
 export default function AIAssistantPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "Hello! I'm your AI assistant for Lokalista. I can help you find the perfect restaurants, cafes, and events based on your preferences and location. What would you like to discover today?",
-      isUser: false,
-      timestamp: new Date(),
-    },
-  ]);
+  const router = useRouter();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,6 +43,147 @@ export default function AIAssistantPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const [locationReady, setLocationReady] = useState(false);
+  const [locationError, setLocationError] = useState(false);
+
+  // Get user's current location on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords: [number, number] = [position.coords.latitude, position.coords.longitude];
+          setUserLocation(coords);
+          setLocationReady(true);
+          console.log('Location detected:', coords);
+          
+          // Add welcome message once location is ready
+          setMessages([{
+            id: "1",
+            content: `Hello! I'm your AI assistant for Lokalista. I've detected your location and I can help you find the perfect restaurants, cafes, and events near you. What would you like to discover?`,
+            isUser: false,
+            timestamp: new Date(),
+          }]);
+        },
+        (error) => {
+          console.warn('Geolocation error:', error);
+          // If permission denied or error, use default location
+          setUserLocation([14.5995, 120.9842]); // Manila, Philippines
+          setLocationReady(true);
+          setLocationError(true);
+          
+          // Add welcome message with error notice
+          setMessages([{
+            id: "1",
+            content: "Hello! I'm your AI assistant for Lokalista. I couldn't access your location, so I'll show results for a general area. Allow location access for better recommendations near you. What would you like to discover?",
+            isUser: false,
+            timestamp: new Date(),
+          }]);
+        }
+      );
+    } else {
+      // Fallback if geolocation not supported
+      setUserLocation([14.5995, 120.9842]);
+      setLocationReady(true);
+      setLocationError(true);
+      
+      setMessages([{
+        id: "1",
+        content: "Hello! I'm your AI assistant for Lokalista. Location services aren't available in your browser. What would you like to discover?",
+        isUser: false,
+        timestamp: new Date(),
+      }]);
+    }
+  }, []);
+
+  // Convert FoodPlace to Restaurant format
+  const convertToRestaurant = (place: FoodPlace): Restaurant => {
+    // Generate vibe based on category and name
+    const getVibe = (category: string, name: string) => {
+      const lowerName = name.toLowerCase();
+      if (category.includes("Cafe") || lowerName.includes("coffee")) {
+        return lowerName.includes("cozy") || lowerName.includes("quiet") 
+          ? "Cozy and quiet, perfect for work or relaxation" 
+          : "Modern and welcoming, great for meetings";
+      }
+      if (category.includes("Fast Food")) {
+        return "Quick and convenient, family-friendly";
+      }
+      if (category.includes("Local")) {
+        return "Authentic Filipino experience";
+      }
+      return "Welcoming atmosphere, great for dining";
+    };
+
+    // Generate tip based on place
+    const getTip = (category: string, name: string) => {
+      if (category.includes("Cafe")) return "Visit during off-peak hours for a more peaceful experience.";
+      if (category.includes("Fast Food")) return "Most locations are open until late, great for quick meals.";
+      if (name.toLowerCase().includes("starbucks")) return "Peak hours are lunch and afternoon, try early morning.";
+      return "Check hours before visiting to avoid disappointment.";
+    };
+
+    return {
+      id: place.id,
+      name: place.name,
+      category: place.category,
+      rating: place.rating,
+      price_range: place.price_range,
+      location: place.description || `Near your location`,
+      vibe: getVibe(place.category, place.name),
+      image: place.image_url || "/Landing.png",
+      tip: getTip(place.category, place.name),
+      latitude: place.latitude,
+      longitude: place.longitude
+    };
+  };
+
+  const generateRecommendations = async (userInput: string): Promise<Restaurant[]> => {
+    if (!userLocation) {
+      return [];
+    }
+
+    const input = userInput.toLowerCase();
+    
+    try {
+      // Fetch real food places near user location
+      const foodPlaces = await fetchRealFoodPlaces(userLocation);
+      
+      // Filter based on keywords
+      let matches: FoodPlace[] = [];
+      
+      if (input.includes("coffee") || input.includes("cafe") || input.includes("cozy")) {
+        matches = foodPlaces.filter(p => 
+          p.category.toLowerCase().includes("cafe") || 
+          p.name.toLowerCase().includes("coffee") ||
+          p.name.toLowerCase().includes("cafe")
+        );
+      } else if (input.includes("fast food") || input.includes("quick") || input.includes("cheap")) {
+        matches = foodPlaces.filter(p => 
+          p.category.toLowerCase().includes("fast") || 
+          p.price_range === "$"
+        );
+      } else if (input.includes("budget") || input.includes("affordable")) {
+        matches = foodPlaces.filter(p => p.price_range === "$");
+      } else if (input.includes("local") || input.includes("filipino")) {
+        matches = foodPlaces.filter(p => 
+          p.category.toLowerCase().includes("local") || 
+          p.cuisine_type?.toLowerCase().includes("filipino")
+        );
+      } else {
+        matches = foodPlaces.slice(0, 3);
+      }
+      
+      // Limit to 3 results
+      const limited = matches.slice(0, 3);
+      
+      // Convert to Restaurant format
+      return limited.map(convertToRestaurant);
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      return [];
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -45,47 +199,36 @@ export default function AIAssistantPage() {
     setInputMessage("");
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    // Fetch real recommendations based on location
+    try {
+      const restaurants = await generateRecommendations(inputMessage.trim());
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: generateAIResponse(inputMessage.trim()),
+        content: restaurants.length > 0 
+          ? `Here are ${restaurants.length} ${inputMessage.trim().toLowerCase().includes('cozy') ? 'cozy' : inputMessage.trim().toLowerCase().includes('coffee') ? 'coffee' : ''} recommendations near your location:`
+          : "I couldn't find places matching your request. Try asking for 'coffee', 'fast food', or 'budget-friendly' options.",
+        restaurants: restaurants,
         isUser: false,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Sorry, I couldn't fetch recommendations right now. Please try again or use the map to explore nearby places.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
-  const generateAIResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-    
-    if (input.includes("restaurant") || input.includes("food") || input.includes("eat")) {
-      return "I'd be happy to help you find great restaurants! Based on your preferences, I recommend checking out our Food Map to discover local dining options. You can filter by cuisine type, price range, and features like 'Budget-Friendly' or 'Family-Friendly'. What type of cuisine are you looking for?";
+  const handleViewOnMap = (restaurant: Restaurant) => {
+    if (restaurant.latitude && restaurant.longitude) {
+      router.push(`/map?lat=${restaurant.latitude}&lng=${restaurant.longitude}&restaurant=${encodeURIComponent(restaurant.name)}`);
     }
-    
-    if (input.includes("cafe") || input.includes("coffee") || input.includes("drink")) {
-      return "Great choice! For cafes and coffee shops, I suggest exploring our map with the 'Cafes' filter. You'll find everything from cozy local coffee shops to modern cafes with great ambiance. Many of our featured cafes are also pet-friendly! Would you like recommendations for a specific area?";
-    }
-    
-    if (input.includes("location") || input.includes("where") || input.includes("near")) {
-      return "I can help you find places near your location! Use the 'Use my location' button on our Food Map to automatically center the map on your current position. Then you can search for restaurants, cafes, or any food places within walking distance. What's your preferred distance?";
-    }
-    
-    if (input.includes("budget") || input.includes("cheap") || input.includes("affordable")) {
-      return "Perfect! I can help you find budget-friendly options. On our Food Map, use the 'Budget-Friendly' filter to see all affordable dining options. You'll find great value restaurants, food courts, and local eateries that won't break the bank. What type of cuisine are you looking for?";
-    }
-    
-    if (input.includes("family") || input.includes("kids") || input.includes("children")) {
-      return "Family-friendly dining is important! Use the 'Family-Friendly' filter on our map to find restaurants that welcome families with children. These places typically have kid-friendly menus, high chairs, and a comfortable atmosphere for all ages. What age range are your children?";
-    }
-    
-    if (input.includes("help") || input.includes("how") || input.includes("what can you do")) {
-      return "I'm here to help you discover amazing food experiences! I can assist you with:\n\n• Finding restaurants and cafes by cuisine type\n• Locating budget-friendly or family-friendly options\n• Discovering pet-friendly establishments\n• Getting recommendations based on your location\n• Exploring different dining categories\n\nTry asking me about specific cuisines, locations, or dining preferences!";
-    }
-    
-    return "That's interesting! I'd love to help you find the perfect dining experience. You can explore our Food Map to discover restaurants, cafes, and food places near you. Try asking me about specific cuisines, your budget preferences, or what type of dining experience you're looking for!";
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -96,12 +239,12 @@ export default function AIAssistantPage() {
   };
 
   const quickActions = [
-    "Find restaurants near me",
-    "Show me budget-friendly cafes",
-    "Family-friendly dining options",
-    "Pet-friendly places",
-    "Best local cuisine",
-    "Open 24 hours"
+    "Good coffee spot near me",
+    "Budget-friendly places near me",
+    "Fast food near me",
+    "Cozy cafes for working",
+    "Quick meals nearby",
+    "Popular restaurants near me"
   ];
 
   return (
@@ -126,44 +269,104 @@ export default function AIAssistantPage() {
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
           {/* Messages Container */}
-          <div className="h-96 overflow-y-auto p-6 space-y-4">
+          <div className="h-[600px] overflow-y-auto p-6 space-y-4">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
-                    message.isUser
-                      ? "bg-gradient-to-br from-purple-500 to-pink-500 text-white"
-                      : "bg-gray-100 text-gray-900"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    {!message.isUser && (
-                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className="flex-1">
+              <div key={message.id} className="space-y-4">
+                {/* User Message */}
+                {message.isUser && message.content && (
+                  <div className="flex justify-end">
+                    <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 text-white">
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                      <p className={`text-xs mt-1 ${
-                        message.isUser ? "text-purple-100" : "text-gray-500"
-                      }`}>
+                      <p className="text-xs mt-1 text-purple-100">
                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
-                    {message.isUser && (
-                      <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+                  </div>
+                )}
+                
+                {/* AI Message with Restaurant Cards */}
+                {!message.isUser && (
+                  <div className="space-y-4">
+                    {message.content && (
+                      <div className="flex justify-start">
+                        <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-gray-100 text-gray-900">
+                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          <p className="text-xs mt-1 text-gray-500">
+                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Restaurant Cards */}
+                    {message.restaurants && message.restaurants.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {message.restaurants.map((restaurant) => (
+                          <div key={restaurant.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                            {/* Image */}
+                            <div className="aspect-video overflow-hidden bg-gray-100">
+                              <img 
+                                src={restaurant.image} 
+                                alt={restaurant.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = "/Landing.png";
+                                }}
+                              />
+                            </div>
+                            
+                            {/* Content */}
+                            <div className="p-4 space-y-3">
+                              <div>
+                                <div className="flex items-start justify-between mb-2">
+                                  <div>
+                                    <h3 className="font-semibold text-gray-900">{restaurant.name}</h3>
+                                    <p className="text-sm text-gray-500">{restaurant.category}</p>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-sm">
+                                    <span className="text-yellow-500">⭐</span>
+                                    <span className="font-medium">{restaurant.rating}</span>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-gray-400">Closed</p>
+                              </div>
+                              
+                              <div className="space-y-2 text-sm text-gray-700">
+                                <div>
+                                  <span className="font-medium">📍 Location:</span> {restaurant.location}
+                                </div>
+                                <div>
+                                  <span className="font-medium">✨ Vibe:</span> {restaurant.vibe}
+                                </div>
+                                <div>
+                                  <span className="font-medium">💰 Price:</span> {restaurant.price_range}
+                                </div>
+                                {restaurant.menu && restaurant.menu.length > 0 && (
+                                  <div>
+                                    <span className="font-medium">🍽️ Menu:</span> {restaurant.menu.slice(0, 3).join(", ")}
+                                  </div>
+                                )}
+                                {restaurant.tip && (
+                                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
+                                    <span className="font-medium text-amber-800">💡 Tip:</span> {restaurant.tip}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <button
+                                onClick={() => handleViewOnMap(restaurant)}
+                                className="w-full mt-3 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+                              >
+                                View on Map
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
-                </div>
+                )}
               </div>
             ))}
             
@@ -183,57 +386,82 @@ export default function AIAssistantPage() {
                     </div>
                   </div>
                 </div>
-          </div>
+              </div>
             )}
             <div ref={messagesEndRef} />
-            </div>
+          </div>
 
           {/* Quick Actions */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-            <p className="text-sm text-gray-600 mb-3">Quick actions:</p>
-            <div className="flex flex-wrap gap-2">
-              {quickActions.map((action, index) => (
-                <button
-                  key={index}
-                  onClick={() => setInputMessage(action)}
-                  className="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                >
-                  {action}
-                </button>
-              ))}
+          {locationReady && (
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+              <p className="text-sm text-gray-600 mb-3">Quick actions:</p>
+              <div className="flex flex-wrap gap-2">
+                {quickActions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setInputMessage(action)}
+                    className="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+                  >
+                    {action}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Input Area */}
           <div className="p-6 bg-white border-t border-gray-200">
-            <div className="flex gap-3">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask me about restaurants, cafes, or food places..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  disabled={isLoading}
-                />
+            {!locationReady ? (
+              <div className="flex items-center justify-center gap-3 py-4">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-500"></div>
+                <p className="text-gray-600">Getting your location...</p>
               </div>
-            <button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isLoading}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
-              >
-                {isLoading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                  </svg>
+            ) : (
+              <>
+                {locationError && (
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      ⚠️ Location permission denied. Showing results for Manila area. Allow location access for better recommendations.
+                    </p>
+                  </div>
                 )}
-                Send
-            </button>
+                {userLocation && !locationError && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      ✓ Location detected! Finding places near you.
+                    </p>
+                  </div>
+                )}
+                <div className="flex gap-3">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Ask anything about places, restaurants, or cafes..."
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      disabled={isLoading || !locationReady}
+                    />
+                  </div>
+                <button
+                    onClick={handleSendMessage}
+                    disabled={!inputMessage.trim() || isLoading || !locationReady}
+                    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                  >
+                    {isLoading ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    )}
+                    Send
+                </button>
+              </div>
+              </>
+            )}
           </div>
-        </div>
         </div>
 
         {/* Features Section */}
