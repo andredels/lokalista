@@ -696,7 +696,7 @@ function AIAssistantPage() {
         columnNumber: 5
     }, this);
 }
-_s(AIAssistantPage, "gJ047SKuWMnlCR++XHA/i/LYla4=");
+_s(AIAssistantPage, "WR2HCLJVbiSyueDSPicsV/l5vD8=");
 _c = AIAssistantPage;
 var _c;
 __turbopack_context__.k.register(_c, "AIAssistantPage");

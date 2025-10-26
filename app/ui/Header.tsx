@@ -25,69 +25,84 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    const supabase = createClient();
     let mounted = true;
     
-    const loadProfileData = async (userId: string) => {
-      try {
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('first_name, avatar_url')
-          .eq('id', userId)
-          .single();
-        
-        if (!mounted) return;
-        
-        if (error && error.code !== 'PGRST116') {
+    // Check if Supabase is configured
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === "https://placeholder.supabase.co") {
+      // Supabase not configured, just set loading to false
+      setLoadingUser(false);
+      return;
+    }
+    
+    try {
+      const supabase = createClient();
+      
+      const loadProfileData = async (userId: string) => {
+        try {
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('first_name, avatar_url')
+            .eq('id', userId)
+            .single();
+          
+          if (!mounted) return;
+          
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error loading profile:', error);
+          }
+          
+          setProfile(profileData || null);
+        } catch (error) {
           console.error('Error loading profile:', error);
+          if (mounted) {
+            setProfile(null);
+            setLoadingUser(false);
+          }
         }
-        
-        setProfile(profileData || null);
-      } catch (error) {
-        console.error('Error loading profile:', error);
-        if (mounted) {
-          setProfile(null);
-          // Set loading to false even if profile loading fails
-          setLoadingUser(false);
+      };
+      
+      (async () => {
+        try {
+          const { data } = await supabase.auth.getUser();
+          if (!mounted) return;
+          setUser(data.user ?? null);
+          if (data.user) {
+            loadProfileData(data.user.id);
+          }
+        } catch (error) {
+          console.error('Error in auth initialization:', error);
+        } finally {
+          if (mounted) {
+            setLoadingUser(false);
+          }
         }
+      })();
+      
+      const { data: sub } = supabase.auth.onAuthStateChange(
+        async (_event: import("@supabase/supabase-js").AuthChangeEvent, session: import("@supabase/supabase-js").Session | null) => {
+          if (!mounted) return;
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            loadProfileData(session.user.id);
+          } else {
+            setProfile(null);
+          }
+        }
+      );
+      
+      return () => {
+        mounted = false;
+        sub.subscription.unsubscribe();
+      };
+    } catch (error) {
+      console.error('Error initializing Supabase client:', error);
+      if (mounted) {
+        setLoadingUser(false);
       }
-    };
-    
-    (async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        if (!mounted) return;
-        setUser(data.user ?? null);
-        // Do not block UI on profile fetch
-        if (data.user) {
-          loadProfileData(data.user.id);
-        }
-      } catch (error) {
-        console.error('Error in auth initialization:', error);
-      } finally {
-        if (mounted) {
-          setLoadingUser(false);
-        }
-      }
-    })();
-    
-    const { data: sub } = supabase.auth.onAuthStateChange(
-      async (_event: import("@supabase/supabase-js").AuthChangeEvent, session: import("@supabase/supabase-js").Session | null) => {
-        if (!mounted) return;
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          // Fire and forget profile refresh
-          loadProfileData(session.user.id);
-        } else {
-          setProfile(null);
-        }
-      }
-    );
-    
-    return () => {
-      mounted = false;
-      sub.subscription.unsubscribe();
-    };
+    }
   }, []);
 
   useEffect(() => {
@@ -127,8 +142,17 @@ export default function Header() {
   }, [user, profile]);
 
   async function handleSignOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (supabaseUrl && supabaseAnonKey && supabaseUrl !== "https://placeholder.supabase.co") {
+      try {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.error('Error signing out:', error);
+      }
+    }
     // Redirect to landing page after sign out
     window.location.href = "/";
   }

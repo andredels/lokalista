@@ -31,6 +31,8 @@ export default function FoodMapPage() {
   const [showNearbyPlaces, setShowNearbyPlaces] = useState(false);
   const [clickMarker, setClickMarker] = useState<any>(null);
   const clickMarkersRef = useRef<any[]>([]);
+  const [currentZoom, setCurrentZoom] = useState<number>(14);
+  const [filteredPlaces, setFilteredPlaces] = useState<FoodPlace[]>([]);
 
   // Initialize Leaflet map with satellite view focused on food places
   useEffect(() => {
@@ -140,6 +142,15 @@ export default function FoodMapPage() {
         collapsed: true
       }).addTo(mapRef.current);
 
+      // Track zoom level changes
+      mapRef.current.on('zoomend', () => {
+        const newZoom = mapRef.current.getZoom();
+        setCurrentZoom(newZoom);
+        console.log('Zoom level changed to:', newZoom);
+        // Re-filter places based on new zoom level
+        filterPlacesByZoom(foodPlaces, newZoom);
+      });
+
       // Ask for geolocation and center
       locateUser();
 
@@ -192,11 +203,8 @@ export default function FoodMapPage() {
           // Update the main food places state with the new places
           setFoodPlaces(newPlaces);
           
-          // Clear existing markers and plot the new markers on the map
-          plotFoodMarkers([]); // Clear existing markers first
-          setTimeout(() => {
-            plotFoodMarkers(newPlaces);
-          }, 100);
+          // Filter and display places based on current zoom level
+          filterPlacesByZoom(newPlaces, currentZoom);
           
           // Find nearby places around the clicked location from the newly fetched places
           const nearby = findNearbyPlaces(clickedLatLng, newPlaces, 1); // 1km radius
@@ -557,10 +565,8 @@ export default function FoodMapPage() {
       console.log("Found", places.length, "real places");
       setFoodPlaces(places);
       
-      // Wait a bit to ensure map is ready
-      setTimeout(() => {
-        plotFoodMarkers(places);
-      }, 100);
+      // Filter places based on current zoom level
+      filterPlacesByZoom(places, currentZoom);
       
     } catch (error) {
       console.error("Error fetching food places:", error);
@@ -568,9 +574,9 @@ export default function FoodMapPage() {
       console.log("Falling back to sample data");
       const places = getSampleFoodPlaces(centerLatLng);
       setFoodPlaces(places);
-      setTimeout(() => {
-        plotFoodMarkers(places);
-      }, 100);
+      
+      // Filter places based on current zoom level
+      filterPlacesByZoom(places, currentZoom);
     } finally {
       setLoadingPlaces(false);
     }
@@ -901,6 +907,72 @@ export default function FoodMapPage() {
     return R * c; // Distance in kilometers
   };
 
+  // Filter places based on zoom level and rating
+  const filterPlacesByZoom = (places: FoodPlace[], zoom: number) => {
+    console.log(`Filtering ${places.length} places at zoom level ${zoom}`);
+    
+    let filtered: FoodPlace[];
+    
+    if (zoom <= 12) {
+      // Zoomed out: Show only highly rated, well-known places (max 10)
+      const wellKnownAndRated = places.filter(place => {
+        // Well-known chains and highly rated places
+        const isWellKnown = place.name && (
+          place.name.toLowerCase().includes('jollibee') ||
+          place.name.toLowerCase().includes('mcdonald') ||
+          place.name.toLowerCase().includes('kfc') ||
+          place.name.toLowerCase().includes('starbucks') ||
+          place.name.toLowerCase().includes('chowking') ||
+          place.name.toLowerCase().includes('pizza hut') ||
+          place.name.toLowerCase().includes('subway') ||
+          place.name.toLowerCase().includes('mang inasal') ||
+          place.name.toLowerCase().includes('greenwich') ||
+          place.name.toLowerCase().includes('tokyo tokyo') ||
+          place.name.toLowerCase().includes('bonchon') ||
+          place.name.toLowerCase().includes('goldilocks') ||
+          place.name.toLowerCase().includes('red ribbon') ||
+          place.name.toLowerCase().includes('yellow cab') ||
+          place.name.toLowerCase().includes('coffee bean')
+        );
+        
+        // High rating threshold for independent places
+        const isHighlyRated = place.rating && place.rating >= 4.2;
+        
+        return isWellKnown || isHighlyRated;
+      });
+      
+      // Sort by rating (highest first) and limit to 10
+      filtered = wellKnownAndRated
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+        .slice(0, 10);
+      
+      console.log(`Zoomed out: Showing ${filtered.length} well-known/highly-rated places (max 10)`);
+    } else if (zoom <= 15) {
+      // Medium zoom: Show places with rating >= 3.8 (max 20)
+      const mediumRated = places.filter(place => 
+        !place.rating || place.rating >= 3.8
+      );
+      
+      // Sort by rating and limit to 20
+      filtered = mediumRated
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+        .slice(0, 20);
+      
+      console.log(`Medium zoom: Showing ${filtered.length} places with rating >= 3.8 (max 20)`);
+    } else {
+      // Zoomed in: Show all places (no limit)
+      filtered = places;
+      console.log(`Zoomed in: Showing all ${filtered.length} places`);
+    }
+    
+    setFilteredPlaces(filtered);
+    
+    // Update markers on map
+    setTimeout(() => {
+      plotFoodMarkers(filtered);
+    }, 100);
+  };
+
   // Find nearby places within a specified radius from a clicked location
   const findNearbyPlaces = (clickedLatLng: [number, number], allPlaces: FoodPlace[], radiusKm: number = 1): FoodPlace[] => {
     const [clickLat, clickLon] = clickedLatLng;
@@ -924,6 +996,13 @@ export default function FoodMapPage() {
   useEffect(() => {
     console.log("Food places state:", foodPlaces);
   }, [foodPlaces]);
+
+  // Filter places when foodPlaces or currentZoom changes
+  useEffect(() => {
+    if (foodPlaces.length > 0) {
+      filterPlacesByZoom(foodPlaces, currentZoom);
+    }
+  }, [foodPlaces, currentZoom]);
 
   // Filter food places when filters change
   useEffect(() => {
@@ -999,6 +1078,14 @@ export default function FoodMapPage() {
           <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-700">
               <strong>🗺️ Click to Explore:</strong> Click anywhere on the map to automatically find and display nearby restaurants and cafes! The map will refresh with new places from the Places API around your clicked location.
+            </p>
+          </div>
+          <div className="mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+            <p className="text-sm text-purple-700">
+              <strong>🔍 Smart Zoom Filtering:</strong> 
+              <br />• <strong>Zoomed Out (≤12):</strong> Shows max 10 well-known chains and highly-rated places (4.2+ stars)
+              <br />• <strong>Medium Zoom (13-15):</strong> Shows max 20 places with 3.8+ star ratings
+              <br />• <strong>Zoomed In (16+):</strong> Shows all available food places (no limit)
             </p>
           </div>
         </div>
@@ -1112,16 +1199,34 @@ export default function FoodMapPage() {
         <div className="mt-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-900">
-              🍴 Food Places {loadingPlaces ? "(loading...)" : `(${foodPlaces.length})`}
+              🍴 Food Places {loadingPlaces ? "(loading...)" : `(${filteredPlaces.length} of ${foodPlaces.length})`}
             </h2>
-            {userLocation && (
-              <p className="text-sm text-gray-500">
-                📍 Showing places near your location
-              </p>
-            )}
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              {userLocation && (
+                <p>📍 Showing places near your location</p>
+              )}
+              <div className="flex items-center gap-2">
+                <span>🔍 Zoom Level: {currentZoom}</span>
+                {currentZoom <= 12 && (
+                  <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                    Well-known places only
+                  </span>
+                )}
+                {currentZoom > 12 && currentZoom <= 15 && (
+                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                    Highly rated places
+                  </span>
+                )}
+                {currentZoom > 15 && (
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                    All places
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
           
-          {foodPlaces.length === 0 && !loadingPlaces && (
+          {filteredPlaces.length === 0 && !loadingPlaces && (
             <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
               <div className="text-6xl mb-4">🍽️</div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No food places found</h3>
@@ -1130,7 +1235,7 @@ export default function FoodMapPage() {
           )}
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {foodPlaces.map((place) => (
+            {filteredPlaces.map((place) => (
               <div 
                 key={place.id} 
                 className={`bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer ${

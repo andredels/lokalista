@@ -1,8 +1,8 @@
 "use client";
 
-// Clone of journey page but with /community redirects
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/browserClient";
+import PostModal from "../ui/PostModal";
 
 type Profile = {
   id: string;
@@ -32,292 +32,577 @@ type Comment = {
 };
 
 export default function CommunityPage() {
-  const supabase = useMemo(() => createClient(), []);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+  const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && supabaseUrl !== "https://placeholder.supabase.co";
+  
+  const supabase = useMemo(() => isSupabaseConfigured ? createClient() : null, [isSupabaseConfigured]);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
-  const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
-  const [newCommentContent, setNewCommentContent] = useState<Record<string, string>>({});
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!mounted) return;
-      const uid = data.user?.id ?? null;
-      setUserId(uid);
-      await loadPosts(uid);
+    if (!supabase || !isSupabaseConfigured) {
       setLoading(false);
+      return;
+    }
+    
+    let mounted = true;
+    
+    // Add a timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      if (mounted) {
+        console.warn("Loading timeout reached, setting loading to false");
+        setLoading(false);
+      }
+    }, 10000); // 10 second timeout
+    
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!mounted) return;
+        const uid = data.user?.id ?? null;
+        setUserId(uid);
+        await loadPosts(uid);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
     })();
+    
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
       const uid = session?.user?.id ?? null;
       setUserId(uid);
       await loadPosts(uid);
     });
+    
     return () => {
       mounted = false;
+      clearTimeout(timeout);
       sub.subscription.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isSupabaseConfigured]);
 
   async function loadPosts(currentUserId: string | null = userId) {
-    const { data, error } = await supabase
-      .from("posts")
-      .select(
-        `id, user_id, content, image_url, created_at, profiles:profiles!posts_user_id_fkey(id, first_name, last_name),
-         likes_count:likes(count), comments_count:comments(count)`
-      )
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error(error);
+    if (!supabase || !isSupabaseConfigured) {
+      setLoading(false);
       return;
     }
-
-    const normalized = (data as any[]).map((row) => ({
-      ...row,
-      likes_count: Array.isArray(row.likes_count) ? row.likes_count[0]?.count ?? 0 : row.likes_count ?? 0,
-      comments_count: Array.isArray(row.comments_count) ? row.comments_count[0]?.count ?? 0 : row.comments_count ?? 0,
-      liked_by_me: false,
-    })) as Post[];
-
-    if (currentUserId && normalized.length) {
-      const postIds = normalized.map((p) => p.id);
-      const { data: myLikes, error: likesErr } = await supabase
-        .from("likes")
-        .select("post_id")
-        .eq("user_id", currentUserId)
-        .in("post_id", postIds);
-      if (!likesErr && myLikes) {
-        const likedSet = new Set(myLikes.map((l: any) => l.post_id));
-        for (const p of normalized) p.liked_by_me = likedSet.has(p.id);
-      }
-    }
-
-    setPosts(normalized);
-  }
-
-  async function submitPost(e: React.FormEvent) {
-    e.preventDefault();
-    if (!userId) {
-      window.location.href = "/auth/login?next=/community";
-      return;
-    }
-    if (!content.trim()) return;
-    setSubmitting(true);
-    let imageUrl: string | null = null;
+    
     try {
-      if (imageFile) {
-        const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
-        const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("post-images").upload(path, imageFile, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: imageFile.type || "image/jpeg",
-        });
-        if (upErr) throw upErr;
-        const { data: pub } = supabase.storage.from("post-images").getPublicUrl(path);
-        imageUrl = pub.publicUrl;
+      console.log("Loading posts for user:", currentUserId);
+      
+      // Get posts with proper counts and like status
+      const { data, error } = await supabase
+        .from("posts")
+        .select(`
+          id, 
+          user_id, 
+          content, 
+          image_url, 
+          created_at,
+          profiles:profiles!posts_user_id_fkey(id, first_name, last_name)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error loading posts:", error);
+        setPosts([]);
+        setLoading(false);
+        return;
       }
-      const { error } = await supabase.from("posts").insert({ content, image_url: imageUrl });
-      if (error) throw error;
-      setContent("");
-      setImageFile(null);
-      setImagePreview(null);
-      await loadPosts();
-    } catch (err: any) {
-      alert(err?.message || "Failed to post.");
+
+      console.log("Posts loaded:", data?.length || 0);
+
+      // Get like counts for each post
+      const postsWithCounts = await Promise.all((data || []).map(async (post) => {
+        // Get like count
+        const { count: likesCount } = await supabase
+          .from("likes")
+          .select("*", { count: "exact", head: true })
+          .eq("post_id", post.id);
+
+        // Get comment count
+        const { count: commentsCount } = await supabase
+          .from("comments")
+          .select("*", { count: "exact", head: true })
+          .eq("post_id", post.id);
+
+        // Check if current user liked this post
+        let likedByMe = false;
+        if (currentUserId) {
+          const { data: likeData } = await supabase
+            .from("likes")
+            .select("id")
+            .eq("post_id", post.id)
+            .eq("user_id", currentUserId)
+            .single();
+          likedByMe = !!likeData;
+        }
+
+        return {
+          ...post,
+          likes_count: likesCount || 0,
+          comments_count: commentsCount || 0,
+          liked_by_me: likedByMe,
+        };
+      }));
+
+      console.log("Posts with counts:", postsWithCounts);
+      setPosts(postsWithCounts as Post[]);
+    } catch (err) {
+      console.error("Error in loadPosts:", err);
+      setPosts([]);
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   }
+
+      async function submitPost(e: React.FormEvent) {
+        e.preventDefault();
+        if (!supabase || !isSupabaseConfigured) {
+          alert("Supabase is not configured. Please set environment variables.");
+          return;
+        }
+        if (!userId) {
+          window.location.href = "/auth/login?next=/community";
+          return;
+        }
+        if (!content.trim()) return;
+        setSubmitting(true);
+        let imageUrl: string | null = null;
+        try {
+          // First, ensure the user has a profile
+          const { data: existingProfile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", userId)
+            .single();
+
+          if (!existingProfile) {
+            // Create a basic profile for the user
+            const { error: profileError } = await supabase
+              .from("profiles")
+              .insert({
+                id: userId,
+                first_name: "User",
+                last_name: "User"
+              });
+            
+            if (profileError) {
+              console.warn("Could not create profile:", profileError);
+              // Continue anyway, the post might still work
+            }
+          }
+
+          if (imageFile) {
+            const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+            const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+            const { error: upErr } = await supabase.storage.from("post-images").upload(path, imageFile, {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: imageFile.type || "image/jpeg",
+            });
+            if (upErr) throw upErr;
+            const { data: pub } = supabase.storage.from("post-images").getPublicUrl(path);
+            imageUrl = pub.publicUrl;
+          }
+          const { error } = await supabase.from("posts").insert({ 
+            content, 
+            image_url: imageUrl, 
+            user_id: userId 
+          });
+          if (error) throw error;
+          setContent("");
+          setImageFile(null);
+          setImagePreview(null);
+          await loadPosts();
+        } catch (err: any) {
+          alert(err?.message || "Failed to post.");
+        } finally {
+          setSubmitting(false);
+        }
+      }
 
   async function toggleLike(post: Post) {
+    console.log("toggleLike called for post:", post.id, "liked_by_me:", post.liked_by_me);
+    
+    if (!supabase || !isSupabaseConfigured) {
+      alert("Supabase is not configured. Please set environment variables.");
+      return;
+    }
     if (!userId) {
       window.location.href = "/auth/login?next=/community";
       return;
     }
-    if (post.liked_by_me) {
-      const { error } = await supabase.from("likes").delete().match({ post_id: post.id, user_id: userId });
-      if (error) return alert(error.message);
-    } else {
-      // Upsert to avoid duplicate key conflicts on refresh/race conditions
-      const { error } = await supabase
-        .from("likes")
-        .upsert({ post_id: post.id, user_id: userId }, { onConflict: "post_id,user_id" });
-      if (error) return alert(error.message);
+    
+    try {
+      if (post.liked_by_me) {
+        console.log("Removing like for post:", post.id);
+        const { error } = await supabase.from("likes").delete().eq("post_id", post.id).eq("user_id", userId);
+        if (error) {
+          console.error("Error removing like:", error);
+          return;
+        }
+      } else {
+        // First ensure user has a profile (required for RLS)
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", userId)
+          .single();
+
+        if (!existingProfile) {
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .insert({
+              id: userId,
+              first_name: "User",
+              last_name: "User"
+            });
+          
+          if (profileError) {
+            console.warn("Could not create profile:", profileError);
+            alert("Please complete your profile setup first.");
+            return;
+          }
+        }
+
+        // Check if like already exists to avoid duplicate key error
+        const { data: existingLike } = await supabase
+          .from("likes")
+          .select("id")
+          .eq("post_id", post.id)
+          .eq("user_id", userId)
+          .single();
+
+        if (existingLike) {
+          // Like already exists, just refresh the data
+          await loadPosts(userId);
+          return;
+        }
+
+        // Now try to insert the like
+        const { error } = await supabase.from("likes").insert({ post_id: post.id, user_id: userId });
+        if (error) {
+          console.error("Error adding like:", error);
+          if (error.message.includes("duplicate key") || error.message.includes("unique constraint")) {
+            // Like already exists, just refresh the data
+            await loadPosts(userId);
+            return;
+          } else if (error.message.includes("row-level security") || error.message.includes("USING expression")) {
+            alert("Unable to like this post due to security restrictions. Please contact support.");
+          } else {
+            alert("Failed to like post: " + error.message);
+          }
+          return;
+        }
+      }
+      await loadPosts(userId);
+    } catch (err: any) {
+      console.error("Error in toggleLike:", err);
+      alert("An error occurred while liking the post.");
     }
-    await loadPosts(userId);
   }
 
-  async function loadComments(postId: string) {
-    const { data, error } = await supabase
-      .from("comments")
-      .select("id, post_id, user_id, content, created_at, profiles:profiles!comments_user_id_fkey(id, first_name, last_name)")
-      .eq("post_id", postId)
-      .order("created_at", { ascending: true });
-    if (error) return alert(error.message);
-    setCommentsByPost((prev) => ({ ...prev, [postId]: (data as Comment[]) || [] }));
-  }
-
-  async function submitComment(postId: string) {
+  async function handleComment(postId: string, content: string) {
+    console.log("handleComment called with:", { postId, content, userId });
+    
+    if (!supabase || !isSupabaseConfigured) {
+      alert("Supabase is not configured. Please set environment variables.");
+      return;
+    }
     if (!userId) {
       window.location.href = "/auth/login?next=/community";
       return;
     }
-    const text = (newCommentContent[postId] || "").trim();
-    if (!text) return;
-    const { error } = await supabase.from("comments").insert({ post_id: postId, content: text, user_id: userId });
-    if (error) return alert(error.message);
-    setNewCommentContent((p) => ({ ...p, [postId]: "" }));
-    await loadComments(postId);
-    await loadPosts();
+    
+    try {
+      // First ensure user has a profile (required for RLS)
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", userId)
+        .single();
+
+      if (!existingProfile) {
+        console.log("Creating profile for user:", userId);
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: userId,
+            first_name: "User",
+            last_name: "User"
+          });
+        
+        if (profileError) {
+          console.warn("Could not create profile:", profileError);
+          alert("Please complete your profile setup first.");
+          return;
+        }
+      }
+
+      console.log("Inserting comment:", { post_id: postId, content, user_id: userId });
+      // Now try to insert the comment
+      const { error } = await supabase.from("comments").insert({ post_id: postId, content, user_id: userId });
+      if (error) {
+        console.error("Error adding comment:", error);
+        if (error.message.includes("row-level security") || error.message.includes("USING expression")) {
+          alert("Unable to comment due to security restrictions. Please contact support.");
+        } else {
+          alert("Failed to add comment: " + error.message);
+        }
+        return;
+      }
+      console.log("Comment added successfully");
+      await loadPosts();
+    } catch (err: any) {
+      console.error("Error in handleComment:", err);
+      alert("An error occurred while adding the comment.");
+    }
   }
 
-  function toggleExpanded(postId: string) {
-    setExpandedPostIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(postId)) next.delete(postId);
-      else next.add(postId);
-      return next;
-    });
-    if (!commentsByPost[postId]) void loadComments(postId);
+  async function handleDeletePost(postId: string) {
+    if (!supabase || !isSupabaseConfigured) {
+      alert("Supabase is not configured. Please set environment variables.");
+      return;
+    }
+    if (!userId) {
+      return;
+    }
+    
+    try {
+      // Delete associated comments first
+      await supabase.from("comments").delete().eq("post_id", postId);
+      
+      // Delete associated likes
+      await supabase.from("likes").delete().eq("post_id", postId);
+      
+      // Delete the post
+      const { error } = await supabase.from("posts").delete().eq("id", postId);
+      if (error) throw error;
+      
+      // Reload posts
+      await loadPosts();
+    } catch (error: any) {
+      alert(error?.message || "Failed to delete post.");
+    }
+  }
+
+  function openModal(post: Post) {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  }
+
+  function closeModal() {
+    setIsModalOpen(false);
+    setSelectedPost(null);
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container max-w-2xl py-6">
-        <h1 className="text-2xl font-semibold mb-4">Community</h1>
-
-        {/* Composer */}
-        <form onSubmit={submitPost} className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder={userId ? "Share something with the community..." : "Sign in to post"}
-            className="w-full resize-none outline-none min-h-[90px]"
-            disabled={!userId || submitting}
-          />
-          {imagePreview && (
-            <div className="mt-3">
-              <img src={imagePreview} alt="Selected" className="max-h-64 rounded-lg border" />
-            </div>
-          )}
-          <div className="flex items-center justify-between mt-3">
-            <span className="text-sm text-gray-500">{content.length}/280</span>
-            <button
-              type="submit"
-              disabled={!userId || submitting || !content.trim() || content.length > 280}
-              className="px-4 h-9 rounded-full bg-[#8c52ff] text-white disabled:opacity-50"
-            >
-              {submitting ? "Posting..." : "Post"}
-            </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="container py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-fuchsia-500 to-violet-600 bg-clip-text text-transparent">
+              Community
+            </h1>
+            {userId && (
+              <button
+                onClick={() => document.getElementById('post-form')?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-4 py-2 bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white rounded-lg hover:opacity-90 transition-opacity"
+              >
+                Create Post
+              </button>
+            )}
           </div>
-          <div className="mt-3">
-            <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                disabled={!userId || submitting}
-                onChange={(e) => {
-                  const file = e.target.files?.[0] || null;
-                  setImageFile(file);
-                  setImagePreview(file ? URL.createObjectURL(file) : null);
-                }}
+        </div>
+      </div>
+
+      <div className="container py-6">
+        {/* Post Form */}
+        {userId && (
+          <div id="post-form" className="mb-8">
+            <form onSubmit={submitPost} className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-600 flex items-center justify-center text-white font-medium">
+                  {(((userId || "").slice(0, 1)).toUpperCase())}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Share with the community</h3>
+                  <p className="text-sm text-gray-500">What's on your mind?</p>
+                </div>
+              </div>
+              
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Share something amazing..."
+                className="w-full resize-none outline-none min-h-[120px] text-gray-900 placeholder-gray-500"
+                disabled={submitting}
               />
-              <span className="px-3 h-9 inline-flex items-center rounded-md border border-gray-300 hover:bg-gray-50">Add image</span>
-              {imageFile && <span className="text-gray-500">{imageFile.name}</span>}
-            </label>
+              
+              {imagePreview && (
+                <div className="mt-4">
+                  <img src={imagePreview} alt="Selected" className="max-h-64 rounded-lg border object-cover w-full" />
+                </div>
+              )}
+              
+              <div className="flex items-center justify-between mt-4">
+                <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer hover:text-fuchsia-600 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={submitting}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setImageFile(file);
+                      setImagePreview(file ? URL.createObjectURL(file) : null);
+                    }}
+                  />
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <span>Add image</span>
+                  {imageFile && <span className="text-gray-500">• {imageFile.name}</span>}
+                </label>
+                
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-500">{content.length}/280</span>
+                  <button
+                    type="submit"
+                    disabled={submitting || !content.trim() || content.length > 280}
+                    className="px-6 py-2 bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  >
+                    {submitting ? "Posting..." : "Post"}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
-        </form>
+        )}
 
-        {/* Feed */}
+        {/* Pinterest Grid */}
         {loading ? (
-          <div className="text-center text-gray-500">Loading…</div>
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fuchsia-500 mx-auto mb-4"></div>
+              <p className="text-gray-500">Loading posts...</p>
+            </div>
+          </div>
         ) : posts.length === 0 ? (
-          <div className="text-center text-gray-500">No posts yet. Be the first!</div>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gray-400">
+                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No posts yet</h3>
+            <p className="text-gray-500 mb-4">Be the first to share something amazing with the community!</p>
+            {!userId && (
+              <a href="/auth/login" className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white rounded-lg hover:opacity-90 transition-opacity">
+                Sign in to post
+              </a>
+            )}
+          </div>
         ) : (
-          <ul className="space-y-3">
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
             {posts.map((post) => (
-              <li key={post.id} className="bg-white border border-gray-200 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium">
-                    {(((post.profiles?.first_name || "") + (post.profiles?.last_name ? ` ${post.profiles.last_name}` : "")) || post.user_id || "?").slice(0, 1).toUpperCase()}
+              <div
+                key={post.id}
+                className="break-inside-avoid mb-6 bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+                onClick={() => openModal(post)}
+              >
+                {/* Image */}
+                {post.image_url ? (
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={post.image_url}
+                      alt="Post image"
+                      className="w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      style={{ aspectRatio: 'auto' }}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="font-medium text-gray-900">{(post.profiles?.first_name || "").toString() + (post.profiles?.last_name ? ` ${post.profiles.last_name}` : "") || "Anonymous"}</span>
-                      <span>·</span>
-                      <time dateTime={post.created_at}>{new Date(post.created_at).toLocaleString()}</time>
+                ) : (
+                  <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-gray-400">
+                      <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                  </div>
+                )}
+
+                {/* Content */}
+                <div className="p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-600 flex items-center justify-center text-white text-sm font-medium">
+                      {(((post.profiles?.first_name || "") + (post.profiles?.last_name ? ` ${post.profiles.last_name}` : "")) || post.user_id || "?").slice(0, 1).toUpperCase()}
                     </div>
-                    <p className="mt-2 whitespace-pre-wrap break-words">{post.content}</p>
-                    {post.image_url && (
-                      <div className="mt-3">
-                        <img src={post.image_url} alt="Post image" className="rounded-lg border max-h-96" />
-                      </div>
-                    )}
-                    <div className="mt-3 flex items-center gap-4 text-sm text-gray-600">
-                      <button onClick={() => toggleLike(post)} className={`inline-flex items-center gap-1 ${post.liked_by_me ? "text-fuchsia-600" : "hover:text-gray-900"}`}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                          <path d="M12 21s-7-4.5-7-10a7 7 0 0114 0c0 5.5-7 10-7 10z" stroke="currentColor" strokeWidth="1.6"/>
-                        </svg>
-                        <span>{post.likes_count ?? 0}</span>
-                      </button>
-                      <button onClick={() => toggleExpanded(post.id)} className="inline-flex items-center gap-1 hover:text-gray-900">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                          <path d="M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2v10z" stroke="currentColor" strokeWidth="1.6"/>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-gray-900 truncate">
+                        {(post.profiles?.first_name || "") + (post.profiles?.last_name ? ` ${post.profiles.last_name}` : "") || "Anonymous"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(post.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  {post.content && (
+                    <p className="text-sm text-gray-700 line-clamp-3 mb-3">
+                      {post.content}
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill={post.liked_by_me ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" className={post.liked_by_me ? "text-red-500" : ""}>
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                            <span>{post.likes_count ?? 0}</span>
+                          </div>
+                      <div className="flex items-center gap-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2v10z"/>
                         </svg>
                         <span>{post.comments_count ?? 0}</span>
-                      </button>
-                    </div>
-
-                    {expandedPostIds.has(post.id) && (
-                      <div className="mt-3 border-t border-gray-200 pt-3">
-                        <div className="space-y-3">
-                          {(commentsByPost[post.id] || []).map((c) => (
-                            <div key={c.id} className="flex items-start gap-3">
-                              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium">
-                                {(((c.profiles?.first_name || "") + (c.profiles?.last_name ? ` ${c.profiles.last_name}` : "")) || c.user_id || "?").slice(0, 1).toUpperCase()}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 text-xs text-gray-600">
-                                  <span className="font-medium text-gray-900">{(c.profiles?.first_name || "") + (c.profiles?.last_name ? ` ${c.profiles.last_name}` : "") || "Anonymous"}</span>
-                                  <span>·</span>
-                                  <time dateTime={c.created_at}>{new Date(c.created_at).toLocaleString()}</time>
-                                </div>
-                                <p className="mt-1 whitespace-pre-wrap break-words text-sm">{c.content}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="mt-3 flex items-center gap-2">
-                          <input
-                            type="text"
-                            placeholder={userId ? "Write a comment…" : "Sign in to comment"}
-                            value={newCommentContent[post.id] || ""}
-                            onChange={(e) => setNewCommentContent((p) => ({ ...p, [post.id]: e.target.value }))}
-                            className="flex-1 h-9 px-3 rounded-md border border-gray-300"
-                            disabled={!userId}
-                          />
-                          <button onClick={() => submitComment(post.id)} disabled={!userId || !(newCommentContent[post.id] || "").trim()} className="px-3 h-9 rounded-md bg-gray-900 text-white disabled:opacity-50">Post</button>
-                        </div>
                       </div>
-                    )}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      Click to view
+                    </div>
                   </div>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
+
+          {/* Modal */}
+          <PostModal
+            post={selectedPost}
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            userId={userId}
+            onLike={toggleLike}
+            onComment={handleComment}
+            onDelete={handleDeletePost}
+            onPostUpdate={() => loadPosts(userId)}
+          />
     </div>
   );
 }

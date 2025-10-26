@@ -57,8 +57,12 @@ async function fetchRealFoodPlaces(centerLatLng) {
                 cuisineType = 'Coffee';
             }
         }
-        // Generate random rating (since OSM doesn't have ratings)
-        const rating = 3.5 + Math.random() * 1.5; // 3.5 to 5.0
+        // Get real rating from Google Places API or use intelligent defaults
+        let rating = await getRealRating(tags.name || tags.brand, element.lat, element.lon);
+        // Fallback to intelligent rating based on place characteristics
+        if (!rating) {
+            rating = getIntelligentRating(tags, category);
+        }
         // Determine price range
         let priceRange = '$$';
         if (tags.amenity === 'cafe' && tags.brand && tags.brand.toLowerCase().includes('starbucks')) {
