@@ -1,95 +1,5 @@
 // Shared restaurant data fetching utilities
 
-// Get real rating from Google Places API
-async function getRealRating(placeName: string, lat: number, lon: number): Promise<number | null> {
-  try {
-    // Note: This would require a Google Places API key
-    // For now, we'll use intelligent defaults based on known chains
-    return getKnownChainRating(placeName);
-  } catch (error) {
-    console.warn('Could not fetch real rating for:', placeName);
-    return null;
-  }
-}
-
-// Get rating for known chains based on real-world data
-function getKnownChainRating(placeName: string): number | null {
-  if (!placeName) return null;
-  
-  const name = placeName.toLowerCase();
-  
-  // Real-world average ratings for major chains in the Philippines
-  const chainRatings: { [key: string]: number } = {
-    'jollibee': 4.2,
-    'mcdonald': 4.0,
-    'kfc': 4.1,
-    'starbucks': 4.3,
-    'chowking': 4.1,
-    'pizza hut': 4.1,
-    'subway': 4.0,
-    'mang inasal': 4.4,
-    'greenwich': 3.9,
-    'tokyo tokyo': 4.0,
-    'bonchon': 4.4,
-    'goldilocks': 4.3,
-    'red ribbon': 4.1,
-    'yellow cab': 4.2,
-    'coffee bean': 4.2,
-    'tim hortons': 4.1,
-    'dunkin': 4.0,
-    'wendy': 4.0,
-    'burger king': 3.9,
-    'domino': 4.0,
-    'papa john': 3.8,
-    'shakey': 4.1,
-    'max': 4.2,
-    'mary grace': 4.3,
-    'contis': 4.2,
-    'red ribbon': 4.1,
-    'goldilocks': 4.3
-  };
-  
-  // Check for exact matches first
-  for (const [chain, rating] of Object.entries(chainRatings)) {
-    if (name.includes(chain)) {
-      return rating;
-    }
-  }
-  
-  return null;
-}
-
-// Intelligent rating based on place characteristics
-function getIntelligentRating(tags: any, category: string): number {
-  let baseRating = 3.5;
-  
-  // Boost rating for certain amenities
-  if (tags.amenity === 'restaurant') {
-    baseRating = 3.8;
-  } else if (tags.amenity === 'cafe') {
-    baseRating = 4.0;
-  } else if (tags.amenity === 'fast_food') {
-    baseRating = 3.6;
-  }
-  
-  // Boost for established brands
-  if (tags.brand) {
-    baseRating += 0.3;
-  }
-  
-  // Boost for places with more information (likely more established)
-  if (tags.website) baseRating += 0.1;
-  if (tags.phone) baseRating += 0.1;
-  if (tags.opening_hours) baseRating += 0.1;
-  if (tags.cuisine) baseRating += 0.1;
-  
-  // Add some realistic variation
-  const variation = (Math.random() - 0.5) * 0.4; // ±0.2 variation
-  const finalRating = Math.max(2.5, Math.min(5.0, baseRating + variation));
-  
-  return Math.round(finalRating * 10) / 10;
-}
-
 export interface FoodPlace {
   id: string;
   name: string;
@@ -113,7 +23,7 @@ export async function fetchRealFoodPlaces(centerLatLng: [number, number]): Promi
   
   // OpenStreetMap Overpass API query for restaurants, cafes, and fast food
   const query = `
-[out:json][timeout:25];
+[out:json][timeout:15];
 (
   node["amenity"="restaurant"](around:${radius},${lat},${lon});
   node["amenity"="cafe"](around:${radius},${lat},${lon});
@@ -127,22 +37,41 @@ export async function fetchRealFoodPlaces(centerLatLng: [number, number]): Promi
 out;
 `;
 
-  const response = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    body: query,
-    headers: {
-      'Content-Type': 'text/plain',
-    },
-  });
+  // Create AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+  try {
+    const response = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: query,
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      signal: controller.signal,
+    });
 
-  const data = await response.json();
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      // Handle 504 Gateway Timeout specifically
+      if (response.status === 504) {
+        console.warn('OpenStreetMap API timeout (504). Returning empty results.');
+        return [];
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
   
-  // Transform OpenStreetMap data to our format
-  const places: FoodPlace[] = await Promise.all(data.elements.map(async (element: any, index: number) => {
+    // Check if data has elements
+    if (!data || !data.elements || !Array.isArray(data.elements)) {
+      console.warn('OpenStreetMap API returned unexpected format. Returning empty results.');
+      return [];
+    }
+  
+    // Transform OpenStreetMap data to our format
+    const places: FoodPlace[] = data.elements.map((element: any, index: number) => {
     const tags = element.tags || {};
     
     // Determine category and cuisine type
@@ -177,13 +106,8 @@ out;
       }
     }
     
-    // Get real rating from Google Places API or use intelligent defaults
-    let rating = await getRealRating(tags.name || tags.brand, element.lat, element.lon);
-    
-    // Fallback to intelligent rating based on place characteristics
-    if (!rating) {
-      rating = getIntelligentRating(tags, category);
-    }
+    // Generate random rating (since OSM doesn't have ratings)
+    const rating = 3.5 + Math.random() * 1.5; // 3.5 to 5.0
     
     // Determine price range
     let priceRange = '$$';
@@ -205,15 +129,40 @@ out;
       cuisine_type: cuisineType,
       is_open: true
     };
-  }));
+  });
 
-  return places;
+    return places;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    
+    // Handle abort (timeout)
+    if (error.name === 'AbortError') {
+      console.warn('Request to OpenStreetMap API timed out. Returning empty results.');
+      return [];
+    }
+    
+    // Handle other errors
+    if (error.message?.includes('504') || error.message?.includes('timeout')) {
+      console.warn('OpenStreetMap API timeout. Returning empty results.');
+      return [];
+    }
+    
+    console.error('Error fetching food places from OpenStreetMap:', error);
+    // Return empty array instead of throwing to prevent app crashes
+    return [];
+  }
 }
 
 // Get trending restaurants from real data
 export async function getTrendingRestaurants(centerLatLng: [number, number]): Promise<FoodPlace[]> {
   try {
     const places = await fetchRealFoodPlaces(centerLatLng);
+    
+    // If no places found, return empty array (don't throw error)
+    if (!places || places.length === 0) {
+      console.warn('No food places found. This may be due to API timeout or no places in the area.');
+      return [];
+    }
     
     // Sort by rating and take top 8 as trending
     const trending = places
@@ -235,6 +184,7 @@ export async function getTrendingRestaurants(centerLatLng: [number, number]): Pr
     return trending;
   } catch (error) {
     console.error('Error fetching trending restaurants:', error);
+    // Return empty array instead of throwing to prevent app crashes
     return [];
   }
 }

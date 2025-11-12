@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/browserClient";
 import { fetchRealFoodPlaces, type FoodPlace } from "@/lib/restaurants";
@@ -23,6 +23,8 @@ export default function FoodMapPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const debounceRef = useRef<any>(null);
   const [foodPlaces, setFoodPlaces] = useState<FoodPlace[]>([]);
+  const [filteredPlaces, setFilteredPlaces] = useState<FoodPlace[]>([]);
+  const [currentZoom, setCurrentZoom] = useState<number>(14);
   const [loadingPlaces, setLoadingPlaces] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<FoodPlace | null>(null);
@@ -31,10 +33,6 @@ export default function FoodMapPage() {
   const [showNearbyPlaces, setShowNearbyPlaces] = useState(false);
   const [clickMarker, setClickMarker] = useState<any>(null);
   const clickMarkersRef = useRef<any[]>([]);
-  const restaurantMarkerRef = useRef<any>(null);
-  const [currentZoom, setCurrentZoom] = useState<number>(14);
-  const [filteredPlaces, setFilteredPlaces] = useState<FoodPlace[]>([]);
-  const [mapReady, setMapReady] = useState<boolean>(false);
 
   // Initialize Leaflet map with satellite view focused on food places
   useEffect(() => {
@@ -144,15 +142,6 @@ export default function FoodMapPage() {
         collapsed: true
       }).addTo(mapRef.current);
 
-      // Track zoom level changes
-      mapRef.current.on('zoomend', () => {
-        const newZoom = mapRef.current.getZoom();
-        setCurrentZoom(newZoom);
-        console.log('Zoom level changed to:', newZoom);
-        // Re-filter places based on new zoom level
-        filterPlacesByZoom(foodPlaces, newZoom);
-      });
-
       // Ask for geolocation and center
       locateUser();
 
@@ -205,8 +194,13 @@ export default function FoodMapPage() {
           // Update the main food places state with the new places
           setFoodPlaces(newPlaces);
           
-          // Filter and display places based on current zoom level
-          filterPlacesByZoom(newPlaces, currentZoom);
+          // Filter places based on current zoom level
+          if (mapRef.current) {
+            const zoom = mapRef.current.getZoom();
+            filterPlacesByZoom(newPlaces, zoom);
+          } else {
+            filterPlacesByZoom(newPlaces, currentZoom);
+          }
           
           // Find nearby places around the clicked location from the newly fetched places
           const nearby = findNearbyPlaces(clickedLatLng, newPlaces, 1); // 1km radius
@@ -224,17 +218,23 @@ export default function FoodMapPage() {
         }
       });
 
+      // Track zoom level changes
+      mapRef.current.on("zoomend", () => {
+        if (mapRef.current) {
+          const zoom = mapRef.current.getZoom();
+          setCurrentZoom(zoom);
+        }
+      });
+
+      // Set initial zoom level
+      setCurrentZoom(mapRef.current.getZoom());
+
       // Load initial food places around default center
       setTimeout(() => {
         searchFoodPlaces(defaultCenter);
       }, 1000);
 
       initializingRef.current = false;
-      
-      // Wait a bit longer to ensure map is fully ready
-      setTimeout(() => {
-        setMapReady(true); // Map is now ready!
-      }, 500);
     };
 
     init();
@@ -254,14 +254,12 @@ export default function FoodMapPage() {
         mapRef.current.remove();
         mapRef.current = null;
       }
-      setMapReady(false);
     };
   }, []);
 
   // Handle URL parameters for restaurant navigation
   useEffect(() => {
-    // Wait for map to be ready before processing URL params
-    if (!mapRef.current || !mapReady) return;
+    if (!mapRef.current) return;
     
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');
@@ -271,136 +269,41 @@ export default function FoodMapPage() {
       const coordinates: [number, number] = [parseFloat(lat), parseFloat(lng)];
       console.log('Centering map on restaurant:', restaurant, 'at', coordinates);
       
-      // Remove previous marker if exists
-      if (restaurantMarkerRef.current) {
-        try {
-          mapRef.current.removeLayer(restaurantMarkerRef.current);
-        } catch (error) {
-          console.warn('Error removing previous marker:', error);
-        }
-      }
+      // Center map on the restaurant location
+      mapRef.current.setView(coordinates, 16);
       
-      // Get user's current location first
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userCoords: [number, number] = [position.coords.latitude, position.coords.longitude];
-            
-            // Add "You are here" marker at user's location
-            const L = (window as any).L;
-            if (L) {
-              const youIcon = L.divIcon({
-                html: '<div style="background:#ef4444;color:#fff;border-radius:9999px;padding:6px 10px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold">📍 You are here</div>',
-                className: '',
-                iconSize: [50, 24],
-                iconAnchor: [25, 12]
-              });
-              
-              if (!userMarkerRef.current) {
-                userMarkerRef.current = L.marker(userCoords, { icon: youIcon });
-                userMarkerRef.current.addTo(mapRef.current);
-                setUserLocation(userCoords);
-              }
-              
-              // Calculate distance
-              const distance = calculateDistance(userCoords[0], userCoords[1], coordinates[0], coordinates[1]);
-              
-              // Center map to show both user and restaurant
-              const bounds = L.latLngBounds([userCoords, coordinates]);
-              mapRef.current.fitBounds(bounds, { padding: [50, 50] });
-              
-              // Add restaurant marker
-              const restaurantIcon = L.divIcon({
-                html: `<div style="background:#8c52ff;color:#fff;border-radius:9999px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold;font-size:12px;border:3px solid white">📍 ${restaurant || 'Restaurant'}</div>`,
-                className: '',
-                iconSize: [80, 32],
-                iconAnchor: [40, 16]
-              });
-              
-              restaurantMarkerRef.current = L.marker(coordinates, { icon: restaurantIcon });
-              restaurantMarkerRef.current.addTo(mapRef.current);
-              
-              // Show popup with distance
-              setTimeout(() => {
-                restaurantMarkerRef.current?.bindPopup(`
-                  <div style="text-align: center; padding: 8px;">
-                    <h3 style="margin: 0 0 8px 0; color: #8c52ff; font-weight: bold;">${restaurant || 'Selected Restaurant'}</h3>
-                    <p style="margin: 0; color: #666; font-size: 14px; margin-bottom: 4px;">${distance.toFixed(2)} km away</p>
-                    <p style="margin: 0; color: #666; font-size: 14px;">Click on the map to explore nearby places!</p>
-                  </div>
-                `).openPopup();
-              }, 1600);
-              
-              // Search for food places around the restaurant
-              setTimeout(() => {
-                searchFoodPlaces(coordinates);
-              }, 2000);
-            }
-          },
-          (error) => {
-            console.warn('Could not get user location:', error);
-            
-            // If location denied, just show restaurant
-            const L = (window as any).L;
-            if (L) {
-              // Center map on the restaurant location
-              mapRef.current.setView(coordinates, 18, { animate: true, duration: 1.5 });
-              
-              // Add restaurant marker
-              const restaurantIcon = L.divIcon({
-                html: `<div style="background:#8c52ff;color:#fff;border-radius:9999px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold;font-size:12px;border:3px solid white">📍 ${restaurant || 'Restaurant'}</div>`,
-                className: '',
-                iconSize: [80, 32],
-                iconAnchor: [40, 16]
-              });
-              
-              restaurantMarkerRef.current = L.marker(coordinates, { icon: restaurantIcon });
-              restaurantMarkerRef.current.addTo(mapRef.current);
-              
-              setTimeout(() => {
-                restaurantMarkerRef.current?.bindPopup(`
-                  <div style="text-align: center; padding: 8px;">
-                    <h3 style="margin: 0 0 8px 0; color: #8c52ff; font-weight: bold;">${restaurant || 'Selected Restaurant'}</h3>
-                    <p style="margin: 0; color: #666; font-size: 14px;">Click on the map to explore nearby places!</p>
-                  </div>
-                `).openPopup();
-              }, 1600);
-              
-              // Search for food places around the restaurant
-              setTimeout(() => {
-                searchFoodPlaces(coordinates);
-              }, 2000);
-            }
+      // Add a special marker for the restaurant
+      const L = (window as any).L;
+      if (L) {
+        const restaurantIcon = L.divIcon({
+          html: `<div style="background:#8c52ff;color:#fff;border-radius:9999px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold;font-size:12px;border:3px solid white">📍 ${restaurant || 'Restaurant'}</div>`,
+          className: '', 
+          iconSize: [80, 32], 
+          iconAnchor: [40, 16]
+        });
+        
+        const restaurantMarker = L.marker(coordinates, { icon: restaurantIcon });
+        restaurantMarker.addTo(mapRef.current);
+        
+        // Show popup with restaurant info
+        restaurantMarker.bindPopup(`
+          <div style="text-align: center; padding: 8px;">
+            <h3 style="margin: 0 0 8px 0; color: #8c52ff; font-weight: bold;">${restaurant || 'Selected Restaurant'}</h3>
+            <p style="margin: 0; color: #666; font-size: 14px;">Click on the map to explore nearby places!</p>
+          </div>
+        `).openPopup();
+        
+        // Clean up the marker when component unmounts or params change
+        return () => {
+          try {
+            mapRef.current?.removeLayer(restaurantMarker);
+          } catch (error) {
+            console.warn('Error removing restaurant marker:', error);
           }
-        );
-      }
-      
-      // Calculate distance function
-      function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-        const R = 6371; // Earth's radius in kilometers
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-          Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+        };
       }
     }
-    
-    // Clean up when params change
-    return () => {
-      if (restaurantMarkerRef.current && mapRef.current) {
-        try {
-          mapRef.current.removeLayer(restaurantMarkerRef.current);
-          restaurantMarkerRef.current = null;
-        } catch (error) {
-          console.warn('Error removing restaurant marker:', error);
-        }
-      }
-    };
-  }, [searchParams, mapReady]);
+  }, [searchParams, mapRef.current]);
 
   async function locateUser() {
     if (!mapRef.current) return;
@@ -658,6 +561,72 @@ export default function FoodMapPage() {
     return filtered;
   };
 
+  // Filter food places based on zoom level
+  const filterPlacesByZoom = useCallback((places: FoodPlace[], zoom: number) => {
+    console.log(`Filtering ${places.length} places at zoom level ${zoom}`);
+    
+    let filtered: FoodPlace[];
+    
+    // Determine zoom thresholds
+    // Normal view (zoomed out): zoom <= 13
+    // Slightly zoomed: 13 < zoom <= 16
+    // Max zoom: zoom > 16
+    
+    if (zoom <= 13) {
+      // Normal view: Show only the 5 most popular food places
+      // Most popular = well-known chains OR highest rated places
+      const wellKnownChains = [
+        'jollibee', 'mcdonald', 'kfc', 'starbucks', 'chowking',
+        'pizza hut', 'subway', 'mang inasal', 'greenwich', 'tokyo tokyo',
+        'bonchon', 'goldilocks', 'red ribbon', 'yellow cab', 'coffee bean',
+        'burger king', 'wendy\'s', 'domino', 'papa john', 'shakey'
+      ];
+      
+      // Score places by popularity (well-known chains get priority, then by rating)
+      const scoredPlaces = places.map(place => {
+        const name = place.name?.toLowerCase() || '';
+        const isWellKnown = wellKnownChains.some(chain => name.includes(chain));
+        const rating = place.rating || 0;
+        
+        // Higher score = more popular
+        // Well-known chains get base score of 100, then add rating * 10
+        // Other places get score based on rating only
+        const score = isWellKnown ? 100 + (rating * 10) : rating * 10;
+        
+        return { place, score, isWellKnown, rating };
+      });
+      
+      // Sort by score (highest first) and take top 5
+      filtered = scoredPlaces
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5)
+        .map(item => item.place);
+      
+      console.log(`Normal view (zoom ${zoom}): Showing ${filtered.length} most popular places`);
+    } else if (zoom <= 16) {
+      // Slightly zoomed: Show top 10 places by rating
+      filtered = places
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+        .slice(0, 10);
+      
+      console.log(`Slightly zoomed (zoom ${zoom}): Showing ${filtered.length} top-rated places`);
+    } else {
+      // Max zoom: Show top 20 places by rating
+      filtered = places
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+        .slice(0, 20);
+      
+      console.log(`Max zoom (zoom ${zoom}): Showing ${filtered.length} top-rated places`);
+    }
+    
+    setFilteredPlaces(filtered);
+    
+    // Update markers on map
+    setTimeout(() => {
+      plotFoodMarkers(filtered);
+    }, 100);
+  }, []);
+
   async function searchFoodPlaces(centerLatLng: [number, number]) {
     setLoadingPlaces(true);
     try {
@@ -670,7 +639,13 @@ export default function FoodMapPage() {
       setFoodPlaces(places);
       
       // Filter places based on current zoom level
-      filterPlacesByZoom(places, currentZoom);
+      if (mapRef.current) {
+        const zoom = mapRef.current.getZoom();
+        filterPlacesByZoom(places, zoom);
+      } else {
+        // Fallback if map not ready
+        filterPlacesByZoom(places, currentZoom);
+      }
       
     } catch (error) {
       console.error("Error fetching food places:", error);
@@ -680,7 +655,12 @@ export default function FoodMapPage() {
       setFoodPlaces(places);
       
       // Filter places based on current zoom level
-      filterPlacesByZoom(places, currentZoom);
+      if (mapRef.current) {
+        const zoom = mapRef.current.getZoom();
+        filterPlacesByZoom(places, zoom);
+      } else {
+        filterPlacesByZoom(places, currentZoom);
+      }
     } finally {
       setLoadingPlaces(false);
     }
@@ -1011,72 +991,6 @@ export default function FoodMapPage() {
     return R * c; // Distance in kilometers
   };
 
-  // Filter places based on zoom level and rating
-  const filterPlacesByZoom = (places: FoodPlace[], zoom: number) => {
-    console.log(`Filtering ${places.length} places at zoom level ${zoom}`);
-    
-    let filtered: FoodPlace[];
-    
-    if (zoom <= 12) {
-      // Zoomed out: Show only highly rated, well-known places (max 10)
-      const wellKnownAndRated = places.filter(place => {
-        // Well-known chains and highly rated places
-        const isWellKnown = place.name && (
-          place.name.toLowerCase().includes('jollibee') ||
-          place.name.toLowerCase().includes('mcdonald') ||
-          place.name.toLowerCase().includes('kfc') ||
-          place.name.toLowerCase().includes('starbucks') ||
-          place.name.toLowerCase().includes('chowking') ||
-          place.name.toLowerCase().includes('pizza hut') ||
-          place.name.toLowerCase().includes('subway') ||
-          place.name.toLowerCase().includes('mang inasal') ||
-          place.name.toLowerCase().includes('greenwich') ||
-          place.name.toLowerCase().includes('tokyo tokyo') ||
-          place.name.toLowerCase().includes('bonchon') ||
-          place.name.toLowerCase().includes('goldilocks') ||
-          place.name.toLowerCase().includes('red ribbon') ||
-          place.name.toLowerCase().includes('yellow cab') ||
-          place.name.toLowerCase().includes('coffee bean')
-        );
-        
-        // High rating threshold for independent places
-        const isHighlyRated = place.rating && place.rating >= 4.2;
-        
-        return isWellKnown || isHighlyRated;
-      });
-      
-      // Sort by rating (highest first) and limit to 10
-      filtered = wellKnownAndRated
-        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-        .slice(0, 10);
-      
-      console.log(`Zoomed out: Showing ${filtered.length} well-known/highly-rated places (max 10)`);
-    } else if (zoom <= 15) {
-      // Medium zoom: Show places with rating >= 3.8 (max 20)
-      const mediumRated = places.filter(place => 
-        !place.rating || place.rating >= 3.8
-      );
-      
-      // Sort by rating and limit to 20
-      filtered = mediumRated
-        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-        .slice(0, 20);
-      
-      console.log(`Medium zoom: Showing ${filtered.length} places with rating >= 3.8 (max 20)`);
-    } else {
-      // Zoomed in: Show all places (no limit)
-      filtered = places;
-      console.log(`Zoomed in: Showing all ${filtered.length} places`);
-    }
-    
-    setFilteredPlaces(filtered);
-    
-    // Update markers on map
-    setTimeout(() => {
-      plotFoodMarkers(filtered);
-    }, 100);
-  };
-
   // Find nearby places within a specified radius from a clicked location
   const findNearbyPlaces = (clickedLatLng: [number, number], allPlaces: FoodPlace[], radiusKm: number = 1): FoodPlace[] => {
     const [clickLat, clickLon] = clickedLatLng;
@@ -1101,12 +1015,12 @@ export default function FoodMapPage() {
     console.log("Food places state:", foodPlaces);
   }, [foodPlaces]);
 
-  // Filter places when foodPlaces or currentZoom changes
+  // Re-filter places when zoom level or foodPlaces change
   useEffect(() => {
     if (foodPlaces.length > 0) {
       filterPlacesByZoom(foodPlaces, currentZoom);
     }
-  }, [foodPlaces, currentZoom]);
+  }, [currentZoom, foodPlaces, filterPlacesByZoom]);
 
   // Filter food places when filters change
   useEffect(() => {
@@ -1187,9 +1101,9 @@ export default function FoodMapPage() {
           <div className="mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
             <p className="text-sm text-purple-700">
               <strong>🔍 Smart Zoom Filtering:</strong> 
-              <br />• <strong>Zoomed Out (≤12):</strong> Shows max 10 well-known chains and highly-rated places (4.2+ stars)
-              <br />• <strong>Medium Zoom (13-15):</strong> Shows max 20 places with 3.8+ star ratings
-              <br />• <strong>Zoomed In (16+):</strong> Shows all available food places (no limit)
+              <br />• <strong>Normal View (≤13):</strong> Shows 5 most popular food places (well-known chains & highest rated)
+              <br />• <strong>Slightly Zoomed (14-16):</strong> Shows 10 top-rated places
+              <br />• <strong>Max Zoom (17+):</strong> Shows 20 top-rated places
             </p>
           </div>
         </div>
@@ -1303,34 +1217,16 @@ export default function FoodMapPage() {
         <div className="mt-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-900">
-              🍴 Food Places {loadingPlaces ? "(loading...)" : `(${filteredPlaces.length} of ${foodPlaces.length})`}
+              🍴 Food Places {loadingPlaces ? "(loading...)" : `(${foodPlaces.length})`}
             </h2>
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              {userLocation && (
-                <p>📍 Showing places near your location</p>
-              )}
-              <div className="flex items-center gap-2">
-                <span>🔍 Zoom Level: {currentZoom}</span>
-                {currentZoom <= 12 && (
-                  <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
-                    Well-known places only
-                  </span>
-                )}
-                {currentZoom > 12 && currentZoom <= 15 && (
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                    Highly rated places
-                  </span>
-                )}
-                {currentZoom > 15 && (
-                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                    All places
-                  </span>
-                )}
-              </div>
-            </div>
+            {userLocation && (
+              <p className="text-sm text-gray-500">
+                📍 Showing places near your location
+              </p>
+            )}
           </div>
           
-          {filteredPlaces.length === 0 && !loadingPlaces && (
+          {foodPlaces.length === 0 && !loadingPlaces && (
             <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
               <div className="text-6xl mb-4">🍽️</div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No food places found</h3>
@@ -1339,7 +1235,7 @@ export default function FoodMapPage() {
           )}
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredPlaces.map((place) => (
+            {foodPlaces.map((place) => (
               <div 
                 key={place.id} 
                 className={`bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer ${

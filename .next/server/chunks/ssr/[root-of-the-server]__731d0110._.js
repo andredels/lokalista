@@ -26,6 +26,7 @@ module.exports = mod;
 "[project]/lib/supabase/fetchInterceptor.ts [app-ssr] (ecmascript)", ((__turbopack_context__, module, exports) => {
 
 // Global fetch interceptor to prevent Supabase requests when not configured
+// Also intercepts console errors to suppress "Failed to fetch" errors from Supabase
 if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
 ;
 }),
@@ -182,6 +183,101 @@ const createMockClient = ()=>{
     };
     return mockClient;
 };
+// Wrapper to catch network errors from Supabase auth methods
+function wrapAuthMethods(client) {
+    if (!client || !client.auth) return client;
+    const originalSignIn = client.auth.signInWithPassword;
+    const originalSignUp = client.auth.signUp;
+    const originalGetSession = client.auth.getSession;
+    const originalGetUser = client.auth.getUser;
+    // Wrap signInWithPassword to catch network errors
+    if (originalSignIn) {
+        client.auth.signInWithPassword = async (...args)=>{
+            try {
+                return await originalSignIn.apply(client.auth, args);
+            } catch (error) {
+                const errorMessage = error?.message || String(error);
+                if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError") || errorMessage.includes("ERR_NAME_NOT_RESOLVED")) {
+                    return {
+                        data: {
+                            user: null,
+                            session: null
+                        },
+                        error: {
+                            message: "Unable to connect to the authentication service. Please check your internet connection and try again. If the problem persists, the service may be temporarily unavailable."
+                        }
+                    };
+                }
+                throw error;
+            }
+        };
+    }
+    // Wrap signUp to catch network errors
+    if (originalSignUp) {
+        client.auth.signUp = async (...args)=>{
+            try {
+                return await originalSignUp.apply(client.auth, args);
+            } catch (error) {
+                const errorMessage = error?.message || String(error);
+                if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError") || errorMessage.includes("ERR_NAME_NOT_RESOLVED")) {
+                    return {
+                        data: {
+                            user: null,
+                            session: null
+                        },
+                        error: {
+                            message: "Unable to connect to the authentication service. Please check your internet connection and try again. If the problem persists, the service may be temporarily unavailable."
+                        }
+                    };
+                }
+                throw error;
+            }
+        };
+    }
+    // Wrap getSession to catch network errors
+    if (originalGetSession) {
+        client.auth.getSession = async (...args)=>{
+            try {
+                return await originalGetSession.apply(client.auth, args);
+            } catch (error) {
+                const errorMessage = error?.message || String(error);
+                if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError") || errorMessage.includes("ERR_NAME_NOT_RESOLVED")) {
+                    return {
+                        data: {
+                            session: null
+                        },
+                        error: {
+                            message: "Unable to connect to the authentication service."
+                        }
+                    };
+                }
+                throw error;
+            }
+        };
+    }
+    // Wrap getUser to catch network errors
+    if (originalGetUser) {
+        client.auth.getUser = async (...args)=>{
+            try {
+                return await originalGetUser.apply(client.auth, args);
+            } catch (error) {
+                const errorMessage = error?.message || String(error);
+                if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError") || errorMessage.includes("ERR_NAME_NOT_RESOLVED")) {
+                    return {
+                        data: {
+                            user: null
+                        },
+                        error: {
+                            message: "Unable to connect to the authentication service."
+                        }
+                    };
+                }
+                throw error;
+            }
+        };
+    }
+    return client;
+}
 function createClient() {
     // If client is already created, return it
     if (cachedClient) {
@@ -193,7 +289,9 @@ function createClient() {
         return cachedClient;
     }
     try {
-        cachedClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
+        const client = createBrowserClient(supabaseUrl, supabaseAnonKey);
+        // Wrap auth methods to catch network errors
+        cachedClient = wrapAuthMethods(client);
         return cachedClient;
     } catch (error) {
         console.warn("Failed to create Supabase client:", error);

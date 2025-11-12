@@ -2,15 +2,61 @@
 "[project]/lib/supabase/fetchInterceptor.ts [app-client] (ecmascript)", ((__turbopack_context__, module, exports) => {
 
 // Global fetch interceptor to prevent Supabase requests when not configured
+// Also intercepts console errors to suppress "Failed to fetch" errors from Supabase
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = /*#__PURE__*/ __turbopack_context__.i("[project]/node_modules/next/dist/build/polyfills/process.js [app-client] (ecmascript)");
 if ("TURBOPACK compile-time truthy", 1) {
     const originalFetch = window.fetch;
     const supabaseUrl = ("TURBOPACK compile-time value", "https://yrqtlbuuhxrghoorjwyo.supabase.co") || "https://yrqtlbuuhxrghoorjwyo.supabase.co";
     const supabaseAnonKey = ("TURBOPACK compile-time value", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlycXRsYnV1aHhyZ2hvb3Jqd3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4NjY5NjcsImV4cCI6MjA3MzQ0Mjk2N30.PYfMtnwbuHUpEfEDUgzsAE6hnsJHt2q3qMOt8xC9DQ8") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlycXRsYnV1aHhyZ2hvb3Jqd3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4NjY5NjcsImV4cCI6MjA3MzQ0Mjk2N30.PYfMtnwbuHUpEfEDUgzsAE6hnsJHt2q3qMOt8xC9DQ8";
     const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && supabaseUrl !== "https://placeholder.supabase.co";
-    // Only intercept fetch if Supabase is not properly configured
-    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-    ;
+    // Intercept console.error to suppress Supabase-related "Failed to fetch" errors
+    const originalConsoleError = console.error;
+    console.error = function() {
+        for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++){
+            args[_key] = arguments[_key];
+        }
+        const errorMessage = args.join(" ");
+        // Suppress "Failed to fetch" errors that are related to Supabase
+        if (errorMessage.includes("Failed to fetch") && (errorMessage.includes("supabase") || errorMessage.includes("yrqtlbuuhxrghoorjwyo") || errorMessage.includes("signInWithPassword") || errorMessage.includes("SupabaseAuthClient"))) {
+            // Silently suppress these errors - they're handled gracefully in the UI
+            return;
+        }
+        // For all other errors, log them normally
+        originalConsoleError.apply(console, args);
+    };
+    // Wrap fetch to catch and handle Supabase network errors gracefully
+    window.fetch = function() {
+        for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++){
+            args[_key] = arguments[_key];
+        }
+        var _args_;
+        const url = ((_args_ = args[0]) === null || _args_ === void 0 ? void 0 : _args_.toString()) || "";
+        // If Supabase is not configured, block requests
+        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+        ;
+        // For Supabase requests, catch network errors and return a graceful response
+        if (url.includes("supabase.co") || url.includes("yrqtlbuuhxrghoorjwyo")) {
+            return originalFetch.apply(window, args).catch((error)=>{
+                var _error_message, _error_message1;
+                // If fetch fails (network error), return a response that Supabase can handle
+                if (((_error_message = error.message) === null || _error_message === void 0 ? void 0 : _error_message.includes("Failed to fetch")) || ((_error_message1 = error.message) === null || _error_message1 === void 0 ? void 0 : _error_message1.includes("NetworkError"))) {
+                    return new Response(JSON.stringify({
+                        error: {
+                            message: "Unable to connect to the authentication service. Please check your internet connection and try again."
+                        }
+                    }), {
+                        status: 500,
+                        statusText: "Internal Server Error",
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    });
+                }
+                throw error;
+            });
+        }
+        return originalFetch.apply(window, args);
+    };
 }
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
@@ -176,6 +222,113 @@ const createMockClient = ()=>{
     };
     return mockClient;
 };
+// Wrapper to catch network errors from Supabase auth methods
+function wrapAuthMethods(client) {
+    if (!client || !client.auth) return client;
+    const originalSignIn = client.auth.signInWithPassword;
+    const originalSignUp = client.auth.signUp;
+    const originalGetSession = client.auth.getSession;
+    const originalGetUser = client.auth.getUser;
+    // Wrap signInWithPassword to catch network errors
+    if (originalSignIn) {
+        client.auth.signInWithPassword = async function() {
+            for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++){
+                args[_key] = arguments[_key];
+            }
+            try {
+                return await originalSignIn.apply(client.auth, args);
+            } catch (error) {
+                const errorMessage = (error === null || error === void 0 ? void 0 : error.message) || String(error);
+                if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError") || errorMessage.includes("ERR_NAME_NOT_RESOLVED")) {
+                    return {
+                        data: {
+                            user: null,
+                            session: null
+                        },
+                        error: {
+                            message: "Unable to connect to the authentication service. Please check your internet connection and try again. If the problem persists, the service may be temporarily unavailable."
+                        }
+                    };
+                }
+                throw error;
+            }
+        };
+    }
+    // Wrap signUp to catch network errors
+    if (originalSignUp) {
+        client.auth.signUp = async function() {
+            for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++){
+                args[_key] = arguments[_key];
+            }
+            try {
+                return await originalSignUp.apply(client.auth, args);
+            } catch (error) {
+                const errorMessage = (error === null || error === void 0 ? void 0 : error.message) || String(error);
+                if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError") || errorMessage.includes("ERR_NAME_NOT_RESOLVED")) {
+                    return {
+                        data: {
+                            user: null,
+                            session: null
+                        },
+                        error: {
+                            message: "Unable to connect to the authentication service. Please check your internet connection and try again. If the problem persists, the service may be temporarily unavailable."
+                        }
+                    };
+                }
+                throw error;
+            }
+        };
+    }
+    // Wrap getSession to catch network errors
+    if (originalGetSession) {
+        client.auth.getSession = async function() {
+            for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++){
+                args[_key] = arguments[_key];
+            }
+            try {
+                return await originalGetSession.apply(client.auth, args);
+            } catch (error) {
+                const errorMessage = (error === null || error === void 0 ? void 0 : error.message) || String(error);
+                if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError") || errorMessage.includes("ERR_NAME_NOT_RESOLVED")) {
+                    return {
+                        data: {
+                            session: null
+                        },
+                        error: {
+                            message: "Unable to connect to the authentication service."
+                        }
+                    };
+                }
+                throw error;
+            }
+        };
+    }
+    // Wrap getUser to catch network errors
+    if (originalGetUser) {
+        client.auth.getUser = async function() {
+            for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++){
+                args[_key] = arguments[_key];
+            }
+            try {
+                return await originalGetUser.apply(client.auth, args);
+            } catch (error) {
+                const errorMessage = (error === null || error === void 0 ? void 0 : error.message) || String(error);
+                if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError") || errorMessage.includes("ERR_NAME_NOT_RESOLVED")) {
+                    return {
+                        data: {
+                            user: null
+                        },
+                        error: {
+                            message: "Unable to connect to the authentication service."
+                        }
+                    };
+                }
+                throw error;
+            }
+        };
+    }
+    return client;
+}
 function createClient() {
     // If client is already created, return it
     if (cachedClient) {
@@ -187,7 +340,9 @@ function createClient() {
         return cachedClient;
     }
     try {
-        cachedClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
+        const client = createBrowserClient(supabaseUrl, supabaseAnonKey);
+        // Wrap auth methods to catch network errors
+        cachedClient = wrapAuthMethods(client);
         return cachedClient;
     } catch (error) {
         console.warn("Failed to create Supabase client:", error);

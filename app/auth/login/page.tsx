@@ -15,14 +15,6 @@ export default function LoginPage() {
 
   // Check if user is already logged in
   useEffect(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === "https://placeholder.supabase.co") {
-      setLoading(false);
-      return;
-    }
-    
     const supabase = createClient();
     
     const checkSession = async () => {
@@ -48,7 +40,7 @@ export default function LoginPage() {
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         router.push("/dashboard");
       } else {
@@ -81,14 +73,6 @@ export default function LoginPage() {
     setErrors(e);
     if (Object.keys(e).length !== 0) return;
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === "https://placeholder.supabase.co") {
-      setMessage("Authentication is currently unavailable. The database service is temporarily offline. Please try again later or contact support.");
-      return;
-    }
-
     setSubmitting(true);
     setMessage(null);
     try {
@@ -99,8 +83,6 @@ export default function LoginPage() {
         return;
       }
       router.push("/dashboard");
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setSubmitting(false);
     }

@@ -36,69 +36,69 @@ type LayoutConfig<Route extends LayoutRoutes = LayoutRoutes> = {
 }
 
 
-// Validate ../app/auth/login/page.tsx
+// Validate ../../app/auth/login/page.tsx
 {
-  const handler = {} as typeof import("../app/auth/login/page.js")
+  const handler = {} as typeof import("../../app/auth/login/page.js")
   handler satisfies AppPageConfig<"/auth/login">
 }
 
-// Validate ../app/auth/page.tsx
+// Validate ../../app/auth/page.tsx
 {
-  const handler = {} as typeof import("../app/auth/page.js")
+  const handler = {} as typeof import("../../app/auth/page.js")
   handler satisfies AppPageConfig<"/auth">
 }
 
-// Validate ../app/auth/signup/page.tsx
+// Validate ../../app/auth/signup/page.tsx
 {
-  const handler = {} as typeof import("../app/auth/signup/page.js")
+  const handler = {} as typeof import("../../app/auth/signup/page.js")
   handler satisfies AppPageConfig<"/auth/signup">
 }
 
-// Validate ../app/community/page.tsx
+// Validate ../../app/community/page.tsx
 {
-  const handler = {} as typeof import("../app/community/page.js")
+  const handler = {} as typeof import("../../app/community/page.js")
   handler satisfies AppPageConfig<"/community">
 }
 
-// Validate ../app/dashboard/page.tsx
+// Validate ../../app/dashboard/page.tsx
 {
-  const handler = {} as typeof import("../app/dashboard/page.js")
+  const handler = {} as typeof import("../../app/dashboard/page.js")
   handler satisfies AppPageConfig<"/dashboard">
 }
 
-// Validate ../app/feed/page.tsx
+// Validate ../../app/feed/page.tsx
 {
-  const handler = {} as typeof import("../app/feed/page.js")
+  const handler = {} as typeof import("../../app/feed/page.js")
   handler satisfies AppPageConfig<"/feed">
 }
 
-// Validate ../app/how-it-works/page.tsx
+// Validate ../../app/how-it-works/page.tsx
 {
-  const handler = {} as typeof import("../app/how-it-works/page.js")
+  const handler = {} as typeof import("../../app/how-it-works/page.js")
   handler satisfies AppPageConfig<"/how-it-works">
 }
 
-// Validate ../app/journey/page.tsx
+// Validate ../../app/journey/page.tsx
 {
-  const handler = {} as typeof import("../app/journey/page.js")
+  const handler = {} as typeof import("../../app/journey/page.js")
   handler satisfies AppPageConfig<"/journey">
 }
 
-// Validate ../app/map/page.tsx
+// Validate ../../app/map/page.tsx
 {
-  const handler = {} as typeof import("../app/map/page.js")
+  const handler = {} as typeof import("../../app/map/page.js")
   handler satisfies AppPageConfig<"/map">
 }
 
-// Validate ../app/page.tsx
+// Validate ../../app/page.tsx
 {
-  const handler = {} as typeof import("../app/page.js")
+  const handler = {} as typeof import("../../app/page.js")
   handler satisfies AppPageConfig<"/">
 }
 
-// Validate ../app/profile/edit/page.tsx
+// Validate ../../app/profile/edit/page.tsx
 {
-  const handler = {} as typeof import("../app/profile/edit/page.js")
+  const handler = {} as typeof import("../../app/profile/edit/page.js")
   handler satisfies AppPageConfig<"/profile/edit">
 }
 
@@ -108,8 +108,8 @@ type LayoutConfig<Route extends LayoutRoutes = LayoutRoutes> = {
 
 
 
-// Validate ../app/layout.tsx
+// Validate ../../app/layout.tsx
 {
-  const handler = {} as typeof import("../app/layout.js")
+  const handler = {} as typeof import("../../app/layout.js")
   handler satisfies LayoutConfig<"/">
 }
