@@ -248,9 +248,9 @@ export default function AIAssistantPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <div className="ai-assistant-bg">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="bg-ai-surface border-b border-ai shadow-ai">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
@@ -267,7 +267,7 @@ export default function AIAssistantPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        <div className="bg-ai-surface rounded-2xl shadow-ai border border-ai overflow-hidden backdrop-blur">
           {/* Messages Container */}
           <div className="h-[600px] overflow-y-auto p-6 space-y-4">
             {messages.map((message) => (
@@ -302,7 +302,7 @@ export default function AIAssistantPage() {
                     {message.restaurants && message.restaurants.length > 0 && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {message.restaurants.map((restaurant) => (
-                          <div key={restaurant.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                          <div key={restaurant.id} className="bg-ai-card border border-ai rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
                             {/* Image */}
                             <div className="aspect-video overflow-hidden bg-gray-100">
                               <img 
@@ -393,14 +393,14 @@ export default function AIAssistantPage() {
 
           {/* Quick Actions */}
           {locationReady && (
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div className="px-6 py-4 bg-ai-muted border-t border-ai">
               <p className="text-sm text-gray-600 mb-3">Quick actions:</p>
               <div className="flex flex-wrap gap-2">
                 {quickActions.map((action, index) => (
                   <button
                     key={index}
                     onClick={() => setInputMessage(action)}
-                    className="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+                    className="px-3 py-1.5 text-xs bg-ai-card border border-ai rounded-full hover:bg-muted transition-colors"
                   >
                     {action}
                   </button>
@@ -410,7 +410,7 @@ export default function AIAssistantPage() {
           )}
 
           {/* Input Area */}
-          <div className="p-6 bg-white border-t border-gray-200">
+          <div className="p-6 bg-ai-surface border-t border-ai">
             {!locationReady ? (
               <div className="flex items-center justify-center gap-3 py-4">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-500"></div>
@@ -419,15 +419,15 @@ export default function AIAssistantPage() {
             ) : (
               <>
                 {locationError && (
-                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800">
+                  <div className="mb-4 p-3 bg-yellow-50/80 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-100">
                       ⚠️ Location permission denied. Showing results for Manila area. Allow location access for better recommendations.
                     </p>
                   </div>
                 )}
                 {userLocation && !locationError && (
-                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-800">
+                  <div className="mb-4 p-3 bg-green-50/80 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800 dark:text-green-100">
                       ✓ Location detected! Finding places near you.
                     </p>
                   </div>
@@ -466,7 +466,7 @@ export default function AIAssistantPage() {
 
         {/* Features Section */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+          <div className="bg-ai-card p-6 rounded-xl shadow-lg border border-ai">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -474,27 +474,27 @@ export default function AIAssistantPage() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Location-Based</h3>
-            <p className="text-gray-600 text-sm">Find restaurants and cafes near your current location with precise recommendations.</p>
+            <p className="text-ai-muted text-sm">Find restaurants and cafes near your current location with precise recommendations.</p>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+          <div className="bg-ai-card p-6 rounded-xl shadow-lg border border-ai">
             <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Smart Filtering</h3>
-            <p className="text-gray-600 text-sm">Filter by cuisine, price range, features, and preferences to find exactly what you want.</p>
+            <p className="text-ai-muted text-sm">Filter by cuisine, price range, features, and preferences to find exactly what you want.</p>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+          <div className="bg-ai-card p-6 rounded-xl shadow-lg border border-ai">
             <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Personalized</h3>
-            <p className="text-gray-600 text-sm">Get recommendations tailored to your preferences, budget, and dining preferences.</p>
+            <p className="text-ai-muted text-sm">Get recommendations tailored to your preferences, budget, and dining preferences.</p>
           </div>
           </div>
       </div>

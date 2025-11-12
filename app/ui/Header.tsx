@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/browserClient";
 import { usePathname } from "next/navigation";
 
@@ -13,7 +13,55 @@ export default function Header() {
   const [profile, setProfile] = useState<{ first_name?: string; avatar_url?: string } | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const applyTheme = useCallback((value: "light" | "dark") => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.dataset.theme = value;
+    try {
+      root.style.colorScheme = value;
+      localStorage.setItem("lokalista-theme", value);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const stored = (() => {
+      try {
+        return localStorage.getItem("lokalista-theme");
+      } catch {
+        return null;
+      }
+    })();
+
+    if (stored === "dark" || stored === "light") {
+      setTheme(stored);
+      applyTheme(stored);
+    } else {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const initial = prefersDark ? "dark" : "light";
+      setTheme(initial);
+      applyTheme(initial);
+    }
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const listener = (event: MediaQueryListEvent) => {
+      const next = event.matches ? "dark" : "light";
+      setTheme(next);
+      applyTheme(next);
+    };
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, [applyTheme]);
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme, applyTheme]);
 
   useEffect(() => {
     function onScroll() {
@@ -133,6 +181,10 @@ export default function Header() {
     window.location.href = "/";
   }
 
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  }, []);
+
   return (
     <header
       className={`sticky top-0 z-50 border-b border-border/60 backdrop-blur supports-[backdrop-filter]:bg-background/70 ${
@@ -246,6 +298,31 @@ export default function Header() {
                   <Link href="/account/settings" className="block px-3 py-2 rounded hover:bg-muted" role="menuitem" onClick={() => setMenuOpen(false)}>
                     Account Settings
                   </Link>
+                  <div className="px-3 py-2 rounded hover:bg-muted flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="font-medium">Dark Mode</span>
+                      <span className="text-xs text-muted">{theme === "dark" ? "On" : "Off"}</span>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={theme === "dark"}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleTheme();
+                      }}
+                      className={`w-12 h-6 rounded-full transition-colors relative ${
+                        theme === "dark" ? "bg-fuchsia-500" : "bg-gray-300"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-[3px] left-[3px] h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                          theme === "dark" ? "translate-x-6" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
                   <button className="w-full text-left px-3 py-2 rounded hover:bg-muted" role="menuitem" onClick={() => { setMenuOpen(false); handleSignOut(); }}>
                     Sign out
                   </button>

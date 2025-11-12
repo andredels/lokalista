@@ -183,12 +183,9 @@ function EditProfilePage() {
     };
     if (loading) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "min-h-screen flex items-center justify-center",
-            style: {
-                backgroundColor: "#eadbfd"
-            },
+            className: "ai-assistant-bg flex items-center justify-center",
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "text-center",
+                className: "text-center bg-ai-card border border-ai rounded-2xl px-6 py-8 shadow-ai",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "animate-spin rounded-full h-8 w-8 border-b-2 border-[#8c52ff] mx-auto mb-4"
@@ -198,7 +195,7 @@ function EditProfilePage() {
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-gray-600",
+                        className: "text-ai-muted",
                         children: "Loading profile..."
                     }, void 0, false, {
                         fileName: "[project]/app/profile/edit/page.tsx",
@@ -219,15 +216,12 @@ function EditProfilePage() {
     }
     if (!profile) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "min-h-screen flex items-center justify-center",
-            style: {
-                backgroundColor: "#eadbfd"
-            },
+            className: "ai-assistant-bg flex items-center justify-center",
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "text-center",
+                className: "text-center bg-ai-card border border-ai rounded-2xl px-6 py-8 shadow-ai space-y-4",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-red-600 mb-4",
+                        className: "text-red-400",
                         children: "Failed to load profile"
                     }, void 0, false, {
                         fileName: "[project]/app/profile/edit/page.tsx",
@@ -236,7 +230,7 @@ function EditProfilePage() {
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                         onClick: ()=>router.push('/dashboard'),
-                        className: "px-4 py-2 bg-[#8c52ff] text-white rounded-md hover:opacity-90",
+                        className: "px-4 py-2 bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white rounded-md hover:opacity-90 transition",
                         children: "Back to Dashboard"
                     }, void 0, false, {
                         fileName: "[project]/app/profile/edit/page.tsx",
@@ -256,14 +250,11 @@ function EditProfilePage() {
         }, this);
     }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "min-h-screen",
-        style: {
-            backgroundColor: "#eadbfd"
-        },
+        className: "ai-assistant-bg",
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "container py-8",
+            className: "container py-10",
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "max-w-2xl mx-auto",
+                className: "max-w-2xl mx-auto bg-ai-card border border-ai shadow-ai rounded-2xl p-6 md:p-8 backdrop-blur",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "text-center mb-8",
@@ -351,13 +342,12 @@ function EditProfilePage() {
                         className: "space-y-6",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "p-6 md:p-7 rounded-xl border border-border/60 bg-background shadow-sm",
+                                className: "p-6 md:p-7 rounded-xl border border-ai bg-ai-surface shadow-ai space-y-6",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "mb-6",
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                className: "block text-sm font-medium mb-3",
+                                                className: "block text-sm font-medium mb-3 text-ai-muted",
                                                 children: "Profile Picture"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/profile/edit/page.tsx",
@@ -370,7 +360,7 @@ function EditProfilePage() {
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         className: "relative",
                                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden",
+                                                            className: "w-20 h-20 rounded-full bg-ai-muted flex items-center justify-center overflow-hidden border border-ai",
                                                             children: imagePreview ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
                                                                 src: imagePreview,
                                                                 alt: "Profile",
@@ -418,7 +408,7 @@ function EditProfilePage() {
                                                                     return (_fileInputRef_current = fileInputRef.current) === null || _fileInputRef_current === void 0 ? void 0 : _fileInputRef_current.click();
                                                                 },
                                                                 disabled: saving,
-                                                                className: "px-4 py-2 bg-[#8c52ff] text-white rounded-md hover:opacity-90 disabled:opacity-60 text-sm",
+                                                                className: "px-4 py-2 bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white rounded-md hover:opacity-90 disabled:opacity-60 text-sm transition",
                                                                 children: saving ? 'Uploading...' : 'Change Photo'
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/profile/edit/page.tsx",
@@ -426,7 +416,7 @@ function EditProfilePage() {
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                                className: "text-xs text-gray-500 mt-1",
+                                                                className: "text-xs text-ai-muted mt-1",
                                                                 children: "JPG, PNG up to 5MB"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/profile/edit/page.tsx",
@@ -476,7 +466,7 @@ function EditProfilePage() {
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                        className: "block text-sm font-medium mb-2",
+                                                        className: "block text-sm font-medium mb-2 text-ai-muted",
                                                         htmlFor: "email",
                                                         children: "Email"
                                                     }, void 0, false, {
@@ -489,14 +479,14 @@ function EditProfilePage() {
                                                         type: "email",
                                                         value: profile.email,
                                                         disabled: true,
-                                                        className: "w-full h-11 px-3 rounded-md border border-border/60 bg-gray-50 text-gray-500"
+                                                        className: "w-full h-11 px-3 rounded-md border border-ai bg-ai-muted text-ai-muted"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/profile/edit/page.tsx",
                                                         lineNumber: 304,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-xs text-gray-500 mt-1",
+                                                        className: "text-xs text-ai-muted mt-1",
                                                         children: "Email cannot be changed"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/profile/edit/page.tsx",
@@ -515,7 +505,7 @@ function EditProfilePage() {
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                className: "block text-sm font-medium mb-2",
+                                                                className: "block text-sm font-medium mb-2 text-ai-muted",
                                                                 htmlFor: "first_name",
                                                                 children: "First Name"
                                                             }, void 0, false, {
@@ -529,7 +519,7 @@ function EditProfilePage() {
                                                                 value: profile.first_name || '',
                                                                 onChange: (e)=>handleInputChange('first_name', e.target.value),
                                                                 placeholder: "Enter your first name",
-                                                                className: "w-full h-11 px-3 rounded-md border border-border/60 focus-ring"
+                                                                className: "w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/profile/edit/page.tsx",
                                                                 lineNumber: 317,
@@ -552,7 +542,7 @@ function EditProfilePage() {
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                className: "block text-sm font-medium mb-2",
+                                                                className: "block text-sm font-medium mb-2 text-ai-muted",
                                                                 htmlFor: "last_name",
                                                                 children: "Last Name"
                                                             }, void 0, false, {
@@ -566,7 +556,7 @@ function EditProfilePage() {
                                                                 value: profile.last_name || '',
                                                                 onChange: (e)=>handleInputChange('last_name', e.target.value),
                                                                 placeholder: "Enter your last name",
-                                                                className: "w-full h-11 px-3 rounded-md border border-border/60 focus-ring"
+                                                                className: "w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/profile/edit/page.tsx",
                                                                 lineNumber: 330,
@@ -598,7 +588,7 @@ function EditProfilePage() {
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                className: "block text-sm font-medium mb-2",
+                                                                className: "block text-sm font-medium mb-2 text-ai-muted",
                                                                 htmlFor: "age",
                                                                 children: "Age"
                                                             }, void 0, false, {
@@ -614,7 +604,7 @@ function EditProfilePage() {
                                                                 placeholder: "Your age",
                                                                 min: "13",
                                                                 max: "120",
-                                                                className: "w-full h-11 px-3 rounded-md border border-border/60 focus-ring"
+                                                                className: "w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/profile/edit/page.tsx",
                                                                 lineNumber: 345,
@@ -637,7 +627,7 @@ function EditProfilePage() {
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                                className: "block text-sm font-medium mb-2",
+                                                                className: "block text-sm font-medium mb-2 text-ai-muted",
                                                                 htmlFor: "sex",
                                                                 children: "Gender"
                                                             }, void 0, false, {
@@ -649,7 +639,7 @@ function EditProfilePage() {
                                                                 id: "sex",
                                                                 value: profile.sex || '',
                                                                 onChange: (e)=>handleInputChange('sex', e.target.value),
-                                                                className: "w-full h-11 px-3 rounded-md border border-border/60 focus-ring",
+                                                                className: "w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground",
                                                                 children: [
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                                         value: "",
@@ -712,7 +702,7 @@ function EditProfilePage() {
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                        className: "block text-sm font-medium mb-2",
+                                                        className: "block text-sm font-medium mb-2 text-ai-muted",
                                                         htmlFor: "bio",
                                                         children: "Bio"
                                                     }, void 0, false, {
@@ -727,14 +717,14 @@ function EditProfilePage() {
                                                         placeholder: "Tell us about yourself...",
                                                         rows: 3,
                                                         maxLength: 500,
-                                                        className: "w-full px-3 py-2 rounded-md border border-border/60 focus-ring resize-none"
+                                                        className: "w-full px-3 py-2 rounded-md border border-ai focus-ring resize-none bg-transparent text-foreground"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/profile/edit/page.tsx",
                                                         lineNumber: 377,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "flex justify-between text-xs text-gray-500 mt-1",
+                                                        className: "flex justify-between text-xs text-ai-muted mt-1",
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 children: "Optional"
@@ -791,7 +781,7 @@ function EditProfilePage() {
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         type: "submit",
                                         disabled: saving,
-                                        className: "flex-1 h-11 rounded-md bg-[#8c52ff] text-white hover:opacity-90 disabled:opacity-60",
+                                        className: "flex-1 h-11 rounded-md bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white hover:opacity-90 disabled:opacity-60 transition",
                                         children: saving ? 'Saving...' : 'Save Changes'
                                     }, void 0, false, {
                                         fileName: "[project]/app/profile/edit/page.tsx",
@@ -801,7 +791,7 @@ function EditProfilePage() {
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         type: "button",
                                         onClick: ()=>router.push('/dashboard'),
-                                        className: "px-6 h-11 rounded-md border border-border/60 hover:bg-gray-50",
+                                        className: "px-6 h-11 rounded-md border border-ai hover:bg-ai-muted transition text-ai-muted",
                                         children: "Cancel"
                                     }, void 0, false, {
                                         fileName: "[project]/app/profile/edit/page.tsx",

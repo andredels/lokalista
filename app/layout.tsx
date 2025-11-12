@@ -42,11 +42,27 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const themeInitializer = `
+    (() => {
+      try {
+        const stored = localStorage.getItem('lokalista-theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored === 'dark' || stored === 'light' ? stored : (prefersDark ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+        localStorage.setItem('lokalista-theme', theme);
+      } catch (error) {
+        console.warn('Theme initialization failed:', error);
+      }
+    })();
+  `;
+
   return (
-    <html lang="en">
+    <html lang="en" data-theme="light" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
+        <script dangerouslySetInnerHTML={{ __html: themeInitializer }} />
         <div className="min-h-dvh flex flex-col">
           <ConditionalHeader />
           {children}

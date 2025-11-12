@@ -129,16 +129,8 @@ export default function CommunityPage() {
     
     setSubmitting(true);
     let imageUrl: string | null = null;
-    
-    // Add a timeout to prevent infinite loading
-    let timeoutCompleted = false;
-    const timeoutId = setTimeout(() => {
-      timeoutCompleted = true;
-      console.error("Post submission timed out");
-      setSubmitting(false);
-      alert("Post submission timed out. Please try again.");
-    }, 30000); // 30 second timeout
-    
+    console.log("Submitting post...");
+
     try {
       // Ensure user has a profile before posting (to satisfy foreign key constraint)
       const { data: profileData, error: profileError } = await supabase
@@ -172,6 +164,7 @@ export default function CommunityPage() {
       // Upload image if provided
       if (imageFile) {
         try {
+          console.log("Uploading image...");
           const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
           const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
           
@@ -198,6 +191,7 @@ export default function CommunityPage() {
       }
       
       // Insert post
+      console.log("Inserting post...");
       const { error: insertError, data: insertData } = await supabase
         .from("posts")
         .insert({ 
@@ -219,19 +213,15 @@ export default function CommunityPage() {
       setImagePreview(null);
       
       // Reload posts
+      console.log("Post created successfully. Reloading posts...");
       await loadPosts(userId);
       
     } catch (err: any) {
       console.error("Error in submitPost:", err);
-      if (!timeoutCompleted) {
-        const errorMessage = err?.message || err?.error?.message || "Failed to post. Please try again.";
-        alert(errorMessage);
-      }
+      const errorMessage = err?.message || err?.error?.message || "Failed to post. Please try again.";
+      alert(errorMessage);
     } finally {
-      clearTimeout(timeoutId);
-      if (!timeoutCompleted) {
-        setSubmitting(false);
-      }
+      setSubmitting(false);
     }
   }
 

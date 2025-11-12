@@ -7,7 +7,29 @@
   --brand-600: #0284c7;
   --muted: #f5f7fb;
   --border: #e6e8ee;
+  --assistant-gradient: linear-gradient(120deg, #f4f1ff 0%, #ffffff 45%, #ffe9f4 100%);
+  --assistant-surface: #ffffff;
+  --assistant-card: #ffffff;
+  --assistant-border: rgba(15, 23, 42, 0.08);
+  --assistant-muted: #f8fafc;
+  --assistant-text-muted: #64748b;
   color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --background: #070c1a;
+  --foreground: #f8fafc;
+  --brand: #38bdf8;
+  --brand-600: #0ea5e9;
+  --muted: #10172a;
+  --border: #1f2937;
+  --assistant-gradient: radial-gradient(circle at top, rgba(37, 99, 235, 0.3) 0%, rgba(79, 70, 229, 0.12) 30%, rgba(7, 12, 26, 0.95) 80%);
+  --assistant-surface: rgba(11, 18, 33, 0.92);
+  --assistant-card: rgba(14, 23, 42, 0.95);
+  --assistant-border: rgba(148, 163, 184, 0.18);
+  --assistant-muted: rgba(30, 41, 59, 0.6);
+  --assistant-text-muted: rgba(226, 232, 240, 0.75);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -25,6 +47,47 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+:root[data-theme="dark"] body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+:root[data-theme="dark"] .bg-white {
+  background-color: #101a2e !important;
+  color: var(--foreground);
+}
+
+:root[data-theme="dark"] .bg-gray-50 {
+  background-color: #0f172a !important;
+}
+
+:root[data-theme="dark"] .bg-gray-100 {
+  background-color: rgba(148, 163, 184, 0.12) !important;
+}
+
+:root[data-theme="dark"] .text-gray-900,
+:root[data-theme="dark"] .text-gray-800 {
+  color: #f8fafc !important;
+}
+
+:root[data-theme="dark"] .text-gray-700,
+:root[data-theme="dark"] .text-gray-600 {
+  color: #e2e8f0 !important;
+}
+
+:root[data-theme="dark"] .text-gray-500 {
+  color: rgba(226, 232, 240, 0.75) !important;
+}
+
+:root[data-theme="dark"] .border-gray-200,
+:root[data-theme="dark"] .border-gray-300 {
+  border-color: rgba(148, 163, 184, 0.4) !important;
+}
+
+:root[data-theme="dark"] .bg-muted {
+  background-color: var(--muted) !important;
 }
 
 /* Base typography refinements */
@@ -72,4 +135,36 @@ body {
 .focus-ring:focus {
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-brand) 40%, transparent);
+}
+
+.ai-assistant-bg {
+  min-height: 100vh;
+  background: var(--assistant-gradient);
+  transition: background 200ms ease;
+}
+
+.bg-ai-surface {
+  background: var(--assistant-surface) !important;
+  backdrop-filter: blur(12px);
+}
+
+.bg-ai-card {
+  background: var(--assistant-card) !important;
+  backdrop-filter: blur(10px);
+}
+
+.border-ai {
+  border-color: var(--assistant-border) !important;
+}
+
+.bg-ai-muted {
+  background: var(--assistant-muted) !important;
+}
+
+.text-ai-muted {
+  color: var(--assistant-text-muted) !important;
+}
+
+.shadow-ai {
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
 }

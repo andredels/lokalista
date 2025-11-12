@@ -208,10 +208,10 @@ export default function EditProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#eadbfd" }}>
-        <div className="text-center">
+      <div className="ai-assistant-bg flex items-center justify-center">
+        <div className="text-center bg-ai-card border border-ai rounded-2xl px-6 py-8 shadow-ai">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8c52ff] mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading profile...</p>
+          <p className="text-ai-muted">Loading profile...</p>
         </div>
       </div>
     );
@@ -219,12 +219,12 @@ export default function EditProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#eadbfd" }}>
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load profile</p>
+      <div className="ai-assistant-bg flex items-center justify-center">
+        <div className="text-center bg-ai-card border border-ai rounded-2xl px-6 py-8 shadow-ai space-y-4">
+          <p className="text-red-400">Failed to load profile</p>
           <button 
             onClick={() => router.push('/dashboard')}
-            className="px-4 py-2 bg-[#8c52ff] text-white rounded-md hover:opacity-90"
+            className="px-4 py-2 bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white rounded-md hover:opacity-90 transition"
           >
             Back to Dashboard
           </button>
@@ -235,9 +235,9 @@ export default function EditProfilePage() {
 
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#eadbfd" }}>
-      <div className="container py-8">
-        <div className="max-w-2xl mx-auto">
+    <div className="ai-assistant-bg">
+      <div className="container py-10">
+        <div className="max-w-2xl mx-auto bg-ai-card border border-ai shadow-ai rounded-2xl p-6 md:p-8 backdrop-blur">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 mb-4">
@@ -254,14 +254,14 @@ export default function EditProfilePage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="p-6 md:p-7 rounded-xl border border-border/60 bg-background shadow-sm">
+            <div className="p-6 md:p-7 rounded-xl border border-ai bg-ai-surface shadow-ai space-y-6">
               
               {/* Profile Picture Section */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-3">Profile Picture</label>
+              <div>
+                <label className="block text-sm font-medium mb-3 text-ai-muted">Profile Picture</label>
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                    <div className="w-20 h-20 rounded-full bg-ai-muted flex items-center justify-center overflow-hidden border border-ai">
                       {imagePreview ? (
                         <img 
                           src={imagePreview} 
@@ -280,11 +280,11 @@ export default function EditProfilePage() {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={saving}
-                      className="px-4 py-2 bg-[#8c52ff] text-white rounded-md hover:opacity-90 disabled:opacity-60 text-sm"
+                      className="px-4 py-2 bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white rounded-md hover:opacity-90 disabled:opacity-60 text-sm transition"
                     >
                       {saving ? 'Uploading...' : 'Change Photo'}
                     </button>
-                    <p className="text-xs text-gray-500 mt-1">JPG, PNG up to 5MB</p>
+                    <p className="text-xs text-ai-muted mt-1">JPG, PNG up to 5MB</p>
                   </div>
                 </div>
                 <input
@@ -300,40 +300,40 @@ export default function EditProfilePage() {
               {/* Basic Information */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2" htmlFor="email">Email</label>
+                  <label className="block text-sm font-medium mb-2 text-ai-muted" htmlFor="email">Email</label>
                   <input
                     id="email"
                     type="email"
                     value={profile.email}
                     disabled
-                    className="w-full h-11 px-3 rounded-md border border-border/60 bg-gray-50 text-gray-500"
+                    className="w-full h-11 px-3 rounded-md border border-ai bg-ai-muted text-ai-muted"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                  <p className="text-xs text-ai-muted mt-1">Email cannot be changed</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2" htmlFor="first_name">First Name</label>
+                    <label className="block text-sm font-medium mb-2 text-ai-muted" htmlFor="first_name">First Name</label>
                     <input
                       id="first_name"
                       type="text"
                       value={profile.first_name || ''}
                       onChange={(e) => handleInputChange('first_name', e.target.value)}
                       placeholder="Enter your first name"
-                      className="w-full h-11 px-3 rounded-md border border-border/60 focus-ring"
+                      className="w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground"
                     />
                     {errors.first_name && <div className="text-sm text-red-600 mt-1">{errors.first_name}</div>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2" htmlFor="last_name">Last Name</label>
+                    <label className="block text-sm font-medium mb-2 text-ai-muted" htmlFor="last_name">Last Name</label>
                     <input
                       id="last_name"
                       type="text"
                       value={profile.last_name || ''}
                       onChange={(e) => handleInputChange('last_name', e.target.value)}
                       placeholder="Enter your last name"
-                      className="w-full h-11 px-3 rounded-md border border-border/60 focus-ring"
+                      className="w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground"
                     />
                     {errors.last_name && <div className="text-sm text-red-600 mt-1">{errors.last_name}</div>}
                   </div>
@@ -341,7 +341,7 @@ export default function EditProfilePage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2" htmlFor="age">Age</label>
+                    <label className="block text-sm font-medium mb-2 text-ai-muted" htmlFor="age">Age</label>
                     <input
                       id="age"
                       type="number"
@@ -350,18 +350,18 @@ export default function EditProfilePage() {
                       placeholder="Your age"
                       min="13"
                       max="120"
-                      className="w-full h-11 px-3 rounded-md border border-border/60 focus-ring"
+                      className="w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground"
                     />
                     {errors.age && <div className="text-sm text-red-600 mt-1">{errors.age}</div>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2" htmlFor="sex">Gender</label>
+                    <label className="block text-sm font-medium mb-2 text-ai-muted" htmlFor="sex">Gender</label>
                     <select
                       id="sex"
                       value={profile.sex || ''}
                       onChange={(e) => handleInputChange('sex', e.target.value)}
-                      className="w-full h-11 px-3 rounded-md border border-border/60 focus-ring"
+                      className="w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground"
                     >
                       <option value="">Select gender</option>
                       <option value="male">Male</option>
@@ -373,7 +373,7 @@ export default function EditProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2" htmlFor="bio">Bio</label>
+                  <label className="block text-sm font-medium mb-2 text-ai-muted" htmlFor="bio">Bio</label>
                   <textarea
                     id="bio"
                     value={profile.bio || ''}
@@ -381,9 +381,9 @@ export default function EditProfilePage() {
                     placeholder="Tell us about yourself..."
                     rows={3}
                     maxLength={500}
-                    className="w-full px-3 py-2 rounded-md border border-border/60 focus-ring resize-none"
+                    className="w-full px-3 py-2 rounded-md border border-ai focus-ring resize-none bg-transparent text-foreground"
                   />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <div className="flex justify-between text-xs text-ai-muted mt-1">
                     <span>Optional</span>
                     <span>{(profile.bio || '').length}/500</span>
                   </div>
@@ -398,14 +398,14 @@ export default function EditProfilePage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 h-11 rounded-md bg-[#8c52ff] text-white hover:opacity-90 disabled:opacity-60"
+                className="flex-1 h-11 rounded-md bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white hover:opacity-90 disabled:opacity-60 transition"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
               <button
                 type="button"
                 onClick={() => router.push('/dashboard')}
-                className="px-6 h-11 rounded-md border border-border/60 hover:bg-gray-50"
+                className="px-6 h-11 rounded-md border border-ai hover:bg-ai-muted transition text-ai-muted"
               >
                 Cancel
               </button>
