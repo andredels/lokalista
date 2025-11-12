@@ -1,7 +1,7 @@
 "use client";
 
 // Clone of journey page but with /community redirects
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/browserClient";
 import Modal from "@/app/ui/Modal";
 
@@ -48,6 +48,7 @@ export default function CommunityPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deletingPost, setDeletingPost] = useState<string | null>(null);
   const [deletingComment, setDeletingComment] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -195,7 +196,7 @@ export default function CommunityPage() {
       const { error: insertError, data: insertData } = await supabase
         .from("posts")
         .insert({ 
-          content: content.trim() || null, 
+          content: content.trim() || "", // Use empty string instead of null to satisfy NOT NULL constraint
           image_url: imageUrl, 
           user_id: userId 
         })
@@ -204,13 +205,26 @@ export default function CommunityPage() {
       
       if (insertError) {
         console.error("Insert error:", insertError);
-        throw new Error(`Failed to create post: ${insertError.message}`);
+        // Better error logging
+        const errorDetails = insertError.details || insertError.hint || insertError.message || JSON.stringify(insertError);
+        throw new Error(`Failed to create post: ${errorDetails}`);
       }
       
       // Success - clear form and reload posts
       setContent("");
+      
+      // Revoke object URL to prevent memory leaks
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+      
       setImageFile(null);
       setImagePreview(null);
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       
       // Reload posts
       console.log("Post created successfully. Reloading posts...");
@@ -220,7 +234,15 @@ export default function CommunityPage() {
       console.error("Error in submitPost:", err);
       const errorMessage = err?.message || err?.error?.message || "Failed to post. Please try again.";
       alert(errorMessage);
+      
+      // Don't clear form on error - let user retry with same content/image
+      // But still revoke object URL if there was an upload attempt
+      if (imagePreview && imageUrl) {
+        // Only revoke if we successfully uploaded but failed to insert
+        // Otherwise keep the preview so user can retry
+      }
     } finally {
+      // Always reset submitting state
       setSubmitting(false);
     }
   }
@@ -672,9 +694,21 @@ export default function CommunityPage() {
               return;
             }
             
-            // Set the image file and preview
+            // Revoke old object URL to prevent memory leaks
+            setImagePreview((prev) => {
+              if (prev) {
+                URL.revokeObjectURL(prev);
+              }
+              return URL.createObjectURL(file);
+            });
+            
+            // Set the image file
             setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
+            
+            // Reset file input if it exists
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
           }
           break;
         }
@@ -689,10 +723,19 @@ export default function CommunityPage() {
     };
   }, [userId, submitting]);
 
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container max-w-7xl py-6">
-        <h1 className="text-3xl font-bold mb-6">Community</h1>
+        <h1 className="text-3xl font-bold mb-6 text-gray-900">Community</h1>
 
         {/* Composer */}
         <form onSubmit={submitPost} className="bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
@@ -700,7 +743,7 @@ export default function CommunityPage() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={userId ? "Share something with the community... (You can paste an image here!)" : "Sign in to post"}
-            className="w-full resize-none outline-none min-h-[90px]"
+            className="w-full resize-none outline-none min-h-[90px] bg-transparent text-gray-900 placeholder:text-gray-500"
             disabled={!userId || submitting}
             onPaste={(e) => {
               // Let the global paste handler handle images
@@ -724,17 +767,24 @@ export default function CommunityPage() {
           <div className="flex items-center justify-between mt-3">
             <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
                 disabled={!userId || submitting}
                 onChange={(e) => {
                   const file = e.target.files?.[0] || null;
+                  
+                  // Revoke old object URL to prevent memory leaks
+                  if (imagePreview) {
+                    URL.revokeObjectURL(imagePreview);
+                  }
+                  
                   setImageFile(file);
                   setImagePreview(file ? URL.createObjectURL(file) : null);
                 }}
               />
-              <span className="px-3 h-9 inline-flex items-center rounded-md border border-gray-300 hover:bg-gray-50">📷 Add image</span>
+              <span className="px-3 h-9 inline-flex items-center rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700">📷 Add image</span>
               {imageFile && <span className="text-gray-500 text-sm">{imageFile.name}</span>}
             </label>
             <div className="flex items-center gap-3">
@@ -742,7 +792,7 @@ export default function CommunityPage() {
               <button
                 type="submit"
                 disabled={!userId || submitting || content.length > 280 || !imageFile}
-                className="px-4 h-9 rounded-full bg-[#8c52ff] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 h-9 rounded-full bg-[#8c52ff] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
               >
                 {submitting ? "Posting..." : "Post"}
               </button>
@@ -832,7 +882,7 @@ export default function CommunityPage() {
                 <div className="md:w-1/2 flex flex-col max-h-[90vh] overflow-hidden relative">
                   {/* Author and Caption Section - Combined */}
                   <div className="p-4 border-b border-gray-200 flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium flex-shrink-0 text-gray-900">
                       {(((selectedPost.profiles?.first_name || "") + (selectedPost.profiles?.last_name ? ` ${selectedPost.profiles.last_name}` : "")) || selectedPost.user_id || "?").slice(0, 1).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -881,7 +931,7 @@ export default function CommunityPage() {
                           e.preventDefault();
                           e.stopPropagation();
                           toggleLike(selectedPost);
-                        }} 
+                        }}
                         className={`flex items-center gap-2 transition-colors cursor-pointer hover:scale-105 ${selectedPost.liked_by_me ? "text-red-500" : "text-gray-600 hover:text-red-500"}`}
                       >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill={selectedPost.liked_by_me ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
@@ -907,7 +957,7 @@ export default function CommunityPage() {
                     ) : (
                       (commentsByPost[selectedPost.id] || []).map((c) => (
                         <div key={c.id} className="flex items-start gap-3 group">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium flex-shrink-0 text-gray-900">
                             {(((c.profiles?.first_name || "") + (c.profiles?.last_name ? ` ${c.profiles.last_name}` : "")) || c.user_id || "?").slice(0, 1).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">

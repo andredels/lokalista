@@ -1,40 +1,27 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { fetchRealFoodPlaces, type FoodPlace } from "@/lib/restaurants";
-
-interface Restaurant {
-  id: string;
-  name: string;
-  category: string;
-  rating: number;
-  price_range: string;
-  location: string;
-  vibe: string;
-  menu?: string[];
-  image: string;
-  tip?: string;
-  latitude?: number;
-  longitude?: number;
-}
 
 interface Message {
   id: string;
   content?: string;
   isUser: boolean;
   timestamp: Date;
-  restaurants?: Restaurant[];
   isTyping?: boolean;
 }
 
+interface ChatHistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export default function AIAssistantPage() {
-  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatHistoryMessage[]>([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -64,133 +51,58 @@ export default function AIAssistantPage() {
             isUser: false,
             timestamp: new Date(),
           }]);
+          setChatHistory([{
+            role: "assistant",
+            content: `Hello! I'm your AI assistant for Lokalista. I've detected your location and can help you find the perfect spots nearby. What would you like to discover?`,
+          }]);
         },
         (error) => {
           console.warn('Geolocation error:', error);
           // If permission denied or error, use default location
-          setUserLocation([14.5995, 120.9842]); // Manila, Philippines
+          setUserLocation([10.3157, 123.8854]); // Cebu City, Philippines
           setLocationReady(true);
           setLocationError(true);
           
           // Add welcome message with error notice
           setMessages([{
             id: "1",
-            content: "Hello! I'm your AI assistant for Lokalista. I couldn't access your location, so I'll show results for a general area. Allow location access for better recommendations near you. What would you like to discover?",
+            content: "Hello! I'm your AI assistant for Lokalista. I couldn't access your location, so I'll focus on Cebu City for now. Allow location access for hyper-local picks around you. What would you like to discover?",
             isUser: false,
             timestamp: new Date(),
+          }]);
+          setChatHistory([{
+            role: "assistant",
+            content: "Hello! I'm your AI assistant for Lokalista. I couldn't access your location, so I'll use Cebu City as our base. What would you like to discover around here?",
           }]);
         }
       );
     } else {
       // Fallback if geolocation not supported
-      setUserLocation([14.5995, 120.9842]);
+      setUserLocation([10.3157, 123.8854]);
       setLocationReady(true);
       setLocationError(true);
       
       setMessages([{
         id: "1",
-        content: "Hello! I'm your AI assistant for Lokalista. Location services aren't available in your browser. What would you like to discover?",
+        content: "Hello! I'm your AI assistant for Lokalista. Location services aren't available, so we'll explore Cebu City by default. What would you like to discover?",
         isUser: false,
         timestamp: new Date(),
+      }]);
+      setChatHistory([{
+        role: "assistant",
+        content: "Hello! I'm your AI assistant for Lokalista. Location services aren't available, so let's explore Cebu City by default. What would you like to discover?",
       }]);
     }
   }, []);
 
-  // Convert FoodPlace to Restaurant format
-  const convertToRestaurant = (place: FoodPlace): Restaurant => {
-    // Generate vibe based on category and name
-    const getVibe = (category: string, name: string) => {
-      const lowerName = name.toLowerCase();
-      if (category.includes("Cafe") || lowerName.includes("coffee")) {
-        return lowerName.includes("cozy") || lowerName.includes("quiet") 
-          ? "Cozy and quiet, perfect for work or relaxation" 
-          : "Modern and welcoming, great for meetings";
-      }
-      if (category.includes("Fast Food")) {
-        return "Quick and convenient, family-friendly";
-      }
-      if (category.includes("Local")) {
-        return "Authentic Filipino experience";
-      }
-      return "Welcoming atmosphere, great for dining";
-    };
-
-    // Generate tip based on place
-    const getTip = (category: string, name: string) => {
-      if (category.includes("Cafe")) return "Visit during off-peak hours for a more peaceful experience.";
-      if (category.includes("Fast Food")) return "Most locations are open until late, great for quick meals.";
-      if (name.toLowerCase().includes("starbucks")) return "Peak hours are lunch and afternoon, try early morning.";
-      return "Check hours before visiting to avoid disappointment.";
-    };
-
-    return {
-      id: place.id,
-      name: place.name,
-      category: place.category,
-      rating: place.rating,
-      price_range: place.price_range,
-      location: place.description || `Near your location`,
-      vibe: getVibe(place.category, place.name),
-      image: place.image_url || "/Landing.png",
-      tip: getTip(place.category, place.name),
-      latitude: place.latitude,
-      longitude: place.longitude
-    };
-  };
-
-  const generateRecommendations = async (userInput: string): Promise<Restaurant[]> => {
-    if (!userLocation) {
-      return [];
-    }
-
-    const input = userInput.toLowerCase();
-    
-    try {
-      // Fetch real food places near user location
-      const foodPlaces = await fetchRealFoodPlaces(userLocation);
-      
-      // Filter based on keywords
-      let matches: FoodPlace[] = [];
-      
-      if (input.includes("coffee") || input.includes("cafe") || input.includes("cozy")) {
-        matches = foodPlaces.filter(p => 
-          p.category.toLowerCase().includes("cafe") || 
-          p.name.toLowerCase().includes("coffee") ||
-          p.name.toLowerCase().includes("cafe")
-        );
-      } else if (input.includes("fast food") || input.includes("quick") || input.includes("cheap")) {
-        matches = foodPlaces.filter(p => 
-          p.category.toLowerCase().includes("fast") || 
-          p.price_range === "$"
-        );
-      } else if (input.includes("budget") || input.includes("affordable")) {
-        matches = foodPlaces.filter(p => p.price_range === "$");
-      } else if (input.includes("local") || input.includes("filipino")) {
-        matches = foodPlaces.filter(p => 
-          p.category.toLowerCase().includes("local") || 
-          p.cuisine_type?.toLowerCase().includes("filipino")
-        );
-      } else {
-        matches = foodPlaces.slice(0, 3);
-      }
-      
-      // Limit to 3 results
-      const limited = matches.slice(0, 3);
-      
-      // Convert to Restaurant format
-      return limited.map(convertToRestaurant);
-    } catch (error) {
-      console.error('Error fetching recommendations:', error);
-      return [];
-    }
-  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
+    const rawInput = inputMessage.trim();
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputMessage.trim(),
+      content: rawInput,
       isUser: true,
       timestamp: new Date(),
     };
@@ -199,36 +111,63 @@ export default function AIAssistantPage() {
     setInputMessage("");
     setIsLoading(true);
 
-    // Fetch real recommendations based on location
-    try {
-      const restaurants = await generateRecommendations(inputMessage.trim());
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        content: restaurants.length > 0 
-          ? `Here are ${restaurants.length} ${inputMessage.trim().toLowerCase().includes('cozy') ? 'cozy' : inputMessage.trim().toLowerCase().includes('coffee') ? 'coffee' : ''} recommendations near your location:`
-          : "I couldn't find places matching your request. Try asking for 'coffee', 'fast food', or 'budget-friendly' options.",
-        restaurants: restaurants,
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, aiResponse]);
-    } catch (error) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: "Sorry, I couldn't fetch recommendations right now. Please try again or use the map to explore nearby places.",
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const historyWithUser: ChatHistoryMessage[] = [...chatHistory, { role: "user", content: rawInput }];
 
-  const handleViewOnMap = (restaurant: Restaurant) => {
-    if (restaurant.latitude && restaurant.longitude) {
-      router.push(`/map?lat=${restaurant.latitude}&lng=${restaurant.longitude}&restaurant=${encodeURIComponent(restaurant.name)}`);
+    const locationContext = userLocation
+      ? `Approximate user coordinates: ${userLocation[0].toFixed(3)}, ${userLocation[1].toFixed(3)}.`
+      : locationError
+        ? "User location not available. Using Cebu City, Philippines as fallback."
+        : "User location currently loading.";
+
+    const systemPrompt = [
+      "You are Lokalista, an upbeat culinary concierge focusing on Cebu City, Philippines.",
+      "Assume Cebu City context unless the user explicitly confirms they are in another city.",
+      "Whenever the user mentions a specific neighborhood or landmark (e.g., IT Park, SM Seaside), restrict recommendations to that immediate area and mention the neighborhood in your reply.",
+      "Always acknowledge the user's request, ask follow-up questions when helpful, and keep answers to about 4-6 sentences.",
+      "Provide helpful recommendations and information about restaurants, cafes, and food places in Cebu City.",
+      locationContext,
+    ].join(" ");
+
+    const payloadMessages = [
+      { role: "system", content: systemPrompt },
+      ...chatHistory.map((m) => ({ role: m.role, content: m.content })),
+      { role: "user", content: rawInput },
+    ];
+
+    let assistantContent =
+      "Sorry, I couldn't fetch a response from our AI right now. Please try again in a moment.";
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: payloadMessages }),
+      });
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null);
+        throw new Error(errorPayload?.error || `Groq API error (${response.status})`);
+      }
+
+      const data = await response.json();
+      const content = data?.choices?.[0]?.message?.content?.trim();
+      if (content) {
+        assistantContent = content;
+      }
+    } catch (error) {
+      console.error("Chat completion error:", error);
     }
+
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: assistantContent,
+      isUser: false,
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, assistantMessage]);
+    setChatHistory([...historyWithUser, { role: "assistant", content: assistantContent }]);
+    setIsLoading(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -284,7 +223,7 @@ export default function AIAssistantPage() {
                   </div>
                 )}
                 
-                {/* AI Message with Restaurant Cards */}
+                {/* AI Message */}
                 {!message.isUser && (
                   <div className="space-y-4">
                     {message.content && (
@@ -295,74 +234,6 @@ export default function AIAssistantPage() {
                             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
-                      </div>
-                    )}
-                    
-                    {/* Restaurant Cards */}
-                    {message.restaurants && message.restaurants.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {message.restaurants.map((restaurant) => (
-                          <div key={restaurant.id} className="bg-ai-card border border-ai rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                            {/* Image */}
-                            <div className="aspect-video overflow-hidden bg-gray-100">
-                              <img 
-                                src={restaurant.image} 
-                                alt={restaurant.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = "/Landing.png";
-                                }}
-                              />
-                            </div>
-                            
-                            {/* Content */}
-                            <div className="p-4 space-y-3">
-                              <div>
-                                <div className="flex items-start justify-between mb-2">
-                                  <div>
-                                    <h3 className="font-semibold text-gray-900">{restaurant.name}</h3>
-                                    <p className="text-sm text-gray-500">{restaurant.category}</p>
-                                  </div>
-                                  <div className="flex items-center gap-1 text-sm">
-                                    <span className="text-yellow-500">⭐</span>
-                                    <span className="font-medium">{restaurant.rating}</span>
-                                  </div>
-                                </div>
-                                <p className="text-xs text-gray-400">Closed</p>
-                              </div>
-                              
-                              <div className="space-y-2 text-sm text-gray-700">
-                                <div>
-                                  <span className="font-medium">📍 Location:</span> {restaurant.location}
-                                </div>
-                                <div>
-                                  <span className="font-medium">✨ Vibe:</span> {restaurant.vibe}
-                                </div>
-                                <div>
-                                  <span className="font-medium">💰 Price:</span> {restaurant.price_range}
-                                </div>
-                                {restaurant.menu && restaurant.menu.length > 0 && (
-                                  <div>
-                                    <span className="font-medium">🍽️ Menu:</span> {restaurant.menu.slice(0, 3).join(", ")}
-                                  </div>
-                                )}
-                                {restaurant.tip && (
-                                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
-                                    <span className="font-medium text-amber-800">💡 Tip:</span> {restaurant.tip}
-                                  </div>
-                                )}
-                              </div>
-                              
-                              <button
-                                onClick={() => handleViewOnMap(restaurant)}
-                                className="w-full mt-3 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
-                              >
-                                View on Map
-                              </button>
-                            </div>
-                          </div>
-                        ))}
                       </div>
                     )}
                   </div>

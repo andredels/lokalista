@@ -1,4 +1,43 @@
 
+const aiRecommendations = [
+  {
+    id: "emall-foodcourt",
+    name: "Elizabeth Mall Food Court",
+    description: "All-in-one Cebuano favorites inside E-Mall.",
+    category: "Food Court · Filipino & Asian",
+    rating: 4.1,
+    distance: "0.2 km",
+    image: "/ai/emall-foodcourt.jpg",
+  },
+  {
+    id: "larsian",
+    name: "Larsian Fuente",
+    description: "Iconic late-night barbecue stalls with unlimited rice.",
+    category: "Street BBQ · Filipino",
+    rating: 4.4,
+    distance: "0.8 km",
+    image: "/ai/larsian.jpg",
+  },
+  {
+    id: "skyline-bistro",
+    name: "Skyline Bistro",
+    description: "Skypark dining overlooking the SRP coastline.",
+    category: "Casual Dining · International",
+    rating: 4.3,
+    distance: "2.4 km",
+    image: "/ai/skyline-bistro.jpg",
+  },
+  {
+    id: "ayala-coffee",
+    name: "Coffee Bean at Terraces",
+    description: "Cozy third-wave coffee with outdoor seating.",
+    category: "Cafe · Coffee & Pastries",
+    rating: 4.5,
+    distance: "1.6 km",
+    image: "/ai/coffee-bean.jpg",
+  },
+];
+
 export default function Home() {
   return (
     <div className="font-sans">
@@ -66,6 +105,76 @@ export default function Home() {
             <div className="relative">
               <img src="/Landing2.png" alt="Lokalista landing preview" className="w-full h-auto max-w-md md:max-w-lg" />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Recommendation Strip */}
+      <section className="relative border-t border-border/60" style={{ backgroundColor: "#f3e8ff" }}>
+        <div className="pointer-events-none absolute inset-0 [mask-image:linear-gradient(to-bottom,black,transparent)]">
+          <div className="absolute -top-24 left-1/3 w-80 h-80 rounded-full bg-fuchsia-200/40 blur-3xl" />
+        </div>
+        <div className="container relative py-16 md:py-20">
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-[#8c52ff] mb-2">AI Picks Near You</p>
+              <h2 className="h2 mb-1">Curated by Lokalista</h2>
+              <p className="text-muted max-w-xl">
+                Real places surfaced by our assistant based on Cebu City favorites. Updated live as you explore.
+              </p>
+            </div>
+            <a
+              href="/feed"
+              className="h-10 px-5 rounded-full border border-[#8c52ff]/30 text-[#8c52ff] inline-flex items-center gap-2 bg-white/70 backdrop-blur hover:bg-white transition"
+            >
+              Ask the AI for more →
+            </a>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {aiRecommendations.map((place) => (
+              <article
+                key={place.id}
+                className="bg-white rounded-2xl border border-white/60 shadow-lg shadow-purple-200/25 overflow-hidden hover:-translate-y-1 transition-transform"
+              >
+                <div className="relative h-44">
+                  <img
+                    src={place.image}
+                    alt={place.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute top-3 left-3 bg-white/85 backdrop-blur px-3 py-1 rounded-full text-xs font-medium text-[#8c52ff]">
+                    AI recommended
+                  </div>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-base font-semibold text-gray-900 leading-snug">{place.name}</h3>
+                      <p className="text-xs text-gray-500 mt-1">{place.category}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm font-medium text-yellow-500">
+                      <span className="text-lg leading-none">⭐</span>
+                      <span>{place.rating.toFixed(1)}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">{place.description}</p>
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span className="inline-flex items-center gap-1">
+                      <span className="size-1.5 rounded-full bg-[#8c52ff]/70 inline-block" />
+                      {place.distance} away
+                    </span>
+                    <a
+                      href={`/map?search=${encodeURIComponent(place.name)}`}
+                      className="text-[#8c52ff] font-medium hover:underline underline-offset-4"
+                    >
+                      View on map
+                    </a>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>

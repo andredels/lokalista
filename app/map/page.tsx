@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/browserClient";
 import { fetchRealFoodPlaces, type FoodPlace } from "@/lib/restaurants";
 
+const DEFAULT_CENTER: [number, number] = [10.3157, 123.8854];
+
 // FoodPlace interface is now imported from lib/restaurants
 
 export default function FoodMapPage() {
@@ -30,9 +32,26 @@ export default function FoodMapPage() {
   const [selectedPlace, setSelectedPlace] = useState<FoodPlace | null>(null);
   const [nearbyPlaces, setNearbyPlaces] = useState<FoodPlace[]>([]);
   const [clickedLocation, setClickedLocation] = useState<[number, number] | null>(null);
+  const [lastSearchCenter, setLastSearchCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [showNearbyPlaces, setShowNearbyPlaces] = useState(false);
   const [clickMarker, setClickMarker] = useState<any>(null);
   const clickMarkersRef = useRef<any[]>([]);
+
+  const calculateDistanceKm = useCallback((a: [number, number], b: [number, number]) => {
+    const R = 6371;
+    const dLat = ((b[0] - a[0]) * Math.PI) / 180;
+    const dLon = ((b[1] - a[1]) * Math.PI) / 180;
+    const lat1 = (a[0] * Math.PI) / 180;
+    const lat2 = (b[0] * Math.PI) / 180;
+
+    const sinDLat = Math.sin(dLat / 2);
+    const sinDLon = Math.sin(dLon / 2);
+    const aCalc =
+      sinDLat * sinDLat +
+      sinDLon * sinDLon * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
+    return R * c;
+  }, []);
 
   // Initialize Leaflet map with satellite view focused on food places
   useEffect(() => {
@@ -63,7 +82,7 @@ export default function FoodMapPage() {
       if (!mapEl.current) return;
 
       // Default to Cebu City center (similar to your reference image)
-      const defaultCenter: [number, number] = [10.3157, 123.8854];
+      const defaultCenter = DEFAULT_CENTER;
       mapRef.current = L.map(mapEl.current, {
         center: defaultCenter,
         zoom: 14,
@@ -231,7 +250,7 @@ export default function FoodMapPage() {
 
       // Load initial food places around default center
       setTimeout(() => {
-        searchFoodPlaces(defaultCenter);
+        searchFoodPlaces(DEFAULT_CENTER);
       }, 1000);
 
       initializingRef.current = false;
@@ -558,108 +577,55 @@ export default function FoodMapPage() {
       );
     }
 
-    return filtered;
+    return filtered.map(place => ({
+      ...place,
+      distance: calculateDistanceKm(centerLatLng, [place.latitude, place.longitude])
+    }));
   };
 
-  // Filter food places based on zoom level
-  const filterPlacesByZoom = useCallback((places: FoodPlace[], zoom: number) => {
-    console.log(`Filtering ${places.length} places at zoom level ${zoom}`);
-    
-    let filtered: FoodPlace[];
-    
-    // Determine zoom thresholds
-    // Normal view (zoomed out): zoom <= 13
-    // Slightly zoomed: 13 < zoom <= 16
-    // Max zoom: zoom > 16
-    
-    if (zoom <= 13) {
-      // Normal view: Show only the 5 most popular food places
-      // Most popular = well-known chains OR highest rated places
-      const wellKnownChains = [
-        'jollibee', 'mcdonald', 'kfc', 'starbucks', 'chowking',
-        'pizza hut', 'subway', 'mang inasal', 'greenwich', 'tokyo tokyo',
-        'bonchon', 'goldilocks', 'red ribbon', 'yellow cab', 'coffee bean',
-        'burger king', 'wendy\'s', 'domino', 'papa john', 'shakey'
-      ];
-      
-      // Score places by popularity (well-known chains get priority, then by rating)
-      const scoredPlaces = places.map(place => {
-        const name = place.name?.toLowerCase() || '';
-        const isWellKnown = wellKnownChains.some(chain => name.includes(chain));
-        const rating = place.rating || 0;
-        
-        // Higher score = more popular
-        // Well-known chains get base score of 100, then add rating * 10
-        // Other places get score based on rating only
-        const score = isWellKnown ? 100 + (rating * 10) : rating * 10;
-        
-        return { place, score, isWellKnown, rating };
-      });
-      
-      // Sort by score (highest first) and take top 5
-      filtered = scoredPlaces
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5)
-        .map(item => item.place);
-      
-      console.log(`Normal view (zoom ${zoom}): Showing ${filtered.length} most popular places`);
-    } else if (zoom <= 16) {
-      // Slightly zoomed: Show top 10 places by rating
-      filtered = places
-        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-        .slice(0, 10);
-      
-      console.log(`Slightly zoomed (zoom ${zoom}): Showing ${filtered.length} top-rated places`);
-    } else {
-      // Max zoom: Show top 20 places by rating
-      filtered = places
-        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-        .slice(0, 20);
-      
-      console.log(`Max zoom (zoom ${zoom}): Showing ${filtered.length} top-rated places`);
-    }
-    
-    setFilteredPlaces(filtered);
-    
-    // Update markers on map
-    setTimeout(() => {
-      plotFoodMarkers(filtered);
-    }, 100);
-  }, []);
-
   async function searchFoodPlaces(centerLatLng: [number, number]) {
+    setLastSearchCenter(centerLatLng);
     setLoadingPlaces(true);
     try {
       console.log("Searching for real food places at:", centerLatLng);
       
       // Use OpenStreetMap Overpass API for real restaurant data
       const places = await fetchRealFoodPlaces(centerLatLng);
+      const placesWithDistance = places.map((place) => ({
+        ...place,
+        distance:
+          place.distance ??
+          calculateDistanceKm(centerLatLng, [
+            place.latitude,
+            place.longitude,
+          ]),
+      }));
       
-      console.log("Found", places.length, "real places");
-      setFoodPlaces(places);
+      console.log("Found", placesWithDistance.length, "real places");
+      setFoodPlaces(placesWithDistance);
       
       // Filter places based on current zoom level
       if (mapRef.current) {
         const zoom = mapRef.current.getZoom();
-        filterPlacesByZoom(places, zoom);
+        filterPlacesByZoom(placesWithDistance, zoom);
       } else {
         // Fallback if map not ready
-        filterPlacesByZoom(places, currentZoom);
+        filterPlacesByZoom(placesWithDistance, currentZoom);
       }
       
     } catch (error) {
       console.error("Error fetching food places:", error);
       // Fallback to sample data if real data fails
       console.log("Falling back to sample data");
-      const places = getSampleFoodPlaces(centerLatLng);
-      setFoodPlaces(places);
+      const fallbackPlaces = getSampleFoodPlaces(centerLatLng);
+      setFoodPlaces(fallbackPlaces);
       
       // Filter places based on current zoom level
       if (mapRef.current) {
         const zoom = mapRef.current.getZoom();
-        filterPlacesByZoom(places, zoom);
+        filterPlacesByZoom(fallbackPlaces, zoom);
       } else {
-        filterPlacesByZoom(places, currentZoom);
+        filterPlacesByZoom(fallbackPlaces, currentZoom);
       }
     } finally {
       setLoadingPlaces(false);
@@ -669,12 +635,11 @@ export default function FoodMapPage() {
   // Load initial food places only once
   const loadInitialFoodPlaces = useMemo(() => {
     return () => {
-      searchFoodPlaces(defaultCenter);
+      searchFoodPlaces(DEFAULT_CENTER);
     };
   }, []);
 
-
-  function plotFoodMarkers(places: FoodPlace[]) {
+  const plotFoodMarkers = useCallback((places: FoodPlace[]) => {
     const L = (window as any).L;
     
     // Check if Leaflet is loaded and map is ready
@@ -919,7 +884,61 @@ export default function FoodMapPage() {
       marker.addTo(mapRef.current);
       foodMarkersRef.current.push(marker);
     });
-  }
+  }, []);
+
+  const filterPlacesByZoom = useCallback(
+    (places: FoodPlace[], zoom: number) => {
+      console.log(`Filtering ${places.length} places at zoom level ${zoom}`);
+
+      const center =
+        clickedLocation ??
+        lastSearchCenter ??
+        DEFAULT_CENTER;
+
+      const placesWithDistance = places.map((place) => {
+        const distance =
+          place.distance !== undefined
+            ? place.distance
+            : calculateDistanceKm(center, [place.latitude, place.longitude]);
+        return { ...place, distance };
+      });
+
+      const sortByDistanceThenRating = (a: FoodPlace, b: FoodPlace) => {
+        const distanceA =
+          a.distance ?? calculateDistanceKm(center, [a.latitude, a.longitude]);
+        const distanceB =
+          b.distance ?? calculateDistanceKm(center, [b.latitude, b.longitude]);
+
+        if (distanceA !== distanceB) return distanceA - distanceB;
+
+        const ratingA = a.rating ?? 0;
+        const ratingB = b.rating ?? 0;
+        return ratingB - ratingA;
+      };
+
+      let limit = 12;
+      if (zoom <= 13) {
+        limit = 8;
+      } else if (zoom > 16) {
+        limit = 20;
+      }
+
+      const filtered = placesWithDistance
+        .sort(sortByDistanceThenRating)
+        .slice(0, Math.min(limit, placesWithDistance.length));
+
+      console.log(
+        `Zoom ${zoom}: showing ${filtered.length} closest places (limit ${limit})`
+      );
+
+      setFilteredPlaces(filtered);
+
+      setTimeout(() => {
+        plotFoodMarkers(filtered);
+      }, 100);
+    },
+    [calculateDistanceKm, clickedLocation, lastSearchCenter, plotFoodMarkers]
+  );
 
   async function geocodeSearch(e: React.FormEvent) {
     e.preventDefault();

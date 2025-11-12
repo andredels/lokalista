@@ -20,6 +20,7 @@ export default function Header() {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
     root.dataset.theme = value;
+    root.classList.toggle("dark", value === "dark");
     try {
       root.style.colorScheme = value;
       localStorage.setItem("lokalista-theme", value);

@@ -1,23 +1,60 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getTrendingRestaurants, type FoodPlace } from "@/lib/restaurants";
+
+// Default Cebu City center coordinates
+const CEBU_CENTER: [number, number] = [10.3157, 123.8854];
+
+// Calculate distance between two coordinates using Haversine formula
+function calculateDistanceKm(a: [number, number], b: [number, number]): number {
+  const R = 6371; // Earth radius in km
+  const dLat = ((b[0] - a[0]) * Math.PI) / 180;
+  const dLon = ((b[1] - a[1]) * Math.PI) / 180;
+  const lat1 = (a[0] * Math.PI) / 180;
+  const lat2 = (b[0] * Math.PI) / 180;
+
+  const sinDLat = Math.sin(dLat / 2);
+  const sinDLon = Math.sin(dLon / 2);
+  const aCalc =
+    sinDLat * sinDLat +
+    sinDLon * sinDLon * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
+  return R * c;
+}
 
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [trendingRestaurants, setTrendingRestaurants] = useState<FoodPlace[]>([]);
   const [loadingTrending, setLoadingTrending] = useState(true);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const router = useRouter();
   
+  // Get user location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation([position.coords.latitude, position.coords.longitude]);
+        },
+        () => {
+          // Use default Cebu City center if location access denied
+          setUserLocation(CEBU_CENTER);
+        }
+      );
+    } else {
+      setUserLocation(CEBU_CENTER);
+    }
+  }, []);
+
   // Load real trending restaurants on component mount
   useEffect(() => {
     const loadTrendingRestaurants = async () => {
       setLoadingTrending(true);
       try {
-        // Use Cebu City center coordinates as default
-        const cebuCenter: [number, number] = [10.3157, 123.8854];
-        const trending = await getTrendingRestaurants(cebuCenter);
+        const center = userLocation || CEBU_CENTER;
+        const trending = await getTrendingRestaurants(center);
         setTrendingRestaurants(trending);
       } catch (error) {
         console.error('Error loading trending restaurants:', error);
@@ -27,8 +64,10 @@ export default function DashboardPage() {
       }
     };
 
-    loadTrendingRestaurants();
-  }, []);
+    if (userLocation !== null) {
+      loadTrendingRestaurants();
+    }
+  }, [userLocation]);
   
   const handleTrendingClick = (item: FoodPlace) => {
     // Navigate to map page with real restaurant location
@@ -50,48 +89,121 @@ export default function DashboardPage() {
     return icons[category] || '🍽️';
   };
 
-  const recommendations = [
+  // Real Cebu City restaurant coordinates
+  const restaurantData = [
     {
       id: 1,
-      name: "The Mood Kitchen",
-      description: "Innovative dishes with bold flavors",
-      distance: "0.3 km",
+      name: "Jollibee Colon",
+      description: "Popular Filipino fast food chain serving crispy fried chicken and spaghetti.",
+      latitude: 10.2975,
+      longitude: 123.8994,
       status: "Open",
-      price: "$$$$",
-      rating: 4.8,
-      image: "/restaurant1.jpg"
+      price: "$",
+      rating: 4.2,
+      image: "/restaurants/jollibee.png"
     },
     {
       id: 2,
-      name: "Cozy Corner Cafe",
-      description: "Perfect spot for reading and relaxing",
-      distance: "0.7 km",
+      name: "Starbucks IT Park",
+      description: "Modern coffee shop perfect for work meetings and casual hangouts.",
+      latitude: 10.3294,
+      longitude: 123.9056,
       status: "Open",
-      price: "$$",
-      rating: 4.6,
-      image: "/cafe1.jpg"
+      price: "$$$",
+      rating: 4.5,
+      image: "/restaurants/starbucks.png"
     },
     {
       id: 3,
-      name: "Skyline Rooftop",
-      description: "Stunning city views, perfect for dates",
-      distance: "1.2 km",
-      status: "Closed",
-      price: "$$$",
-      rating: 4.9,
-      image: "/rooftop1.jpg"
+      name: "Larsian Fuente",
+      description: "Iconic late-night barbecue stalls with unlimited rice and grilled favorites.",
+      latitude: 10.3097,
+      longitude: 123.8949,
+      status: "Open",
+      price: "$$",
+      rating: 4.4,
+      image: "/restaurants/larsian.jpg"
     },
     {
       id: 4,
-      name: "Street Food Festival",
-      description: "Vibrant food festival with live music",
-      distance: "2.1 km",
+      name: "Mang Inasal Ayala",
+      description: "Filipino grilled chicken restaurant with unlimited rice and sinigang soup.",
+      latitude: 10.3157,
+      longitude: 123.8854,
+      status: "Open",
+      price: "$$",
+      rating: 4.3,
+      image: "/restaurants/manginasal1.png"
+    },
+    {
+      id: 5,
+      name: "Chowking SM City",
+      description: "Chinese-Filipino fast food known for dimsum and noodle dishes.",
+      latitude: 10.3111,
+      longitude: 123.9181,
       status: "Open",
       price: "$",
-      rating: 4.7,
-      image: "/festival1.jpg"
+      rating: 4.0,
+      image: "/restaurants/chowking.png"
+    },
+    {
+      id: 6,
+      name: "Coffee Bean & Tea Leaf",
+      description: "Premium coffee and tea specialty cafe with cozy ambiance.",
+      latitude: 10.3157,
+      longitude: 123.8854,
+      status: "Open",
+      price: "$$$",
+      rating: 4.4,
+      image: "/restaurants/coffeebean1.jpg"
     }
   ];
+
+  // Calculate distances and format recommendations (recalculate when location changes)
+  const recommendations = useMemo(() => {
+    const center = userLocation || CEBU_CENTER;
+    return restaurantData.map((restaurant) => {
+      const distanceKm = calculateDistanceKm(center, [restaurant.latitude, restaurant.longitude]);
+      const distance = distanceKm < 1 
+        ? `${(distanceKm * 1000).toFixed(0)} m` 
+        : `${distanceKm.toFixed(1)} km`;
+      
+      return {
+        ...restaurant,
+        distance,
+        distanceKm, // Keep for sorting
+      };
+    }).sort((a, b) => a.distanceKm - b.distanceKm); // Sort by distance
+  }, [userLocation]);
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const filteredRecommendations = normalizedQuery
+    ? recommendations.filter((item) =>
+        [
+          item.name,
+          item.description,
+          item.price,
+          item.status
+        ].some((value) =>
+          value.toLowerCase().includes(normalizedQuery)
+        )
+      )
+    : recommendations;
+
+  const filteredTrendingRestaurants = normalizedQuery
+    ? trendingRestaurants.filter((item) =>
+        [
+          item.name,
+          item.category ?? "",
+          item.description ?? "",
+          item.price_range ?? "",
+          item.cuisine_type ?? ""
+        ].some((value) =>
+          value.toLowerCase().includes(normalizedQuery)
+        )
+      )
+    : trendingRestaurants;
 
 
   return (
@@ -119,9 +231,26 @@ export default function DashboardPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    // Search is already live, just ensure focus stays
+                  }
+                }}
                 placeholder="Search restaurants, cafes, events..."
-                className="w-full pl-10 pr-4 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-10 pr-10 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-gray-50 rounded-r-lg transition-colors"
+                  aria-label="Clear search"
+                >
+                  <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
           
@@ -158,12 +287,25 @@ export default function DashboardPage() {
           </div>
           
           <div className="space-y-4">
-            {recommendations.map((item) => (
+            {filteredRecommendations.length === 0 ? (
+              <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300">
+                <p className="text-gray-600 font-medium mb-1">No matches found</p>
+                <p className="text-sm text-gray-400">Try another dish, place, or landmark.</p>
+              </div>
+            ) : (
+              filteredRecommendations.map((item) => (
               <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
-                <div className="relative">
-                  <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">Image</span>
-                  </div>
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/Landing.png";
+                    }}
+                  />
                   <button className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm hover:bg-gray-50">
                     <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -191,7 +333,8 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -223,8 +366,8 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))
-            ) : trendingRestaurants.length > 0 ? (
-              trendingRestaurants.map((item) => (
+            ) : filteredTrendingRestaurants.length > 0 ? (
+              filteredTrendingRestaurants.map((item) => (
               <div 
                 key={item.id} 
                 className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group transform hover:-translate-y-1"

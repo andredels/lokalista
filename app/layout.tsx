@@ -49,6 +49,7 @@ export default function RootLayout({
         const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = stored === 'dark' || stored === 'light' ? stored : (prefersDark ? 'dark' : 'light');
         document.documentElement.dataset.theme = theme;
+        document.documentElement.classList.toggle('dark', theme === 'dark');
         document.documentElement.style.colorScheme = theme;
         localStorage.setItem('lokalista-theme', theme);
       } catch (error) {

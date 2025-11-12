@@ -9,110 +9,320 @@ __turbopack_context__.s([
     "getTrendingRestaurants",
     ()=>getTrendingRestaurants
 ]);
+function getDistanceKm(a, b) {
+    const R = 6371; // Earth radius in km
+    const dLat = (b[0] - a[0]) * Math.PI / 180;
+    const dLon = (b[1] - a[1]) * Math.PI / 180;
+    const lat1 = a[0] * Math.PI / 180;
+    const lat2 = b[0] * Math.PI / 180;
+    const sinDLat = Math.sin(dLat / 2);
+    const sinDLon = Math.sin(dLon / 2);
+    const aCalc = sinDLat * sinDLat + sinDLon * sinDLon * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
+    return R * c;
+}
+// Fallback data for Cebu City when API fails
+const getCebuFallbackPlaces = (centerLatLng)=>{
+    // Popular places in Cebu City with accurate fixed coordinates
+    const basePlaces = [
+        {
+            id: 'cebu_jollibee_it_park',
+            name: 'Jollibee IT Park',
+            category: 'Fast Food',
+            rating: 4.2,
+            price_range: '$',
+            latitude: 10.330393,
+            longitude: 123.903347,
+            description: 'Skyrise 1, Cebu IT Park, Lahug',
+            cuisine_type: 'Filipino',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_starbucks_ayala',
+            name: 'Starbucks - Ayala Center Cebu',
+            category: 'Cafe',
+            rating: 4.5,
+            price_range: '$$$',
+            latitude: 10.317347,
+            longitude: 123.905759,
+            description: 'Level 3, The Terraces, Ayala Center Cebu',
+            cuisine_type: 'Coffee',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_chowking_ayala',
+            name: 'Chowking Ayala Center',
+            category: 'Fast Food',
+            rating: 4.0,
+            price_range: '$',
+            latitude: 10.316706,
+            longitude: 123.905578,
+            description: 'Ayala Center Cebu, Archbishop Reyes Ave',
+            cuisine_type: 'Filipino',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_mcdo_fuente',
+            name: "McDonald's Fuente Osmeña",
+            category: 'Fast Food',
+            rating: 4.1,
+            price_range: '$',
+            latitude: 10.310230,
+            longitude: 123.893420,
+            description: 'Fuente Osmeña Circle, Cebu City',
+            cuisine_type: 'American',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_mang_inasal_sm',
+            name: 'Mang Inasal SM City Cebu',
+            category: 'Restaurant',
+            rating: 4.3,
+            price_range: '$$',
+            latitude: 10.312200,
+            longitude: 123.915400,
+            description: 'Upper Ground Level, SM City Cebu',
+            cuisine_type: 'Filipino',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_coffee_bean_ayala',
+            name: 'Coffee Bean & Tea Leaf - Ayala Terraces',
+            category: 'Cafe',
+            rating: 4.4,
+            price_range: '$$$',
+            latitude: 10.318970,
+            longitude: 123.905900,
+            description: 'The Terraces, Ayala Center Cebu',
+            cuisine_type: 'Coffee',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_kfc_robinsons',
+            name: 'KFC Robinsons Galleria',
+            category: 'Fast Food',
+            rating: 4.0,
+            price_range: '$',
+            latitude: 10.308270,
+            longitude: 123.917700,
+            description: 'Robinsons Galleria Cebu, North Reclamation Area',
+            cuisine_type: 'American',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_casa_verde',
+            name: 'Casa Verde Ramos',
+            category: 'Restaurant',
+            rating: 4.2,
+            price_range: '$$',
+            latitude: 10.319399,
+            longitude: 123.906757,
+            description: 'Ramos St, Cebu City',
+            cuisine_type: 'Filipino',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_emall_foodcourt',
+            name: 'Elizabeth Mall Food Court',
+            category: 'Food Court',
+            rating: 4.1,
+            price_range: '$$',
+            latitude: 10.299830,
+            longitude: 123.897980,
+            description: 'E-Mall, N. Bacalso Ave, Cebu City',
+            cuisine_type: 'Mixed',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_colonnade_foodcourt',
+            name: 'Colonnade Foodcourt',
+            category: 'Food Court',
+            rating: 4.0,
+            price_range: '$$',
+            latitude: 10.300180,
+            longitude: 123.896650,
+            description: 'Colon St, Cebu City',
+            cuisine_type: 'Filipino',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_larsian_fuente',
+            name: 'Larsian BBQ Fuente',
+            category: 'Restaurant',
+            rating: 4.4,
+            price_range: '$$',
+            latitude: 10.309650,
+            longitude: 123.894900,
+            description: 'Baseline, Juana Osmeña St, Cebu City',
+            cuisine_type: 'Filipino',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_cybergate_foodstrip',
+            name: 'Robinsons Cybergate Food Strip',
+            category: 'Restaurant',
+            rating: 4.1,
+            price_range: '$$',
+            latitude: 10.309150,
+            longitude: 123.892150,
+            description: 'Don Mariano Cui St, Cebu City',
+            cuisine_type: 'Mixed',
+            is_open: true,
+            image_url: '/Landing.png'
+        },
+        {
+            id: 'cebu_sm_seaside_skyline',
+            name: 'Skyline Bistro - SM Seaside',
+            category: 'Restaurant',
+            rating: 4.3,
+            price_range: '$$$',
+            latitude: 10.293470,
+            longitude: 123.878280,
+            description: 'Skypark, SM Seaside City Cebu',
+            cuisine_type: 'International',
+            is_open: true,
+            image_url: '/Landing.png'
+        }
+    ];
+    // Calculate distance from requested center and return closest ones first
+    const placesWithDistance = basePlaces.map((place)=>{
+        const distance = getDistanceKm(centerLatLng, [
+            place.latitude,
+            place.longitude
+        ]);
+        return {
+            ...place,
+            distance
+        };
+    })// Keep only places within 12km to stay relevant to the selected area
+    .filter((place)=>place.distance === undefined || place.distance <= 12).sort((a, b)=>(a.distance || 0) - (b.distance || 0));
+    return placesWithDistance;
+};
 async function fetchRealFoodPlaces(centerLatLng) {
     const [lat, lon] = centerLatLng;
-    const radius = 1000; // 1km radius
+    const radius = 2000; // Increased to 2km radius for better coverage
     // OpenStreetMap Overpass API query for restaurants, cafes, and fast food
-    const query = '\n[out:json][timeout:15];\n(\n  node["amenity"="restaurant"](around:'.concat(radius, ",").concat(lat, ",").concat(lon, ');\n  node["amenity"="cafe"](around:').concat(radius, ",").concat(lat, ",").concat(lon, ');\n  node["amenity"="fast_food"](around:').concat(radius, ",").concat(lat, ",").concat(lon, ');\n  node["amenity"="bar"](around:').concat(radius, ",").concat(lat, ",").concat(lon, ');\n  node["amenity"="pub"](around:').concat(radius, ",").concat(lat, ",").concat(lon, ');\n  node["amenity"="food_court"](around:').concat(radius, ",").concat(lat, ",").concat(lon, ');\n  node["shop"="bakery"](around:').concat(radius, ",").concat(lat, ",").concat(lon, ');\n  node["shop"="confectionery"](around:').concat(radius, ",").concat(lat, ",").concat(lon, ");\n);\nout;\n");
-    // Create AbortController for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(()=>controller.abort(), 20000); // 20 second timeout
-    try {
-        const response = await fetch('https://overpass-api.de/api/interpreter', {
-            method: 'POST',
-            body: query,
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        if (!response.ok) {
-            // Handle 504 Gateway Timeout specifically
-            if (response.status === 504) {
-                console.warn('OpenStreetMap API timeout (504). Returning empty results.');
-                return [];
+    // Using way and relation in addition to node for better coverage
+    const query = '\n[out:json][timeout:10];\n(\n  node["amenity"~"^(restaurant|cafe|fast_food|bar|pub|food_court)$"](around:'.concat(radius, ",").concat(lat, ",").concat(lon, ');\n  way["amenity"~"^(restaurant|cafe|fast_food|bar|pub|food_court)$"](around:').concat(radius, ",").concat(lat, ",").concat(lon, ');\n  node["shop"~"^(bakery|confectionery)$"](around:').concat(radius, ",").concat(lat, ",").concat(lon, ');\n  way["shop"~"^(bakery|confectionery)$"](around:').concat(radius, ",").concat(lat, ",").concat(lon, ");\n);\nout center;\n");
+    const overpassEndpoints = [
+        'https://overpass-api.de/api/interpreter',
+        'https://overpass.kumi.systems/api/interpreter',
+        'https://overpass.openstreetmap.ru/cgi/interpreter'
+    ];
+    const tryFetch = async (endpoint)=>{
+        const controller = new AbortController();
+        const timeoutId = setTimeout(()=>controller.abort(), 15000);
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: query,
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (!response.ok) {
+                console.warn("Overpass endpoint ".concat(endpoint, " returned status ").concat(response.status, "."));
+                return null;
             }
-            throw new Error("HTTP error! status: ".concat(response.status));
-        }
-        const data = await response.json();
-        // Check if data has elements
-        if (!data || !data.elements || !Array.isArray(data.elements)) {
-            console.warn('OpenStreetMap API returned unexpected format. Returning empty results.');
-            return [];
-        }
-        // Transform OpenStreetMap data to our format
-        const places = data.elements.map((element, index)=>{
-            const tags = element.tags || {};
-            // Determine category and cuisine type
-            let category = 'Restaurant';
-            let cuisineType = 'International';
-            if (tags.amenity === 'cafe') {
-                category = 'Cafe';
-                cuisineType = 'Coffee';
-            } else if (tags.amenity === 'fast_food') {
-                category = 'Fast Food';
-                cuisineType = 'Fast Food';
-            } else if (tags.amenity === 'bar' || tags.amenity === 'pub') {
-                category = 'Bar';
-                cuisineType = 'International';
-            } else if (tags.shop === 'bakery') {
-                category = 'Bakery';
-                cuisineType = 'Bakery';
+            const data = await response.json();
+            if (!data || !data.elements || !Array.isArray(data.elements) || data.elements.length === 0) {
+                console.warn("Overpass endpoint ".concat(endpoint, " returned no places."));
+                return null;
             }
-            // Determine cuisine type from tags
-            if (tags.cuisine) {
-                cuisineType = tags.cuisine;
-            } else if (tags.brand) {
-                const brand = tags.brand.toLowerCase();
-                if (brand.includes('jollibee') || brand.includes('chowking') || brand.includes('mang inasal')) {
-                    cuisineType = 'Filipino';
-                } else if (brand.includes('mcdonalds') || brand.includes('kfc') || brand.includes('subway')) {
-                    cuisineType = 'American';
-                } else if (brand.includes('starbucks') || brand.includes('coffee bean')) {
-                    cuisineType = 'Coffee';
+            const places = data.elements.filter((element)=>{
+                if (element.type === 'node') {
+                    return element.lat && element.lon;
+                } else if (element.type === 'way' || element.type === 'relation') {
+                    return element.center && element.center.lat && element.center.lon;
                 }
+                return false;
+            }).map((element, index)=>{
+                var _element_center, _element_center1;
+                const tags = element.tags || {};
+                const elementLat = element.type === 'node' ? element.lat : ((_element_center = element.center) === null || _element_center === void 0 ? void 0 : _element_center.lat) || element.lat;
+                const elementLon = element.type === 'node' ? element.lon : ((_element_center1 = element.center) === null || _element_center1 === void 0 ? void 0 : _element_center1.lon) || element.lon;
+                let category = 'Restaurant';
+                let cuisineType = 'International';
+                if (tags.amenity === 'cafe') {
+                    category = 'Cafe';
+                    cuisineType = 'Coffee';
+                } else if (tags.amenity === 'fast_food') {
+                    category = 'Fast Food';
+                    cuisineType = 'Fast Food';
+                } else if (tags.amenity === 'bar' || tags.amenity === 'pub') {
+                    category = 'Bar';
+                    cuisineType = 'International';
+                } else if (tags.shop === 'bakery') {
+                    category = 'Bakery';
+                    cuisineType = 'Bakery';
+                }
+                if (tags.cuisine) {
+                    cuisineType = tags.cuisine;
+                } else if (tags.brand) {
+                    const brand = tags.brand.toLowerCase();
+                    if (brand.includes('jollibee') || brand.includes('chowking') || brand.includes('mang inasal')) {
+                        cuisineType = 'Filipino';
+                    } else if (brand.includes('mcdonald') || brand.includes('kfc') || brand.includes('subway')) {
+                        cuisineType = 'American';
+                    } else if (brand.includes('starbucks') || brand.includes('coffee bean')) {
+                        cuisineType = 'Coffee';
+                    }
+                }
+                const rating = 3.5 + Math.random() * 1.5;
+                let priceRange = '$$';
+                if (tags.amenity === 'cafe' && tags.brand && tags.brand.toLowerCase().includes('starbucks')) {
+                    priceRange = '$$$';
+                } else if (tags.amenity === 'restaurant' && tags.amenity !== 'fast_food') {
+                    priceRange = Math.random() > 0.5 ? '$$$' : '$$';
+                } else if (tags.amenity === 'fast_food') {
+                    priceRange = '$';
+                }
+                return {
+                    id: "osm_".concat(element.type, "_").concat(element.id || index),
+                    name: tags.name || tags.brand || 'Unnamed Place',
+                    category,
+                    rating: Math.round(rating * 10) / 10,
+                    price_range: priceRange,
+                    latitude: elementLat,
+                    longitude: elementLon,
+                    description: tags.description || tags.cuisine || category,
+                    cuisine_type: cuisineType,
+                    is_open: true,
+                    image_url: '/Landing.png'
+                };
+            });
+            return places.length > 0 ? places : null;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                console.warn("Overpass endpoint ".concat(endpoint, " timed out."));
+            } else {
+                console.warn("Error calling Overpass endpoint ".concat(endpoint, ":"), (error === null || error === void 0 ? void 0 : error.message) || error);
             }
-            // Generate random rating (since OSM doesn't have ratings)
-            const rating = 3.5 + Math.random() * 1.5; // 3.5 to 5.0
-            // Determine price range
-            let priceRange = '$$';
-            if (tags.amenity === 'cafe' && tags.brand && tags.brand.toLowerCase().includes('starbucks')) {
-                priceRange = '$$$';
-            } else if (tags.amenity === 'restaurant' && !tags.amenity === 'fast_food') {
-                priceRange = Math.random() > 0.5 ? '$$$' : '$$';
-            }
-            return {
-                id: "osm_".concat(element.id || index),
-                name: tags.name || tags.brand || 'Unnamed Place',
-                category: category,
-                rating: Math.round(rating * 10) / 10,
-                price_range: priceRange,
-                latitude: element.lat,
-                longitude: element.lon,
-                description: tags.description || tags.cuisine || category,
-                cuisine_type: cuisineType,
-                is_open: true
-            };
-        });
-        return places;
-    } catch (error) {
-        var _error_message, _error_message1;
-        clearTimeout(timeoutId);
-        // Handle abort (timeout)
-        if (error.name === 'AbortError') {
-            console.warn('Request to OpenStreetMap API timed out. Returning empty results.');
-            return [];
+            return null;
         }
-        // Handle other errors
-        if (((_error_message = error.message) === null || _error_message === void 0 ? void 0 : _error_message.includes('504')) || ((_error_message1 = error.message) === null || _error_message1 === void 0 ? void 0 : _error_message1.includes('timeout'))) {
-            console.warn('OpenStreetMap API timeout. Returning empty results.');
-            return [];
+    };
+    for (const endpoint of overpassEndpoints){
+        const places = await tryFetch(endpoint);
+        if (places && places.length > 0) {
+            return places;
         }
-        console.error('Error fetching food places from OpenStreetMap:', error);
-        // Return empty array instead of throwing to prevent app crashes
-        return [];
     }
+    console.warn('All Overpass endpoints failed or returned empty results. Using fallback data.');
+    return getCebuFallbackPlaces(centerLatLng);
 }
 async function getTrendingRestaurants(centerLatLng) {
     try {
@@ -156,12 +366,53 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
+// Default Cebu City center coordinates
+const CEBU_CENTER = [
+    10.3157,
+    123.8854
+];
+// Calculate distance between two coordinates using Haversine formula
+function calculateDistanceKm(a, b) {
+    const R = 6371; // Earth radius in km
+    const dLat = (b[0] - a[0]) * Math.PI / 180;
+    const dLon = (b[1] - a[1]) * Math.PI / 180;
+    const lat1 = a[0] * Math.PI / 180;
+    const lat2 = b[0] * Math.PI / 180;
+    const sinDLat = Math.sin(dLat / 2);
+    const sinDLon = Math.sin(dLon / 2);
+    const aCalc = sinDLat * sinDLat + sinDLon * sinDLon * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
+    return R * c;
+}
 function DashboardPage() {
     _s();
     const [searchQuery, setSearchQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [trendingRestaurants, setTrendingRestaurants] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [loadingTrending, setLoadingTrending] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
+    const [userLocation, setUserLocation] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
+    // Get user location
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "DashboardPage.useEffect": ()=>{
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition({
+                    "DashboardPage.useEffect": (position)=>{
+                        setUserLocation([
+                            position.coords.latitude,
+                            position.coords.longitude
+                        ]);
+                    }
+                }["DashboardPage.useEffect"], {
+                    "DashboardPage.useEffect": ()=>{
+                        // Use default Cebu City center if location access denied
+                        setUserLocation(CEBU_CENTER);
+                    }
+                }["DashboardPage.useEffect"]);
+            } else {
+                setUserLocation(CEBU_CENTER);
+            }
+        }
+    }["DashboardPage.useEffect"], []);
     // Load real trending restaurants on component mount
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "DashboardPage.useEffect": ()=>{
@@ -169,12 +420,8 @@ function DashboardPage() {
                 "DashboardPage.useEffect.loadTrendingRestaurants": async ()=>{
                     setLoadingTrending(true);
                     try {
-                        // Use Cebu City center coordinates as default
-                        const cebuCenter = [
-                            10.3157,
-                            123.8854
-                        ];
-                        const trending = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$restaurants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getTrendingRestaurants"])(cebuCenter);
+                        const center = userLocation || CEBU_CENTER;
+                        const trending = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$restaurants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getTrendingRestaurants"])(center);
                         setTrendingRestaurants(trending);
                     } catch (error) {
                         console.error('Error loading trending restaurants:', error);
@@ -184,9 +431,13 @@ function DashboardPage() {
                     }
                 }
             }["DashboardPage.useEffect.loadTrendingRestaurants"];
-            loadTrendingRestaurants();
+            if (userLocation !== null) {
+                loadTrendingRestaurants();
+            }
         }
-    }["DashboardPage.useEffect"], []);
+    }["DashboardPage.useEffect"], [
+        userLocation
+    ]);
     const handleTrendingClick = (item)=>{
         // Navigate to map page with real restaurant location
         const url = "/map?lat=".concat(item.latitude, "&lng=").concat(item.longitude, "&restaurant=").concat(encodeURIComponent(item.name));
@@ -205,48 +456,116 @@ function DashboardPage() {
         };
         return icons[category] || '🍽️';
     };
-    const recommendations = [
+    // Real Cebu City restaurant coordinates
+    const restaurantData = [
         {
             id: 1,
-            name: "The Mood Kitchen",
-            description: "Innovative dishes with bold flavors",
-            distance: "0.3 km",
+            name: "Jollibee Colon",
+            description: "Popular Filipino fast food chain serving crispy fried chicken and spaghetti.",
+            latitude: 10.2975,
+            longitude: 123.8994,
             status: "Open",
-            price: "$$$$",
-            rating: 4.8,
-            image: "/restaurant1.jpg"
+            price: "$",
+            rating: 4.2,
+            image: "/restaurants/jollibee.png"
         },
         {
             id: 2,
-            name: "Cozy Corner Cafe",
-            description: "Perfect spot for reading and relaxing",
-            distance: "0.7 km",
+            name: "Starbucks IT Park",
+            description: "Modern coffee shop perfect for work meetings and casual hangouts.",
+            latitude: 10.3294,
+            longitude: 123.9056,
             status: "Open",
-            price: "$$",
-            rating: 4.6,
-            image: "/cafe1.jpg"
+            price: "$$$",
+            rating: 4.5,
+            image: "/restaurants/starbucks.png"
         },
         {
             id: 3,
-            name: "Skyline Rooftop",
-            description: "Stunning city views, perfect for dates",
-            distance: "1.2 km",
-            status: "Closed",
-            price: "$$$",
-            rating: 4.9,
-            image: "/rooftop1.jpg"
+            name: "Larsian Fuente",
+            description: "Iconic late-night barbecue stalls with unlimited rice and grilled favorites.",
+            latitude: 10.3097,
+            longitude: 123.8949,
+            status: "Open",
+            price: "$$",
+            rating: 4.4,
+            image: "/restaurants/larsian.jpg"
         },
         {
             id: 4,
-            name: "Street Food Festival",
-            description: "Vibrant food festival with live music",
-            distance: "2.1 km",
+            name: "Mang Inasal Ayala",
+            description: "Filipino grilled chicken restaurant with unlimited rice and sinigang soup.",
+            latitude: 10.3157,
+            longitude: 123.8854,
+            status: "Open",
+            price: "$$",
+            rating: 4.3,
+            image: "/restaurants/manginasal1.png"
+        },
+        {
+            id: 5,
+            name: "Chowking SM City",
+            description: "Chinese-Filipino fast food known for dimsum and noodle dishes.",
+            latitude: 10.3111,
+            longitude: 123.9181,
             status: "Open",
             price: "$",
-            rating: 4.7,
-            image: "/festival1.jpg"
+            rating: 4.0,
+            image: "/restaurants/chowking.png"
+        },
+        {
+            id: 6,
+            name: "Coffee Bean & Tea Leaf",
+            description: "Premium coffee and tea specialty cafe with cozy ambiance.",
+            latitude: 10.3157,
+            longitude: 123.8854,
+            status: "Open",
+            price: "$$$",
+            rating: 4.4,
+            image: "/restaurants/coffeebean1.jpg"
         }
     ];
+    // Calculate distances and format recommendations (recalculate when location changes)
+    const recommendations = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "DashboardPage.useMemo[recommendations]": ()=>{
+            const center = userLocation || CEBU_CENTER;
+            return restaurantData.map({
+                "DashboardPage.useMemo[recommendations]": (restaurant)=>{
+                    const distanceKm = calculateDistanceKm(center, [
+                        restaurant.latitude,
+                        restaurant.longitude
+                    ]);
+                    const distance = distanceKm < 1 ? "".concat((distanceKm * 1000).toFixed(0), " m") : "".concat(distanceKm.toFixed(1), " km");
+                    return {
+                        ...restaurant,
+                        distance,
+                        distanceKm
+                    };
+                }
+            }["DashboardPage.useMemo[recommendations]"]).sort({
+                "DashboardPage.useMemo[recommendations]": (a, b)=>a.distanceKm - b.distanceKm
+            }["DashboardPage.useMemo[recommendations]"]); // Sort by distance
+        }
+    }["DashboardPage.useMemo[recommendations]"], [
+        userLocation
+    ]);
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const filteredRecommendations = normalizedQuery ? recommendations.filter((item)=>[
+            item.name,
+            item.description,
+            item.price,
+            item.status
+        ].some((value)=>value.toLowerCase().includes(normalizedQuery))) : recommendations;
+    const filteredTrendingRestaurants = normalizedQuery ? trendingRestaurants.filter((item)=>{
+        var _item_category, _item_description, _item_price_range, _item_cuisine_type;
+        return [
+            item.name,
+            (_item_category = item.category) !== null && _item_category !== void 0 ? _item_category : "",
+            (_item_description = item.description) !== null && _item_description !== void 0 ? _item_description : "",
+            (_item_price_range = item.price_range) !== null && _item_price_range !== void 0 ? _item_price_range : "",
+            (_item_cuisine_type = item.cuisine_type) !== null && _item_cuisine_type !== void 0 ? _item_cuisine_type : ""
+        ].some((value)=>value.toLowerCase().includes(normalizedQuery));
+    }) : trendingRestaurants;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "min-h-screen bg-white",
         children: [
@@ -254,7 +573,7 @@ function DashboardPage() {
                 className: "h-1 bg-gray-300"
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/page.tsx",
-                lineNumber: 100,
+                lineNumber: 212,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -270,7 +589,7 @@ function DashboardPage() {
                                     children: "Good evening!"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 106,
+                                    lineNumber: 218,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -278,13 +597,13 @@ function DashboardPage() {
                                     children: "Discover your next favorite spot"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 107,
+                                    lineNumber: 219,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/page.tsx",
-                            lineNumber: 105,
+                            lineNumber: 217,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -306,39 +625,74 @@ function DashboardPage() {
                                                 d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/page.tsx",
-                                                lineNumber: 115,
+                                                lineNumber: 227,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 114,
+                                            lineNumber: 226,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/page.tsx",
-                                        lineNumber: 113,
+                                        lineNumber: 225,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                         type: "text",
                                         value: searchQuery,
                                         onChange: (e)=>setSearchQuery(e.target.value),
+                                        onKeyDown: (e)=>{
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                            // Search is already live, just ensure focus stays
+                                            }
+                                        },
                                         placeholder: "Search restaurants, cafes, events...",
-                                        className: "w-full pl-10 pr-4 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        className: "w-full pl-10 pr-10 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/page.tsx",
-                                        lineNumber: 118,
+                                        lineNumber: 230,
                                         columnNumber: 15
+                                    }, this),
+                                    searchQuery && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        onClick: ()=>setSearchQuery(""),
+                                        className: "absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-gray-50 rounded-r-lg transition-colors",
+                                        "aria-label": "Clear search",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                            className: "h-5 w-5 text-gray-400 hover:text-gray-600",
+                                            fill: "none",
+                                            stroke: "currentColor",
+                                            viewBox: "0 0 24 24",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                strokeLinecap: "round",
+                                                strokeLinejoin: "round",
+                                                strokeWidth: 2,
+                                                d: "M6 18L18 6M6 6l12 12"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/dashboard/page.tsx",
+                                                lineNumber: 250,
+                                                columnNumber: 21
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/dashboard/page.tsx",
+                                            lineNumber: 249,
+                                            columnNumber: 19
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/dashboard/page.tsx",
+                                        lineNumber: 244,
+                                        columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/page.tsx",
-                                lineNumber: 112,
+                                lineNumber: 224,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/dashboard/page.tsx",
-                            lineNumber: 111,
+                            lineNumber: 223,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -360,19 +714,19 @@ function DashboardPage() {
                                                 d: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/page.tsx",
-                                                lineNumber: 132,
+                                                lineNumber: 261,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 131,
+                                            lineNumber: 260,
                                             columnNumber: 15
                                         }, this),
                                         "Ask AI"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 130,
+                                    lineNumber: 259,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -392,7 +746,7 @@ function DashboardPage() {
                                                     d: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 138,
+                                                    lineNumber: 267,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -402,20 +756,20 @@ function DashboardPage() {
                                                     d: "M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 139,
+                                                    lineNumber: 268,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 137,
+                                            lineNumber: 266,
                                             columnNumber: 15
                                         }, this),
                                         "Map"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 136,
+                                    lineNumber: 265,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -432,34 +786,34 @@ function DashboardPage() {
                                             d: "M4 6h16M4 10h16M4 14h16M4 18h16"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 145,
+                                            lineNumber: 274,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/page.tsx",
-                                        lineNumber: 144,
+                                        lineNumber: 273,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 143,
+                                    lineNumber: 272,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/page.tsx",
-                            lineNumber: 129,
+                            lineNumber: 258,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/dashboard/page.tsx",
-                    lineNumber: 104,
+                    lineNumber: 216,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/page.tsx",
-                lineNumber: 103,
+                lineNumber: 215,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -475,7 +829,7 @@ function DashboardPage() {
                                     children: "AI Recommendations"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 156,
+                                    lineNumber: 285,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -484,36 +838,59 @@ function DashboardPage() {
                                     children: "See all"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 157,
+                                    lineNumber: 286,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/page.tsx",
-                            lineNumber: 155,
+                            lineNumber: 284,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "space-y-4",
-                            children: recommendations.map((item)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            children: filteredRecommendations.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "text-center py-10 bg-white rounded-xl border border-dashed border-gray-300",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "text-gray-600 font-medium mb-1",
+                                        children: "No matches found"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/dashboard/page.tsx",
+                                        lineNumber: 292,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "text-sm text-gray-400",
+                                        children: "Try another dish, place, or landmark."
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/dashboard/page.tsx",
+                                        lineNumber: 293,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/dashboard/page.tsx",
+                                lineNumber: 291,
+                                columnNumber: 15
+                            }, this) : filteredRecommendations.map((item)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center gap-4 hover:shadow-md transition-shadow",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "relative",
+                                            className: "relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0",
                                             children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center",
-                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                        className: "text-gray-400 text-sm",
-                                                        children: "Image"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/dashboard/page.tsx",
-                                                        lineNumber: 165,
-                                                        columnNumber: 21
-                                                    }, this)
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                                    src: item.image,
+                                                    alt: item.name,
+                                                    className: "absolute inset-0 w-full h-full object-cover",
+                                                    loading: "lazy",
+                                                    onError: (e)=>{
+                                                        const target = e.target;
+                                                        target.src = "/Landing.png";
+                                                    }
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 164,
+                                                    lineNumber: 299,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -530,23 +907,23 @@ function DashboardPage() {
                                                             d: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                            lineNumber: 169,
+                                                            lineNumber: 311,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/page.tsx",
-                                                        lineNumber: 168,
+                                                        lineNumber: 310,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 167,
+                                                    lineNumber: 309,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 163,
+                                            lineNumber: 298,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -560,7 +937,7 @@ function DashboardPage() {
                                                             children: item.name
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                            lineNumber: 177,
+                                                            lineNumber: 319,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -568,7 +945,7 @@ function DashboardPage() {
                                                             children: item.description
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                            lineNumber: 178,
+                                                            lineNumber: 320,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -578,7 +955,7 @@ function DashboardPage() {
                                                                     children: item.distance
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                                    lineNumber: 180,
+                                                                    lineNumber: 322,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -586,14 +963,14 @@ function DashboardPage() {
                                                                     children: item.status
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                                    lineNumber: 181,
+                                                                    lineNumber: 323,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                     children: item.price
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                                    lineNumber: 184,
+                                                                    lineNumber: 326,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -604,64 +981,64 @@ function DashboardPage() {
                                                                             children: "★"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                                            lineNumber: 186,
+                                                                            lineNumber: 328,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                             children: item.rating
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                                            lineNumber: 187,
+                                                                            lineNumber: 329,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                                    lineNumber: 185,
+                                                                    lineNumber: 327,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                            lineNumber: 179,
+                                                            lineNumber: 321,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 176,
+                                                    lineNumber: 318,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/page.tsx",
-                                                lineNumber: 175,
+                                                lineNumber: 317,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 174,
+                                            lineNumber: 316,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, item.id, true, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 162,
+                                    lineNumber: 297,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/app/dashboard/page.tsx",
-                            lineNumber: 160,
+                            lineNumber: 289,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/dashboard/page.tsx",
-                    lineNumber: 154,
+                    lineNumber: 283,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/page.tsx",
-                lineNumber: 153,
+                lineNumber: 282,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -679,7 +1056,7 @@ function DashboardPage() {
                                             children: "Trending in your area"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 204,
+                                            lineNumber: 347,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -687,13 +1064,13 @@ function DashboardPage() {
                                             children: "Based on recent visits and ratings"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 205,
+                                            lineNumber: 348,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 203,
+                                    lineNumber: 346,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -701,13 +1078,13 @@ function DashboardPage() {
                                     children: "View all →"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 207,
+                                    lineNumber: 350,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/page.tsx",
-                            lineNumber: 202,
+                            lineNumber: 345,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -722,7 +1099,7 @@ function DashboardPage() {
                                             className: "aspect-video bg-gray-200"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 217,
+                                            lineNumber: 360,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -732,42 +1109,42 @@ function DashboardPage() {
                                                     className: "h-4 bg-gray-200 rounded mb-2"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 219,
+                                                    lineNumber: 362,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     className: "h-3 bg-gray-200 rounded mb-3"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 220,
+                                                    lineNumber: 363,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     className: "h-3 bg-gray-200 rounded mb-2"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 221,
+                                                    lineNumber: 364,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     className: "h-8 bg-gray-200 rounded"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 222,
+                                                    lineNumber: 365,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 218,
+                                            lineNumber: 361,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, index, true, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 216,
+                                    lineNumber: 359,
                                     columnNumber: 17
-                                }, this)) : trendingRestaurants.length > 0 ? trendingRestaurants.map((item)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                }, this)) : filteredTrendingRestaurants.length > 0 ? filteredTrendingRestaurants.map((item)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group transform hover:-translate-y-1",
                                     onClick: ()=>handleTrendingClick(item),
                                     children: [
@@ -784,12 +1161,12 @@ function DashboardPage() {
                                                                 children: getCategoryIcon(item.category)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/page.tsx",
-                                                                lineNumber: 236,
+                                                                lineNumber: 379,
                                                                 columnNumber: 23
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                            lineNumber: 235,
+                                                            lineNumber: 378,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -797,13 +1174,13 @@ function DashboardPage() {
                                                             children: item.category
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                            lineNumber: 238,
+                                                            lineNumber: 381,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 234,
+                                                    lineNumber: 377,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -813,18 +1190,18 @@ function DashboardPage() {
                                                         children: item.trend
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/page.tsx",
-                                                        lineNumber: 241,
+                                                        lineNumber: 384,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 240,
+                                                    lineNumber: 383,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 233,
+                                            lineNumber: 376,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -838,7 +1215,7 @@ function DashboardPage() {
                                                             children: item.name
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                            lineNumber: 249,
+                                                            lineNumber: 392,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -849,7 +1226,7 @@ function DashboardPage() {
                                                                     children: "★"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                                    lineNumber: 253,
+                                                                    lineNumber: 396,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -857,19 +1234,19 @@ function DashboardPage() {
                                                                     children: item.rating
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                                    lineNumber: 254,
+                                                                    lineNumber: 397,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                            lineNumber: 252,
+                                                            lineNumber: 395,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 248,
+                                                    lineNumber: 391,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -877,7 +1254,7 @@ function DashboardPage() {
                                                     children: item.description
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 258,
+                                                    lineNumber: 401,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -890,7 +1267,7 @@ function DashboardPage() {
                                                                     children: item.distance ? "".concat(item.distance.toFixed(1), " km") : 'Nearby'
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                                    lineNumber: 262,
+                                                                    lineNumber: 405,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -898,13 +1275,13 @@ function DashboardPage() {
                                                                     children: item.is_open ? 'Open' : 'Closed'
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                                    lineNumber: 263,
+                                                                    lineNumber: 406,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                            lineNumber: 261,
+                                                            lineNumber: 404,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -912,13 +1289,13 @@ function DashboardPage() {
                                                             children: item.price_range
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/dashboard/page.tsx",
-                                                            lineNumber: 265,
+                                                            lineNumber: 408,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 260,
+                                                    lineNumber: 403,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -930,19 +1307,19 @@ function DashboardPage() {
                                                     children: "View on Map"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/page.tsx",
-                                                    lineNumber: 268,
+                                                    lineNumber: 411,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/dashboard/page.tsx",
-                                            lineNumber: 247,
+                                            lineNumber: 390,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, item.id, true, {
                                     fileName: "[project]/app/dashboard/page.tsx",
-                                    lineNumber: 228,
+                                    lineNumber: 371,
                                     columnNumber: 15
                                 }, this)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "col-span-full text-center py-12",
@@ -952,7 +1329,7 @@ function DashboardPage() {
                                         children: "No trending restaurants found in your area."
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/page.tsx",
-                                        lineNumber: 282,
+                                        lineNumber: 425,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -960,39 +1337,39 @@ function DashboardPage() {
                                         children: "Try refreshing the page or check back later."
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/page.tsx",
-                                        lineNumber: 283,
+                                        lineNumber: 426,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/page.tsx",
-                                lineNumber: 281,
+                                lineNumber: 424,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/dashboard/page.tsx",
-                            lineNumber: 212,
+                            lineNumber: 355,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/dashboard/page.tsx",
-                    lineNumber: 201,
+                    lineNumber: 344,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/page.tsx",
-                lineNumber: 200,
+                lineNumber: 343,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/dashboard/page.tsx",
-        lineNumber: 98,
+        lineNumber: 210,
         columnNumber: 5
     }, this);
 }
-_s(DashboardPage, "eKWwaOjOjnFgmhjwrZMjxbnnOks=", false, function() {
+_s(DashboardPage, "wtlKcJOko4aSK4rYrEyhuReSaLs=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];
