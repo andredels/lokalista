@@ -111,26 +111,31 @@ export default function AIAssistantPage() {
     setInputMessage("");
     setIsLoading(true);
 
-    const historyWithUser: ChatHistoryMessage[] = [...chatHistory, { role: "user", content: rawInput }];
-
-    const locationContext = userLocation
-      ? `Approximate user coordinates: ${userLocation[0].toFixed(3)}, ${userLocation[1].toFixed(3)}.`
-      : locationError
-        ? "User location not available. Using Cebu City, Philippines as fallback."
-        : "User location currently loading.";
+    // Build location context with detailed information
+    let locationContext = "";
+    if (userLocation) {
+      const [lat, lon] = userLocation;
+      locationContext = `IMPORTANT: The user's CURRENT LOCATION is at coordinates ${lat.toFixed(6)}, ${lon.toFixed(6)} (latitude, longitude). This is their exact current position. Base ALL recommendations on this specific location. Prioritize places within 1-2km of these coordinates.`;
+    } else if (locationError) {
+      locationContext = "User location not available. Using Cebu City, Philippines (10.3157, 123.8854) as default location. Base recommendations on this area.";
+    } else {
+      locationContext = "User location is being detected. Using Cebu City, Philippines (10.3157, 123.8854) as default location for now.";
+    }
 
     const systemPrompt = [
-      "You are Lokalista, an upbeat culinary concierge focusing on Cebu City, Philippines.",
-      "Assume Cebu City context unless the user explicitly confirms they are in another city.",
-      "Whenever the user mentions a specific neighborhood or landmark (e.g., IT Park, SM Seaside), restrict recommendations to that immediate area and mention the neighborhood in your reply.",
-      "Always acknowledge the user's request, ask follow-up questions when helpful, and keep answers to about 4-6 sentences.",
-      "Provide helpful recommendations and information about restaurants, cafes, and food places in Cebu City.",
+      "You are Lokalista, an upbeat culinary concierge that provides location-based food recommendations.",
+      "CRITICAL: Always base your recommendations on the user's CURRENT LOCATION provided below, NOT on previous conversation history.",
+      "Each request should be treated independently based on where the user is RIGHT NOW.",
       locationContext,
+      "Whenever the user mentions a specific neighborhood or landmark (e.g., IT Park, SM Seaside, Ayala Center), prioritize that area and mention it in your reply.",
+      "Provide specific, actionable recommendations for places near the user's current location.",
+      "Keep answers concise (4-6 sentences) and focused on the current location.",
+      "Do NOT reference previous conversations unless the user explicitly asks about them.",
     ].join(" ");
 
+    // Only send the current message, not conversation history, to prioritize location
     const payloadMessages = [
       { role: "system", content: systemPrompt },
-      ...chatHistory.map((m) => ({ role: m.role, content: m.content })),
       { role: "user", content: rawInput },
     ];
 
@@ -146,16 +151,30 @@ export default function AIAssistantPage() {
 
       if (!response.ok) {
         const errorPayload = await response.json().catch(() => null);
-        throw new Error(errorPayload?.error || `Groq API error (${response.status})`);
+        const errorMessage = errorPayload?.error || `API error (${response.status})`;
+        
+        // Provide user-friendly error messages
+        if (response.status === 401) {
+          assistantContent = "⚠️ Invalid API key. Please check your GROQ_API_KEY in the .env.local file. Make sure it's correct and starts with 'gsk_'.";
+        } else if (response.status === 429) {
+          assistantContent = "⏱️ Rate limit exceeded. Please try again in a moment.";
+        } else {
+          assistantContent = `Sorry, I encountered an error: ${errorMessage}. Please try again.`;
+        }
+        
+        console.error("Chat completion error:", errorMessage);
+      } else {
+        const data = await response.json();
+        const content = data?.choices?.[0]?.message?.content?.trim();
+        if (content) {
+          assistantContent = content;
+        }
       }
-
-      const data = await response.json();
-      const content = data?.choices?.[0]?.message?.content?.trim();
-      if (content) {
-        assistantContent = content;
-      }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat completion error:", error);
+      assistantContent = error?.message 
+        ? `Sorry, I encountered an error: ${error.message}. Please try again.`
+        : "Sorry, I couldn't fetch a response from our AI right now. Please try again in a moment.";
     }
 
     const assistantMessage: Message = {
@@ -166,7 +185,8 @@ export default function AIAssistantPage() {
     };
 
     setMessages(prev => [...prev, assistantMessage]);
-    setChatHistory([...historyWithUser, { role: "assistant", content: assistantContent }]);
+    // Only keep the last exchange for minimal context, but location is primary
+    setChatHistory([{ role: "user", content: rawInput }, { role: "assistant", content: assistantContent }]);
     setIsLoading(false);
   };
 
@@ -187,12 +207,12 @@ export default function AIAssistantPage() {
   ];
 
   return (
-    <div className="ai-assistant-bg">
+    <div className="ai-assistant-bg animate-fade-in">
       {/* Header */}
-      <div className="bg-ai-surface border-b border-ai shadow-ai">
+      <div className="bg-ai-surface border-b border-ai shadow-ai animate-fade-in-down">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center animate-scale-in">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
@@ -210,11 +230,11 @@ export default function AIAssistantPage() {
           {/* Messages Container */}
           <div className="h-[600px] overflow-y-auto p-6 space-y-4">
             {messages.map((message) => (
-              <div key={message.id} className="space-y-4">
+              <div key={message.id} className="space-y-4 animate-fade-in-up">
                 {/* User Message */}
                 {message.isUser && message.content && (
                   <div className="flex justify-end">
-                    <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+                    <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 text-white hover-scale">
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       <p className="text-xs mt-1 text-purple-100">
                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -228,7 +248,7 @@ export default function AIAssistantPage() {
                   <div className="space-y-4">
                     {message.content && (
                       <div className="flex justify-start">
-                        <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-gray-100 text-gray-900">
+                        <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-gray-100 text-gray-900 hover-scale">
                           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                           <p className="text-xs mt-1 text-gray-500">
                             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

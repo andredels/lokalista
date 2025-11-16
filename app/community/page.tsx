@@ -733,12 +733,12 @@ export default function CommunityPage() {
   }, [imagePreview]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 animate-fade-in">
       <div className="container max-w-7xl py-6">
-        <h1 className="text-3xl font-bold mb-6 text-gray-900">Community</h1>
+        <h1 className="text-3xl font-bold mb-6 text-gray-900 animate-fade-in-down">Community</h1>
 
         {/* Composer */}
-        <form onSubmit={submitPost} className="bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
+        <form onSubmit={submitPost} className="bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm animate-fade-in-up card-hover">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -792,9 +792,14 @@ export default function CommunityPage() {
               <button
                 type="submit"
                 disabled={!userId || submitting || content.length > 280 || !imageFile}
-                className="px-4 h-9 rounded-full bg-[#8c52ff] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+                className="px-4 h-9 rounded-full bg-[#8c52ff] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-all hover-scale btn-press btn-ripple disabled:hover:scale-100"
               >
-                {submitting ? "Posting..." : "Post"}
+                {submitting ? (
+                  <span className="flex items-center gap-2">
+                    <div className="loading-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
+                    Posting...
+                  </span>
+                ) : "Post"}
               </button>
             </div>
           </div>
@@ -802,7 +807,10 @@ export default function CommunityPage() {
 
         {/* Pinterest-style Masonry Grid */}
         {loading ? (
-          <div className="text-center text-gray-500 py-12">Loading…</div>
+          <div className="text-center text-gray-500 py-12">
+            <div className="loading-spinner mx-auto mb-4"></div>
+            <p>Loading…</p>
+          </div>
         ) : postsWithImages.length === 0 ? (
           <div className="text-center text-gray-500 py-12">
             <p className="text-lg mb-2">No posts with images yet.</p>
@@ -813,10 +821,11 @@ export default function CommunityPage() {
             className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4"
             style={{ columnFill: 'balance' }}
           >
-            {postsWithImages.map((post) => (
+            {postsWithImages.map((post, index) => (
               <div
                 key={post.id}
-                className="break-inside-avoid mb-4 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200"
+                className={`break-inside-avoid mb-4 bg-white rounded-lg overflow-hidden shadow-sm card-hover cursor-pointer border border-gray-200 stagger-item`}
+                style={{ animationDelay: `${index * 0.05}s` }}
                 onClick={() => openPostModal(post)}
               >
                 {post.image_url && (
@@ -824,7 +833,7 @@ export default function CommunityPage() {
                     <img
                       src={post.image_url}
                       alt={post.content || "Post image"}
-                      className="w-full h-auto object-cover"
+                      className="w-full h-auto object-cover transition-transform duration-300 hover:scale-105"
                       loading="lazy"
                     />
                     {/* Overlay with likes and comments count */}

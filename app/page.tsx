@@ -1,3 +1,6 @@
+"use client";
+
+import { useScrollAnimation } from "@/lib/hooks/useScrollAnimation";
 
 const aiRecommendations = [
   {
@@ -39,8 +42,12 @@ const aiRecommendations = [
 ];
 
 export default function Home() {
+  const heroRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });
+  const featuresRef = useScrollAnimation({ threshold: 0.1, triggerOnce: true });
+  const recommendationsRef = useScrollAnimation({ threshold: 0.1, triggerOnce: true });
+
   return (
-    <div className="font-sans">
+    <div className="font-sans animate-fade-in">
       {/* Hero */}
       <section className="relative" style={{ backgroundColor: "#eadbfd" }}>
         <div className="pointer-events-none absolute inset-0 [mask-image:radial-gradient(closest-side,black,transparent)]">
@@ -48,9 +55,12 @@ export default function Home() {
           <div className="absolute -bottom-24 -right-24 size-[480px] rounded-full bg-brand/10 blur-3xl" />
         </div>
         <div className="container relative pt-10 md:pt-14 pb-16 md:pb-20">
-                       <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <div 
+            ref={heroRef.ref as any}
+            className={`grid md:grid-cols-2 gap-8 md:gap-12 items-center ${heroRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+          >
             <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 h-7 rounded-full border border-border/60 bg-muted text-xs font-medium mb-4">
+              <div className="inline-flex items-center gap-2 px-3 h-7 rounded-full border border-border/60 bg-muted text-xs font-medium mb-4 animate-scale-in">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
                   <path d="M12 2l2.39 4.84L20 8l-4 3.9L17 18l-5-2.6L7 18l1-6.1L4 8l5.61-1.16L12 2z" stroke="currentColor" strokeWidth="1.2" fill="none"/>
                 </svg>
@@ -81,8 +91,8 @@ export default function Home() {
               </ul>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <a href="/auth/login" className="h-11 px-5 rounded-md bg-[#8c52ff] text-white hover:opacity-90 transition-colors inline-flex items-center justify-center">Get Started Free → </a>
-                <a href="/map" className="h-11 px-5 rounded-md border border-border/60 bg-white text-[#8c52ff] inline-flex items-center justify-center gap-2">
+                <a href="/auth/login" className="h-11 px-5 rounded-md bg-[#8c52ff] text-white hover:opacity-90 transition-all hover-scale btn-press btn-ripple inline-flex items-center justify-center">Get Started Free → </a>
+                <a href="/map" className="h-11 px-5 rounded-md border border-border/60 bg-white text-[#8c52ff] transition-all hover-scale btn-press inline-flex items-center justify-center gap-2">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5"/>
                     <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -182,7 +192,10 @@ export default function Home() {
       {/* Features */}
       <section id="features" className="border-t border-border/60 bg-muted/30">
         <div className="container py-16 md:py-20">
-          <div className="text-center max-w-3xl mx-auto mb-10">
+          <div 
+            ref={featuresRef.ref as any}
+            className={`text-center max-w-3xl mx-auto mb-10 ${featuresRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+          >
             <h2 className="h2 mb-2">Discover Like Never Before</h2>
             <p className="text-muted">Our AI-powered platform combines intelligent recommendations with interactive discovery to help you find the perfect places for any occasion.</p>
           </div>
@@ -206,8 +219,12 @@ export default function Home() {
                 bullets: ["Advanced filtering", "Quick search", "Saved preferences"],
                 icon: "/search.png",
               },
-            ].map((card) => (
-              <div key={card.title} className="rounded-xl border border-border/60 bg-background p-6 shadow-sm hover-lift">
+            ].map((card, index) => (
+              <div 
+                key={card.title} 
+                className={`rounded-xl border border-border/60 bg-background p-6 shadow-sm card-hover stagger-item`}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <div className="h-10 w-10 rounded-md bg-brand/15 grid place-items-center mb-4">
                   <img src={card.icon} alt="" className="h-5 w-5" />
                 </div>
@@ -221,7 +238,7 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <a href="#" className="h-10 px-4 rounded-md border border-border/60 inline-flex items-center justify-center text-sm">Explore Feature</a>
+                <a href="#" className="h-10 px-4 rounded-md border border-border/60 inline-flex items-center justify-center text-sm transition-all hover-scale btn-press">Explore Feature</a>
               </div>
             ))}
           </div>

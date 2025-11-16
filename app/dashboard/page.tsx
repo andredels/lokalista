@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getTrendingRestaurants, type FoodPlace } from "@/lib/restaurants";
+import { useScrollAnimation } from "@/lib/hooks/useScrollAnimation";
 
 // Default Cebu City center coordinates
 const CEBU_CENTER: [number, number] = [10.3157, 123.8854];
@@ -206,21 +207,34 @@ export default function DashboardPage() {
     : trendingRestaurants;
 
 
+  // Scroll animations
+  const heroRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });
+  const searchRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });
+  const recommendationsRef = useScrollAnimation({ threshold: 0.1, triggerOnce: true });
+  const trendingRef = useScrollAnimation({ threshold: 0.1, triggerOnce: true });
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white animate-fade-in">
       {/* Top Bar */}
       <div className="h-1 bg-gray-300"></div>
       
       {/* Hero Section */}
       <section className="bg-white py-8">
         <div className="container">
-          <div className="text-center mb-8">
+          <div 
+            ref={heroRef.ref as any}
+            className={`text-center mb-8 ${heroRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+          >
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Good evening!</h1>
             <p className="text-lg text-gray-600">Discover your next favorite spot</p>
           </div>
           
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-6">
+          <div 
+            ref={searchRef.ref as any}
+            className={`max-w-2xl mx-auto mb-6 ${searchRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+            style={{ transitionDelay: '0.1s' }}
+          >
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,20 +270,20 @@ export default function DashboardPage() {
           
           {/* Action Buttons */}
           <div className="flex justify-center gap-3 mb-12">
-            <a href="/feed" className="flex items-center gap-2 px-6 py-3 bg-[#8c52ff] text-white rounded-full hover:opacity-90 transition-opacity">
+            <a href="/feed" className="flex items-center gap-2 px-6 py-3 bg-[#8c52ff] text-white rounded-full hover:opacity-90 transition-all hover-scale btn-press btn-ripple">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
               Ask AI
             </a>
-            <a href="/map" className="flex items-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors">
+            <a href="/map" className="flex items-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-all hover-scale btn-press">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               Map
             </a>
-            <button className="flex items-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors">
+            <button className="flex items-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-all hover-scale btn-press">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
@@ -281,32 +295,39 @@ export default function DashboardPage() {
       {/* AI Recommendations Section */}
       <section className="bg-gray-50 py-12">
         <div className="container">
-          <div className="flex justify-between items-center mb-8">
+          <div 
+            ref={recommendationsRef.ref as any}
+            className={`flex justify-between items-center mb-8 ${recommendationsRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+          >
             <h2 className="text-2xl font-bold text-gray-900">AI Recommendations</h2>
-            <a href="#" className="text-blue-600 hover:text-blue-800 font-medium">See all</a>
+            <a href="#" className="text-blue-600 hover:text-blue-800 font-medium transition-colors hover-scale">See all</a>
           </div>
           
           <div className="space-y-4">
             {filteredRecommendations.length === 0 ? (
-              <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300">
+              <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300 animate-fade-in">
                 <p className="text-gray-600 font-medium mb-1">No matches found</p>
                 <p className="text-sm text-gray-400">Try another dish, place, or landmark.</p>
               </div>
             ) : (
-              filteredRecommendations.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
-                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+              filteredRecommendations.map((item, index) => (
+              <div 
+                key={item.id} 
+                className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center gap-4 card-hover stagger-item`}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 hover-brighten">
                   <img
                     src={item.image}
                     alt={item.name}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                     loading="lazy"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = "/Landing.png";
                     }}
                   />
-                  <button className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm hover:bg-gray-50">
+                  <button className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-all hover-scale btn-press">
                     <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
@@ -342,12 +363,15 @@ export default function DashboardPage() {
       {/* Trending Section */}
       <section className="bg-gray-50 py-12">
         <div className="container">
-          <div className="flex items-center justify-between mb-8">
+          <div 
+            ref={trendingRef.ref as any}
+            className={`flex items-center justify-between mb-8 ${trendingRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+          >
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Trending in your area</h2>
               <p className="text-sm text-gray-600 mt-1">Based on recent visits and ratings</p>
             </div>
-            <button className="text-[#8c52ff] hover:text-[#7c42ef] font-medium transition-colors">
+            <button className="text-[#8c52ff] hover:text-[#7c42ef] font-medium transition-all hover-scale">
               View all →
             </button>
           </div>
@@ -356,7 +380,7 @@ export default function DashboardPage() {
             {loadingTrending ? (
               // Loading skeleton
               Array.from({ length: 8 }).map((_, index) => (
-                <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
+                <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden loading-skeleton">
                   <div className="aspect-video bg-gray-200"></div>
                   <div className="p-4">
                     <div className="h-4 bg-gray-200 rounded mb-2"></div>
@@ -367,10 +391,11 @@ export default function DashboardPage() {
                 </div>
               ))
             ) : filteredTrendingRestaurants.length > 0 ? (
-              filteredTrendingRestaurants.map((item) => (
+              filteredTrendingRestaurants.map((item, index) => (
               <div 
                 key={item.id} 
-                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group transform hover:-translate-y-1"
+                className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden card-hover cursor-pointer group stagger-item`}
+                style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => handleTrendingClick(item)}
               >
                 <div className="aspect-video bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center relative">

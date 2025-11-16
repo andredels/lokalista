@@ -124,9 +124,6 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 ;
 ;
 ;
-const client = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$groq$2d$sdk$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["default"]({
-    apiKey: process.env.GROQ_API_KEY
-});
 async function POST(request) {
     try {
         const { messages } = await request.json();
@@ -137,9 +134,20 @@ async function POST(request) {
                 status: 400
             });
         }
-        if (!process.env.GROQ_API_KEY) {
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            console.error("GROQ_API_KEY is not set in environment variables");
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                error: "Groq API key is not configured."
+                error: "Groq API key is not configured. Please add GROQ_API_KEY to your .env.local file."
+            }, {
+                status: 500
+            });
+        }
+        // Check if API key looks valid (starts with gsk_)
+        if (!apiKey.startsWith('gsk_')) {
+            console.error("GROQ_API_KEY format appears invalid (should start with 'gsk_')");
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                error: "Invalid API key format. Groq API keys should start with 'gsk_'."
             }, {
                 status: 500
             });
@@ -155,6 +163,10 @@ async function POST(request) {
                 status: 400
             });
         }
+        // Initialize client with validated API key
+        const client = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$groq$2d$sdk$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["default"]({
+            apiKey: apiKey
+        });
         const model = process.env.GROQ_CHAT_MODEL || "llama-3.1-8b-instant";
         const completion = await client.chat.completions.create({
             model,
@@ -166,6 +178,21 @@ async function POST(request) {
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(completion);
     } catch (error) {
         console.error("Groq chat route error:", error);
+        // Handle specific Groq API errors
+        if (error?.status === 401 || error?.code === 'invalid_api_key') {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                error: "Invalid API key. Please check your GROQ_API_KEY in .env.local file. Make sure it's correct and starts with 'gsk_'."
+            }, {
+                status: 401
+            });
+        }
+        if (error?.status === 429) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                error: "Rate limit exceeded. Please try again in a moment."
+            }, {
+                status: 429
+            });
+        }
         const message = error?.response?.data?.error?.message || error?.message || "Unexpected error while generating chat response.";
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: message
