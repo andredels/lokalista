@@ -115,11 +115,11 @@ export default function AIAssistantPage() {
     let locationContext = "";
     if (userLocation) {
       const [lat, lon] = userLocation;
-      locationContext = `IMPORTANT: The user's CURRENT LOCATION is at coordinates ${lat.toFixed(6)}, ${lon.toFixed(6)} (latitude, longitude). This is their exact current position. Base ALL recommendations on this specific location. Prioritize places within 1-2km of these coordinates.`;
+      locationContext = `IMPORTANT: The user's CURRENT LOCATION coordinates are ${lat.toFixed(6)}, ${lon.toFixed(6)}. Use these coordinates internally to find nearby places, but NEVER mention these numbers or coordinates in your response. Instead, refer to the location by its name (e.g., "near you", "in your area", or the neighborhood/landmark name if known). Base ALL recommendations on this specific location. Prioritize places within 1-2km of this location.`;
     } else if (locationError) {
-      locationContext = "User location not available. Using Cebu City, Philippines (10.3157, 123.8854) as default location. Base recommendations on this area.";
+      locationContext = "User location not available. Using Cebu City, Philippines as default location. Base recommendations on this area. NEVER mention coordinates or numbers - only use location names.";
     } else {
-      locationContext = "User location is being detected. Using Cebu City, Philippines (10.3157, 123.8854) as default location for now.";
+      locationContext = "User location is being detected. Using Cebu City, Philippines as default location for now. NEVER mention coordinates or numbers - only use location names.";
     }
 
     const systemPrompt = [
@@ -127,6 +127,7 @@ export default function AIAssistantPage() {
       "CRITICAL: Always base your recommendations on the user's CURRENT LOCATION provided below, NOT on previous conversation history.",
       "Each request should be treated independently based on where the user is RIGHT NOW.",
       locationContext,
+      "CRITICAL RULE: NEVER mention latitude, longitude, coordinates, or any numerical location data in your responses. Only refer to locations by their names (e.g., 'near you', 'in Cebu City', 'at IT Park', 'around SM Seaside').",
       "Whenever the user mentions a specific neighborhood or landmark (e.g., IT Park, SM Seaside, Ayala Center), prioritize that area and mention it in your reply.",
       "Provide specific, actionable recommendations for places near the user's current location.",
       "Keep answers concise (4-6 sentences) and focused on the current location.",

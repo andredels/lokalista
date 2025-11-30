@@ -9,8 +9,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [country, setCountry] = useState("");
-  const [city, setCity] = useState("");
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -76,8 +74,6 @@ export default function SignupPage() {
     if (!isEmail(email)) e.email = "Enter a valid email.";
     if (password.length < 6) e.password = "Password must be 6+ characters.";
     if (password !== confirmPassword) e.confirmPassword = "Passwords do not match.";
-    if (!country.trim()) e.country = "Enter your country.";
-    if (!city.trim()) e.city = "Enter your city.";
     setErrors(e);
     if (Object.keys(e).length !== 0) return;
 
@@ -92,8 +88,6 @@ export default function SignupPage() {
           emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/login`,
           data: {
             full_name: fullName,
-            country: country,
-            city: city,
           }
         },
       });
@@ -149,20 +143,36 @@ export default function SignupPage() {
 
                 <div>
                   <label className="text-sm font-medium" htmlFor="confirmPassword">Confirm Password</label>
-                  <input id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm password" type="password" className="h-11 px-3 rounded-md border border-border/60 focus-ring w-full" />
+                  <div className="relative">
+                    <input 
+                      id="confirmPassword" 
+                      value={confirmPassword} 
+                      onChange={(e) => setConfirmPassword(e.target.value)} 
+                      placeholder="Confirm password" 
+                      type="password" 
+                      className={`h-11 px-3 pr-10 rounded-md border focus-ring w-full ${
+                        confirmPassword && password !== confirmPassword 
+                          ? 'border-red-500' 
+                          : confirmPassword && password === confirmPassword 
+                          ? 'border-green-500' 
+                          : 'border-border/60'
+                      }`}
+                    />
+                    {confirmPassword && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {password === confirmPassword ? (
+                          <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   {errors.confirmPassword && <div className="text-sm text-red-600">{errors.confirmPassword}</div>}
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium" htmlFor="country">Country</label>
-                  <input id="country" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="United States" className="h-11 px-3 rounded-md border border-border/60 focus-ring w-full" />
-                  {errors.country && <div className="text-sm text-red-600">{errors.country}</div>}
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium" htmlFor="city">City</label>
-                  <input id="city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="New York, NY" className="h-11 px-3 rounded-md border border-border/60 focus-ring w-full" />
-                  {errors.city && <div className="text-sm text-red-600">{errors.city}</div>}
                 </div>
               </div>
 
