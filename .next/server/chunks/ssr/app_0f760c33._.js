@@ -101,6 +101,10 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$ui$2f$Modal$2e$tsx__$
 ;
 ;
 ;
+const extractProfile = (profile)=>{
+    if (!profile) return null;
+    return Array.isArray(profile) ? profile[0] ?? null : profile;
+};
 function CommunityPage() {
     const supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>(0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$supabase$2f$browserClient$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createClient"])(), []);
     const [userId, setUserId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
@@ -111,12 +115,15 @@ function CommunityPage() {
     const [expandedPostIds, setExpandedPostIds] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(new Set());
     const [commentsByPost, setCommentsByPost] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({});
     const [newCommentContent, setNewCommentContent] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({});
-    const [imageFile, setImageFile] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
-    const [imagePreview, setImagePreview] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [imageFiles, setImageFiles] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [imagePreviews, setImagePreviews] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [currentImageIndex, setCurrentImageIndex] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0);
     const [selectedPost, setSelectedPost] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [isModalOpen, setIsModalOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [isComposerOpen, setIsComposerOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [deletingPost, setDeletingPost] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [deletingComment, setDeletingComment] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [currentPostImageIndex, setCurrentPostImageIndex] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({});
     const fileInputRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         let mounted = true;
@@ -150,6 +157,7 @@ function CommunityPage() {
         }
         const normalized = data.map((row)=>({
                 ...row,
+                profiles: extractProfile(row.profiles),
                 likes_count: Array.isArray(row.likes_count) ? row.likes_count[0]?.count ?? 0 : row.likes_count ?? 0,
                 comments_count: Array.isArray(row.comments_count) ? row.comments_count[0]?.count ?? 0 : row.comments_count ?? 0,
                 liked_by_me: false
@@ -170,18 +178,18 @@ function CommunityPage() {
             window.location.href = "/auth/login?next=/community";
             return;
         }
-        // Validate that we have either content or image
-        if (!content.trim() && !imageFile) {
+        // Validate that we have either content or images
+        if (!content.trim() && imageFiles.length === 0) {
             alert("Please add a caption or an image to post.");
             return;
         }
         // Require image for community page
-        if (!imageFile) {
-            alert("Please add an image to post in the community page.");
+        if (imageFiles.length === 0) {
+            alert("Please add at least one image to post in the community page.");
             return;
         }
         setSubmitting(true);
-        let imageUrl = null;
+        let imageUrls = [];
         console.log("Submitting post...");
         try {
             // Ensure user has a profile before posting (to satisfy foreign key constraint)
@@ -205,33 +213,36 @@ function CommunityPage() {
                 // Continue anyway - might work if RLS allows it
                 }
             }
-            // Upload image if provided
-            if (imageFile) {
+            // Upload all images
+            if (imageFiles.length > 0) {
                 try {
-                    console.log("Uploading image...");
-                    const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
-                    const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-                    const { error: upErr, data: uploadData } = await supabase.storage.from("post-images").upload(path, imageFile, {
-                        cacheControl: "3600",
-                        upsert: false,
-                        contentType: imageFile.type || "image/jpeg"
-                    });
-                    if (upErr) {
-                        console.error("Upload error:", upErr);
-                        throw new Error(`Failed to upload image: ${upErr.message}`);
+                    console.log(`Uploading ${imageFiles.length} image(s)...`);
+                    for (const imageFile of imageFiles){
+                        const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+                        const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                        const { error: upErr } = await supabase.storage.from("post-images").upload(path, imageFile, {
+                            cacheControl: "3600",
+                            upsert: false,
+                            contentType: imageFile.type || "image/jpeg"
+                        });
+                        if (upErr) {
+                            console.error("Upload error:", upErr);
+                            throw new Error(`Failed to upload image: ${upErr.message}`);
+                        }
+                        const { data: pub } = supabase.storage.from("post-images").getPublicUrl(path);
+                        imageUrls.push(pub.publicUrl);
                     }
-                    const { data: pub } = supabase.storage.from("post-images").getPublicUrl(path);
-                    imageUrl = pub.publicUrl;
                 } catch (uploadErr) {
                     console.error("Image upload failed:", uploadErr);
                     throw new Error(`Image upload failed: ${uploadErr.message || "Unknown error"}`);
                 }
             }
-            // Insert post
+            // Insert post with JSON array of image URLs (or single URL for backward compatibility)
             console.log("Inserting post...");
+            const imageUrlValue = imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls);
             const { error: insertError, data: insertData } = await supabase.from("posts").insert({
                 content: content.trim() || "",
-                image_url: imageUrl,
+                image_url: imageUrlValue,
                 user_id: userId
             }).select().single();
             if (insertError) {
@@ -242,12 +253,13 @@ function CommunityPage() {
             }
             // Success - clear form and reload posts
             setContent("");
-            // Revoke object URL to prevent memory leaks
-            if (imagePreview) {
-                URL.revokeObjectURL(imagePreview);
-            }
-            setImageFile(null);
-            setImagePreview(null);
+            // Revoke object URLs to prevent memory leaks
+            imagePreviews.forEach((preview)=>{
+                URL.revokeObjectURL(preview);
+            });
+            setImageFiles([]);
+            setImagePreviews([]);
+            setCurrentImageIndex(0);
             // Reset file input
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
@@ -255,16 +267,13 @@ function CommunityPage() {
             // Reload posts
             console.log("Post created successfully. Reloading posts...");
             await loadPosts(userId);
+            setIsComposerOpen(false);
         } catch (err) {
             console.error("Error in submitPost:", err);
             const errorMessage = err?.message || err?.error?.message || "Failed to post. Please try again.";
             alert(errorMessage);
-            // Don't clear form on error - let user retry with same content/image
-            // But still revoke object URL if there was an upload attempt
-            if (imagePreview && imageUrl) {
-            // Only revoke if we successfully uploaded but failed to insert
-            // Otherwise keep the preview so user can retry
-            }
+        // Don't clear form on error - let user retry with same content/images
+        // Keep the previews so user can retry
         } finally{
             // Always reset submitting state
             setSubmitting(false);
@@ -334,6 +343,7 @@ function CommunityPage() {
             if (updatedPosts.data && selectedPost && selectedPost.id === post.id) {
                 const normalized = {
                     ...updatedPosts.data,
+                    profiles: extractProfile(updatedPosts.data.profiles),
                     likes_count: Array.isArray(updatedPosts.data.likes_count) ? updatedPosts.data.likes_count[0]?.count ?? 0 : updatedPosts.data.likes_count ?? 0,
                     comments_count: Array.isArray(updatedPosts.data.comments_count) ? updatedPosts.data.comments_count[0]?.count ?? 0 : updatedPosts.data.comments_count ?? 0,
                     liked_by_me: false
@@ -353,9 +363,13 @@ function CommunityPage() {
             ascending: true
         });
         if (error) return alert(error.message);
+        const normalizedComments = data.map((comment)=>({
+                ...comment,
+                profiles: extractProfile(comment.profiles)
+            }));
         setCommentsByPost((prev)=>({
                 ...prev,
-                [postId]: data || []
+                [postId]: normalizedComments || []
             }));
     }
     async function deletePost(postId) {
@@ -393,15 +407,35 @@ function CommunityPage() {
                 return;
             }
             if (postData?.image_url) {
-                // Extract path from URL
-                const urlParts = postData.image_url.split("/post-images/");
-                if (urlParts.length > 1) {
-                    const filePath = urlParts[1].split("?")[0];
-                    const { error: storageError } = await supabase.storage.from("post-images").remove([
-                        filePath
-                    ]);
+                // Handle both single URL and JSON array of URLs
+                let imageUrls = [];
+                try {
+                    const parsed = JSON.parse(postData.image_url);
+                    if (Array.isArray(parsed)) {
+                        imageUrls = parsed;
+                    } else {
+                        imageUrls = [
+                            postData.image_url
+                        ];
+                    }
+                } catch  {
+                    imageUrls = [
+                        postData.image_url
+                    ];
+                }
+                // Delete all images from storage
+                const filePaths = [];
+                for (const imageUrl of imageUrls){
+                    const urlParts = imageUrl.split("/post-images/");
+                    if (urlParts.length > 1) {
+                        const filePath = urlParts[1].split("?")[0];
+                        filePaths.push(filePath);
+                    }
+                }
+                if (filePaths.length > 0) {
+                    const { error: storageError } = await supabase.storage.from("post-images").remove(filePaths);
                     if (storageError) {
-                        console.warn("Error deleting image from storage (continuing anyway):", storageError);
+                        console.warn("Error deleting images from storage (continuing anyway):", storageError);
                     }
                 }
             }
@@ -542,6 +576,7 @@ function CommunityPage() {
             if (updatedPosts.data && selectedPost && selectedPost.id === postId) {
                 const normalized = {
                     ...updatedPosts.data,
+                    profiles: extractProfile(updatedPosts.data.profiles),
                     likes_count: Array.isArray(updatedPosts.data.likes_count) ? updatedPosts.data.likes_count[0]?.count ?? 0 : updatedPosts.data.likes_count ?? 0,
                     comments_count: Array.isArray(updatedPosts.data.comments_count) ? updatedPosts.data.comments_count[0]?.count ?? 0 : updatedPosts.data.comments_count ?? 0,
                     liked_by_me: selectedPost.liked_by_me
@@ -577,6 +612,11 @@ function CommunityPage() {
     function openPostModal(post) {
         setSelectedPost(post);
         setIsModalOpen(true);
+        // Reset image index when opening modal
+        setCurrentPostImageIndex((prev)=>({
+                ...prev,
+                [post.id]: 0
+            }));
         if (!commentsByPost[post.id]) {
             void loadComments(post.id);
         }
@@ -585,6 +625,22 @@ function CommunityPage() {
         setIsModalOpen(false);
         setSelectedPost(null);
     }
+    // Helper function to get image URLs from a post (handles both single URL and JSON array)
+    const getPostImages = (post)=>{
+        if (!post.image_url) return [];
+        try {
+            // Try to parse as JSON array
+            const parsed = JSON.parse(post.image_url);
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+        } catch  {
+        // If not JSON, treat as single URL string
+        }
+        return [
+            post.image_url
+        ];
+    };
     // Filter posts to only show those with images
     const postsWithImages = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
         return posts.filter((post)=>post.image_url);
@@ -631,15 +687,15 @@ function CommunityPage() {
                             alert('Image is too large. Maximum size is 10MB');
                             return;
                         }
-                        // Revoke old object URL to prevent memory leaks
-                        setImagePreview((prev)=>{
-                            if (prev) {
-                                URL.revokeObjectURL(prev);
-                            }
-                            return URL.createObjectURL(file);
-                        });
-                        // Set the image file
-                        setImageFile(file);
+                        // Add to images array
+                        setImageFiles((prev)=>[
+                                ...prev,
+                                file
+                            ]);
+                        setImagePreviews((prev)=>[
+                                ...prev,
+                                URL.createObjectURL(file)
+                            ]);
                         // Reset file input if it exists
                         if (fileInputRef.current) {
                             fileInputRef.current.value = "";
@@ -661,13 +717,56 @@ function CommunityPage() {
     // Cleanup object URLs on unmount
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         return ()=>{
-            if (imagePreview) {
-                URL.revokeObjectURL(imagePreview);
-            }
+            imagePreviews.forEach((preview)=>{
+                URL.revokeObjectURL(preview);
+            });
         };
     }, [
-        imagePreview
+        imagePreviews
     ]);
+    const handleOpenComposer = ()=>{
+        if (!userId) {
+            window.location.href = "/auth/login?next=/community";
+            return;
+        }
+        setIsComposerOpen(true);
+    };
+    const handleCloseComposer = ()=>{
+        // Clean up previews when closing
+        imagePreviews.forEach((preview)=>{
+            URL.revokeObjectURL(preview);
+        });
+        setImageFiles([]);
+        setImagePreviews([]);
+        setCurrentImageIndex(0);
+        setIsComposerOpen(false);
+    };
+    const nextImage = ()=>{
+        setCurrentImageIndex((prev)=>(prev + 1) % imagePreviews.length);
+    };
+    const prevImage = ()=>{
+        setCurrentImageIndex((prev)=>(prev - 1 + imagePreviews.length) % imagePreviews.length);
+    };
+    const nextPostImage = (postId, totalImages)=>{
+        setCurrentPostImageIndex((prev)=>({
+                ...prev,
+                [postId]: ((prev[postId] || 0) + 1) % totalImages
+            }));
+    };
+    const prevPostImage = (postId, totalImages)=>{
+        setCurrentPostImageIndex((prev)=>({
+                ...prev,
+                [postId]: ((prev[postId] || 0) - 1 + totalImages) % totalImages
+            }));
+    };
+    const removeImage = (index)=>{
+        setImageFiles((prev)=>prev.filter((_, i)=>i !== index));
+        URL.revokeObjectURL(imagePreviews[index]);
+        setImagePreviews((prev)=>prev.filter((_, i)=>i !== index));
+        if (currentImageIndex >= imagePreviews.length - 1 && currentImageIndex > 0) {
+            setCurrentImageIndex(currentImageIndex - 1);
+        }
+    };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "min-h-screen bg-gray-50 animate-fade-in",
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -678,162 +777,7 @@ function CommunityPage() {
                     children: "Community"
                 }, void 0, false, {
                     fileName: "[project]/app/community/page.tsx",
-                    lineNumber: 738,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
-                    onSubmit: submitPost,
-                    className: "bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm animate-fade-in-up card-hover",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
-                            value: content,
-                            onChange: (e)=>setContent(e.target.value),
-                            placeholder: userId ? "Share something with the community... (You can paste an image here!)" : "Sign in to post",
-                            className: "w-full resize-none outline-none min-h-[90px] bg-transparent text-gray-900 placeholder:text-gray-500",
-                            disabled: !userId || submitting,
-                            onPaste: (e)=>{
-                                // Let the global paste handler handle images
-                                // This prevents default text paste behavior for images
-                                const items = e.clipboardData?.items;
-                                if (items) {
-                                    for(let i = 0; i < items.length; i++){
-                                        if (items[i].type.indexOf('image') !== -1) {
-                                            e.preventDefault();
-                                            return;
-                                        }
-                                    }
-                                }
-                            }
-                        }, void 0, false, {
-                            fileName: "[project]/app/community/page.tsx",
-                            lineNumber: 742,
-                            columnNumber: 11
-                        }, this),
-                        imagePreview && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "mt-3",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                src: imagePreview,
-                                alt: "Selected",
-                                className: "max-h-64 rounded-lg border"
-                            }, void 0, false, {
-                                fileName: "[project]/app/community/page.tsx",
-                                lineNumber: 764,
-                                columnNumber: 15
-                            }, this)
-                        }, void 0, false, {
-                            fileName: "[project]/app/community/page.tsx",
-                            lineNumber: 763,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex items-center justify-between mt-3",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                    className: "inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                            ref: fileInputRef,
-                                            type: "file",
-                                            accept: "image/*",
-                                            className: "hidden",
-                                            disabled: !userId || submitting,
-                                            onChange: (e)=>{
-                                                const file = e.target.files?.[0] || null;
-                                                // Revoke old object URL to prevent memory leaks
-                                                if (imagePreview) {
-                                                    URL.revokeObjectURL(imagePreview);
-                                                }
-                                                setImageFile(file);
-                                                setImagePreview(file ? URL.createObjectURL(file) : null);
-                                            }
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/community/page.tsx",
-                                            lineNumber: 769,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "px-3 h-9 inline-flex items-center rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700",
-                                            children: "📷 Add image"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/community/page.tsx",
-                                            lineNumber: 787,
-                                            columnNumber: 15
-                                        }, this),
-                                        imageFile && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "text-gray-500 text-sm",
-                                            children: imageFile.name
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/community/page.tsx",
-                                            lineNumber: 788,
-                                            columnNumber: 29
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/community/page.tsx",
-                                    lineNumber: 768,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex items-center gap-3",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "text-sm text-gray-500",
-                                            children: [
-                                                content.length,
-                                                "/280"
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/community/page.tsx",
-                                            lineNumber: 791,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            type: "submit",
-                                            disabled: !userId || submitting || content.length > 280 || !imageFile,
-                                            className: "px-4 h-9 rounded-full bg-[#8c52ff] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-all hover-scale btn-press btn-ripple disabled:hover:scale-100",
-                                            children: submitting ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: "flex items-center gap-2",
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "loading-spinner",
-                                                        style: {
-                                                            width: '16px',
-                                                            height: '16px',
-                                                            borderWidth: '2px'
-                                                        }
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/community/page.tsx",
-                                                        lineNumber: 799,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    "Posting..."
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/community/page.tsx",
-                                                lineNumber: 798,
-                                                columnNumber: 19
-                                            }, this) : "Post"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/community/page.tsx",
-                                            lineNumber: 792,
-                                            columnNumber: 15
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/community/page.tsx",
-                                    lineNumber: 790,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/community/page.tsx",
-                            lineNumber: 767,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/app/community/page.tsx",
-                    lineNumber: 741,
+                    lineNumber: 834,
                     columnNumber: 9
                 }, this),
                 loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -843,20 +787,20 @@ function CommunityPage() {
                             className: "loading-spinner mx-auto mb-4"
                         }, void 0, false, {
                             fileName: "[project]/app/community/page.tsx",
-                            lineNumber: 811,
+                            lineNumber: 839,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             children: "Loading…"
                         }, void 0, false, {
                             fileName: "[project]/app/community/page.tsx",
-                            lineNumber: 812,
+                            lineNumber: 840,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/community/page.tsx",
-                    lineNumber: 810,
+                    lineNumber: 838,
                     columnNumber: 11
                 }, this) : postsWithImages.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "text-center text-gray-500 py-12",
@@ -866,7 +810,7 @@ function CommunityPage() {
                             children: "No posts with images yet."
                         }, void 0, false, {
                             fileName: "[project]/app/community/page.tsx",
-                            lineNumber: 816,
+                            lineNumber: 844,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -874,13 +818,13 @@ function CommunityPage() {
                             children: "Be the first to share a photo!"
                         }, void 0, false, {
                             fileName: "[project]/app/community/page.tsx",
-                            lineNumber: 817,
+                            lineNumber: 845,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/community/page.tsx",
-                    lineNumber: 815,
+                    lineNumber: 843,
                     columnNumber: 11
                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4",
@@ -888,125 +832,465 @@ function CommunityPage() {
                         columnFill: 'balance'
                     },
                     children: postsWithImages.map((post, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: `break-inside-avoid mb-4 bg-white rounded-lg overflow-hidden shadow-sm card-hover cursor-pointer border border-gray-200 stagger-item`,
+                            className: `break-inside-avoid mb-4 bg-white rounded-lg overflow-hidden shadow-sm card-hover cursor-pointer border border-gray-200 stagger-item group`,
                             style: {
                                 animationDelay: `${index * 0.05}s`
                             },
                             onClick: ()=>openPostModal(post),
-                            children: post.image_url && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "relative w-full",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                        src: post.image_url,
-                                        alt: post.content || "Post image",
-                                        className: "w-full h-auto object-cover transition-transform duration-300 hover:scale-105",
-                                        loading: "lazy"
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/community/page.tsx",
-                                        lineNumber: 833,
-                                        columnNumber: 21
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3",
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex items-center gap-4 text-white text-sm",
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex items-center gap-1",
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
-                                                            width: "16",
-                                                            height: "16",
-                                                            viewBox: "0 0 24 24",
-                                                            fill: post.liked_by_me ? "currentColor" : "none",
-                                                            stroke: "currentColor",
-                                                            strokeWidth: "2",
-                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
-                                                                d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/community/page.tsx",
-                                                                lineNumber: 844,
-                                                                columnNumber: 29
-                                                            }, this)
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/community/page.tsx",
-                                                            lineNumber: 843,
-                                                            columnNumber: 27
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            children: post.likes_count ?? 0
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/community/page.tsx",
-                                                            lineNumber: 846,
-                                                            columnNumber: 27
-                                                        }, this)
-                                                    ]
-                                                }, void 0, true, {
+                            children: (()=>{
+                                const postImages = getPostImages(post);
+                                // Always show first image in grid view (no navigation)
+                                const currentIndex = 0;
+                                return postImages.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "relative w-full",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "relative bg-gray-100 overflow-hidden",
+                                            children: postImages.map((imgUrl, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                                    src: imgUrl,
+                                                    alt: post.content || `Post image ${index + 1}`,
+                                                    className: `w-full h-auto transition-opacity duration-300 ${index === currentIndex ? 'opacity-100 block' : 'opacity-0 hidden'}`,
+                                                    loading: "lazy"
+                                                }, index, false, {
                                                     fileName: "[project]/app/community/page.tsx",
-                                                    lineNumber: 842,
-                                                    columnNumber: 25
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex items-center gap-1",
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
-                                                            width: "16",
-                                                            height: "16",
-                                                            viewBox: "0 0 24 24",
-                                                            fill: "none",
-                                                            stroke: "currentColor",
-                                                            strokeWidth: "2",
-                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
-                                                                d: "M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2v10z"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/app/community/page.tsx",
-                                                                lineNumber: 850,
-                                                                columnNumber: 29
-                                                            }, this)
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/community/page.tsx",
-                                                            lineNumber: 849,
-                                                            columnNumber: 27
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            children: post.comments_count ?? 0
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/app/community/page.tsx",
-                                                            lineNumber: 852,
-                                                            columnNumber: 27
-                                                        }, this)
-                                                    ]
-                                                }, void 0, true, {
-                                                    fileName: "[project]/app/community/page.tsx",
-                                                    lineNumber: 848,
-                                                    columnNumber: 25
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
+                                                    lineNumber: 867,
+                                                    columnNumber: 27
+                                                }, this))
+                                        }, void 0, false, {
                                             fileName: "[project]/app/community/page.tsx",
-                                            lineNumber: 841,
+                                            lineNumber: 865,
+                                            columnNumber: 23
+                                        }, this),
+                                        postImages.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "absolute top-2 right-2 flex items-center gap-1.5 z-10",
+                                            children: postImages.map((_, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: `h-1.5 rounded-full transition-all ${index === currentIndex ? 'bg-white w-4' : 'bg-white/50 w-1.5'}`
+                                                }, index, false, {
+                                                    fileName: "[project]/app/community/page.tsx",
+                                                    lineNumber: 883,
+                                                    columnNumber: 29
+                                                }, this))
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/community/page.tsx",
+                                            lineNumber: 881,
+                                            columnNumber: 25
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 pointer-events-none",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex items-center gap-4 text-white text-sm",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex items-center gap-1",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                                                width: "16",
+                                                                height: "16",
+                                                                viewBox: "0 0 24 24",
+                                                                fill: post.liked_by_me ? "currentColor" : "none",
+                                                                stroke: "currentColor",
+                                                                strokeWidth: "2",
+                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                                    d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/community/page.tsx",
+                                                                    lineNumber: 900,
+                                                                    columnNumber: 31
+                                                                }, this)
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/community/page.tsx",
+                                                                lineNumber: 899,
+                                                                columnNumber: 29
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                children: post.likes_count ?? 0
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/community/page.tsx",
+                                                                lineNumber: 902,
+                                                                columnNumber: 29
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/community/page.tsx",
+                                                        lineNumber: 898,
+                                                        columnNumber: 27
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex items-center gap-1",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                                                width: "16",
+                                                                height: "16",
+                                                                viewBox: "0 0 24 24",
+                                                                fill: "none",
+                                                                stroke: "currentColor",
+                                                                strokeWidth: "2",
+                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                                    d: "M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2v10z"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/community/page.tsx",
+                                                                    lineNumber: 906,
+                                                                    columnNumber: 31
+                                                                }, this)
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/community/page.tsx",
+                                                                lineNumber: 905,
+                                                                columnNumber: 29
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                children: post.comments_count ?? 0
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/community/page.tsx",
+                                                                lineNumber: 908,
+                                                                columnNumber: 29
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/community/page.tsx",
+                                                        lineNumber: 904,
+                                                        columnNumber: 27
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/community/page.tsx",
+                                                lineNumber: 897,
+                                                columnNumber: 25
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/community/page.tsx",
+                                            lineNumber: 896,
                                             columnNumber: 23
                                         }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/community/page.tsx",
-                                        lineNumber: 840,
-                                        columnNumber: 21
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/app/community/page.tsx",
-                                lineNumber: 832,
-                                columnNumber: 19
-                            }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/community/page.tsx",
+                                    lineNumber: 864,
+                                    columnNumber: 21
+                                }, this);
+                            })()
                         }, post.id, false, {
                             fileName: "[project]/app/community/page.tsx",
-                            lineNumber: 825,
+                            lineNumber: 853,
                             columnNumber: 15
                         }, this))
                 }, void 0, false, {
                     fileName: "[project]/app/community/page.tsx",
-                    lineNumber: 820,
+                    lineNumber: 848,
                     columnNumber: 11
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                    type: "button",
+                    onClick: handleOpenComposer,
+                    className: "fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[#8c52ff] text-white shadow-lg hover:scale-105 transition-transform z-50 flex items-center justify-center",
+                    "aria-label": "Create community post",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                        width: "24",
+                        height: "24",
+                        viewBox: "0 0 24 24",
+                        fill: "none",
+                        stroke: "currentColor",
+                        strokeWidth: "2",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                            d: "M12 5v14M5 12h14"
+                        }, void 0, false, {
+                            fileName: "[project]/app/community/page.tsx",
+                            lineNumber: 928,
+                            columnNumber: 13
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/app/community/page.tsx",
+                        lineNumber: 927,
+                        columnNumber: 11
+                    }, this)
+                }, void 0, false, {
+                    fileName: "[project]/app/community/page.tsx",
+                    lineNumber: 921,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$app$2f$ui$2f$Modal$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                    open: isComposerOpen,
+                    onClose: handleCloseComposer,
+                    title: "Share something",
+                    className: "max-w-2xl",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
+                        onSubmit: submitPost,
+                        className: "bg-white space-y-4",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 shadow-inner",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
+                                        value: content,
+                                        onChange: (e)=>setContent(e.target.value),
+                                        placeholder: userId ? "Share something with the community... (You can paste an image here!)" : "Sign in to post",
+                                        className: "w-full resize-none rounded-xl border border-transparent bg-white/80 p-4 text-gray-900 placeholder:text-gray-500 focus:border-[#c9adff] focus:ring-2 focus:ring-[#d9c5ff] min-h-[160px]",
+                                        disabled: !userId || submitting,
+                                        onPaste: (e)=>{
+                                            const items = e.clipboardData?.items;
+                                            if (items) {
+                                                for(let i = 0; i < items.length; i++){
+                                                    if (items[i].type.indexOf('image') !== -1) {
+                                                        e.preventDefault();
+                                                        return;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/community/page.tsx",
+                                        lineNumber: 936,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "mt-2 text-right text-xs text-gray-500",
+                                        children: [
+                                            content.length,
+                                            "/280"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/community/page.tsx",
+                                        lineNumber: 954,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/community/page.tsx",
+                                lineNumber: 935,
+                                columnNumber: 13
+                            }, this),
+                            imagePreviews.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "rounded-xl border border-gray-200 bg-gray-50 p-3",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "flex items-center gap-2 mb-2",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-sm font-medium text-gray-700",
+                                            children: [
+                                                imagePreviews.length,
+                                                " image",
+                                                imagePreviews.length > 1 ? 's' : '',
+                                                " selected"
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/community/page.tsx",
+                                            lineNumber: 959,
+                                            columnNumber: 19
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/community/page.tsx",
+                                        lineNumber: 958,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "flex flex-wrap gap-2",
+                                        children: imagePreviews.map((preview, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-300 bg-gray-100 group",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                                        src: preview,
+                                                        alt: `Preview ${index + 1}`,
+                                                        className: "w-full h-full object-cover"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/community/page.tsx",
+                                                        lineNumber: 967,
+                                                        columnNumber: 23
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                        type: "button",
+                                                        onClick: (e)=>{
+                                                            e.stopPropagation();
+                                                            removeImage(index);
+                                                        },
+                                                        className: "absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100",
+                                                        "aria-label": "Remove image",
+                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                                            width: "12",
+                                                            height: "12",
+                                                            viewBox: "0 0 24 24",
+                                                            fill: "none",
+                                                            stroke: "currentColor",
+                                                            strokeWidth: "3",
+                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                                d: "M18 6L6 18M6 6l12 12"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/community/page.tsx",
+                                                                lineNumber: 983,
+                                                                columnNumber: 27
+                                                            }, this)
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/community/page.tsx",
+                                                            lineNumber: 982,
+                                                            columnNumber: 25
+                                                        }, this)
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/community/page.tsx",
+                                                        lineNumber: 973,
+                                                        columnNumber: 23
+                                                    }, this),
+                                                    imagePreviews.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "absolute bottom-0.5 left-0.5 px-1.5 py-0.5 rounded bg-black/50 text-white text-xs font-medium",
+                                                        children: index + 1
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/community/page.tsx",
+                                                        lineNumber: 988,
+                                                        columnNumber: 25
+                                                    }, this)
+                                                ]
+                                            }, index, true, {
+                                                fileName: "[project]/app/community/page.tsx",
+                                                lineNumber: 963,
+                                                columnNumber: 21
+                                            }, this))
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/community/page.tsx",
+                                        lineNumber: 961,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/community/page.tsx",
+                                lineNumber: 957,
+                                columnNumber: 15
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex flex-wrap items-center justify-between gap-3",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                        className: "inline-flex items-center gap-3 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 cursor-pointer transition",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                ref: fileInputRef,
+                                                type: "file",
+                                                accept: "image/*",
+                                                multiple: true,
+                                                className: "hidden",
+                                                disabled: !userId || submitting,
+                                                onChange: (e)=>{
+                                                    const files = Array.from(e.target.files || []);
+                                                    if (files.length > 0) {
+                                                        const newPreviews = files.map((file)=>URL.createObjectURL(file));
+                                                        setImageFiles((prev)=>[
+                                                                ...prev,
+                                                                ...files
+                                                            ]);
+                                                        setImagePreviews((prev)=>[
+                                                                ...prev,
+                                                                ...newPreviews
+                                                            ]);
+                                                    }
+                                                }
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/community/page.tsx",
+                                                lineNumber: 999,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                                width: "18",
+                                                height: "18",
+                                                viewBox: "0 0 24 24",
+                                                fill: "none",
+                                                stroke: "currentColor",
+                                                strokeWidth: "2",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                        d: "M4 16l6-6 4 4 6-6"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/community/page.tsx",
+                                                        lineNumber: 1016,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                        d: "M2 12l2-2 4 4 4-4 6 6 4-4"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/community/page.tsx",
+                                                        lineNumber: 1017,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/community/page.tsx",
+                                                lineNumber: 1015,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                children: imageFiles.length > 0 ? `${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''}` : "Add images"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/community/page.tsx",
+                                                lineNumber: 1019,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/community/page.tsx",
+                                        lineNumber: 998,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "flex items-center gap-3",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                type: "button",
+                                                onClick: handleCloseComposer,
+                                                className: "px-4 h-10 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50",
+                                                children: "Cancel"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/community/page.tsx",
+                                                lineNumber: 1022,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                type: "submit",
+                                                disabled: !userId || submitting || content.length > 280 || imageFiles.length === 0,
+                                                className: "px-6 h-10 rounded-full bg-[#8c52ff] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7a46e5] transition-all btn-press btn-ripple",
+                                                children: submitting ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "flex items-center gap-2",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "loading-spinner",
+                                                            style: {
+                                                                width: '16px',
+                                                                height: '16px',
+                                                                borderWidth: '2px'
+                                                            }
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/community/page.tsx",
+                                                            lineNumber: 1036,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        "Posting..."
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/community/page.tsx",
+                                                    lineNumber: 1035,
+                                                    columnNumber: 21
+                                                }, this) : "Post"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/community/page.tsx",
+                                                lineNumber: 1029,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/community/page.tsx",
+                                        lineNumber: 1021,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/community/page.tsx",
+                                lineNumber: 997,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/community/page.tsx",
+                        lineNumber: 934,
+                        columnNumber: 11
+                    }, this)
+                }, void 0, false, {
+                    fileName: "[project]/app/community/page.tsx",
+                    lineNumber: 933,
+                    columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$app$2f$ui$2f$Modal$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                     open: isModalOpen,
@@ -1032,38 +1316,156 @@ function CommunityPage() {
                                         d: "M18 6L6 18M6 6l12 12"
                                     }, void 0, false, {
                                         fileName: "[project]/app/community/page.tsx",
-                                        lineNumber: 874,
+                                        lineNumber: 1057,
                                         columnNumber: 19
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/community/page.tsx",
-                                    lineNumber: 873,
+                                    lineNumber: 1056,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/community/page.tsx",
-                                lineNumber: 868,
+                                lineNumber: 1051,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex flex-col md:flex-row max-h-[90vh]",
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "md:w-1/2 bg-black flex items-center justify-center",
-                                        children: selectedPost.image_url && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                            src: selectedPost.image_url,
-                                            alt: "Post image",
-                                            className: "w-full h-auto max-h-[90vh] object-contain"
+                                    (()=>{
+                                        const postImages = getPostImages(selectedPost);
+                                        const currentIndex = currentPostImageIndex[selectedPost.id] || 0;
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "md:w-1/2 bg-white flex items-center justify-center relative",
+                                            style: {
+                                                minHeight: '400px',
+                                                maxHeight: '90vh'
+                                            },
+                                            children: postImages.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "relative w-full h-full flex items-center justify-center p-4",
+                                                        children: [
+                                                            postImages.map((imgUrl, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                                                    src: imgUrl,
+                                                                    alt: `Post image ${index + 1}`,
+                                                                    className: `max-w-full max-h-full w-auto h-auto object-contain transition-opacity duration-300 ${index === currentIndex ? 'opacity-100' : 'opacity-0 absolute'}`,
+                                                                    style: {
+                                                                        maxHeight: 'calc(90vh - 32px)'
+                                                                    }
+                                                                }, index, false, {
+                                                                    fileName: "[project]/app/community/page.tsx",
+                                                                    lineNumber: 1072,
+                                                                    columnNumber: 31
+                                                                }, this)),
+                                                            postImages.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                        type: "button",
+                                                                        onClick: (e)=>{
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            prevPostImage(selectedPost.id, postImages.length);
+                                                                        },
+                                                                        className: "absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors z-10",
+                                                                        "aria-label": "Previous image",
+                                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                                                            width: "24",
+                                                                            height: "24",
+                                                                            viewBox: "0 0 24 24",
+                                                                            fill: "none",
+                                                                            stroke: "currentColor",
+                                                                            strokeWidth: "2",
+                                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                                                d: "M15 18l-6-6 6-6"
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/app/community/page.tsx",
+                                                                                lineNumber: 1097,
+                                                                                columnNumber: 37
+                                                                            }, this)
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/community/page.tsx",
+                                                                            lineNumber: 1096,
+                                                                            columnNumber: 35
+                                                                        }, this)
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/app/community/page.tsx",
+                                                                        lineNumber: 1086,
+                                                                        columnNumber: 33
+                                                                    }, this),
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                        type: "button",
+                                                                        onClick: (e)=>{
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            nextPostImage(selectedPost.id, postImages.length);
+                                                                        },
+                                                                        className: "absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors z-10",
+                                                                        "aria-label": "Next image",
+                                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                                                            width: "24",
+                                                                            height: "24",
+                                                                            viewBox: "0 0 24 24",
+                                                                            fill: "none",
+                                                                            stroke: "currentColor",
+                                                                            strokeWidth: "2",
+                                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                                                d: "M9 18l6-6-6-6"
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/app/community/page.tsx",
+                                                                                lineNumber: 1111,
+                                                                                columnNumber: 37
+                                                                            }, this)
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/community/page.tsx",
+                                                                            lineNumber: 1110,
+                                                                            columnNumber: 35
+                                                                        }, this)
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/app/community/page.tsx",
+                                                                        lineNumber: 1100,
+                                                                        columnNumber: 33
+                                                                    }, this)
+                                                                ]
+                                                            }, void 0, true)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/community/page.tsx",
+                                                        lineNumber: 1070,
+                                                        columnNumber: 27
+                                                    }, this),
+                                                    postImages.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10",
+                                                        children: postImages.map((_, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                type: "button",
+                                                                onClick: (e)=>{
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    setCurrentPostImageIndex((prev)=>({
+                                                                            ...prev,
+                                                                            [selectedPost.id]: index
+                                                                        }));
+                                                                },
+                                                                className: `h-2 rounded-full transition-all ${index === currentIndex ? 'bg-white w-8' : 'bg-white/50 hover:bg-white/75 w-2'}`,
+                                                                "aria-label": `Go to image ${index + 1}`
+                                                            }, index, false, {
+                                                                fileName: "[project]/app/community/page.tsx",
+                                                                lineNumber: 1122,
+                                                                columnNumber: 33
+                                                            }, this))
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/community/page.tsx",
+                                                        lineNumber: 1120,
+                                                        columnNumber: 29
+                                                    }, this)
+                                                ]
+                                            }, void 0, true)
                                         }, void 0, false, {
                                             fileName: "[project]/app/community/page.tsx",
-                                            lineNumber: 882,
+                                            lineNumber: 1067,
                                             columnNumber: 21
-                                        }, this)
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/community/page.tsx",
-                                        lineNumber: 880,
-                                        columnNumber: 17
-                                    }, this),
+                                        }, this);
+                                    })(),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "md:w-1/2 flex flex-col max-h-[90vh] overflow-hidden relative",
                                         children: [
@@ -1075,7 +1477,7 @@ function CommunityPage() {
                                                         children: ((selectedPost.profiles?.first_name || "") + (selectedPost.profiles?.last_name ? ` ${selectedPost.profiles.last_name}` : "") || selectedPost.user_id || "?").slice(0, 1).toUpperCase()
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/community/page.tsx",
-                                                        lineNumber: 894,
+                                                        lineNumber: 1150,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1089,7 +1491,7 @@ function CommunityPage() {
                                                                         children: (selectedPost.profiles?.first_name || "").toString() + (selectedPost.profiles?.last_name ? ` ${selectedPost.profiles.last_name}` : "") || "Anonymous"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/community/page.tsx",
-                                                                        lineNumber: 899,
+                                                                        lineNumber: 1155,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1097,7 +1499,7 @@ function CommunityPage() {
                                                                         children: "·"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/community/page.tsx",
-                                                                        lineNumber: 900,
+                                                                        lineNumber: 1156,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("time", {
@@ -1106,7 +1508,7 @@ function CommunityPage() {
                                                                         children: new Date(selectedPost.created_at).toLocaleDateString()
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/community/page.tsx",
-                                                                        lineNumber: 901,
+                                                                        lineNumber: 1157,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     userId === selectedPost.user_id && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1131,12 +1533,12 @@ function CommunityPage() {
                                                                                 d: "M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/community/page.tsx",
-                                                                                lineNumber: 918,
+                                                                                lineNumber: 1174,
                                                                                 columnNumber: 33
                                                                             }, this)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/community/page.tsx",
-                                                                            lineNumber: 917,
+                                                                            lineNumber: 1173,
                                                                             columnNumber: 31
                                                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                                                             width: "16",
@@ -1149,23 +1551,23 @@ function CommunityPage() {
                                                                                 d: "M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/community/page.tsx",
-                                                                                lineNumber: 922,
+                                                                                lineNumber: 1178,
                                                                                 columnNumber: 33
                                                                             }, this)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/community/page.tsx",
-                                                                            lineNumber: 921,
+                                                                            lineNumber: 1177,
                                                                             columnNumber: 31
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/community/page.tsx",
-                                                                        lineNumber: 905,
+                                                                        lineNumber: 1161,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/community/page.tsx",
-                                                                lineNumber: 898,
+                                                                lineNumber: 1154,
                                                                 columnNumber: 23
                                                             }, this),
                                                             selectedPost.content ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1173,19 +1575,19 @@ function CommunityPage() {
                                                                 children: selectedPost.content
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/community/page.tsx",
-                                                                lineNumber: 929,
+                                                                lineNumber: 1185,
                                                                 columnNumber: 25
                                                             }, this) : null
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/community/page.tsx",
-                                                        lineNumber: 897,
+                                                        lineNumber: 1153,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/community/page.tsx",
-                                                lineNumber: 893,
+                                                lineNumber: 1149,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1213,12 +1615,12 @@ function CommunityPage() {
                                                                         d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/community/page.tsx",
-                                                                        lineNumber: 947,
+                                                                        lineNumber: 1203,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/community/page.tsx",
-                                                                    lineNumber: 946,
+                                                                    lineNumber: 1202,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1230,13 +1632,13 @@ function CommunityPage() {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/community/page.tsx",
-                                                                    lineNumber: 949,
+                                                                    lineNumber: 1205,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/community/page.tsx",
-                                                            lineNumber: 937,
+                                                            lineNumber: 1193,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1253,12 +1655,12 @@ function CommunityPage() {
                                                                         d: "M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2v10z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/community/page.tsx",
-                                                                        lineNumber: 953,
+                                                                        lineNumber: 1209,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/community/page.tsx",
-                                                                    lineNumber: 952,
+                                                                    lineNumber: 1208,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1270,24 +1672,24 @@ function CommunityPage() {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/community/page.tsx",
-                                                                    lineNumber: 955,
+                                                                    lineNumber: 1211,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/community/page.tsx",
-                                                            lineNumber: 951,
+                                                            lineNumber: 1207,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/community/page.tsx",
-                                                    lineNumber: 936,
+                                                    lineNumber: 1192,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/community/page.tsx",
-                                                lineNumber: 935,
+                                                lineNumber: 1191,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1299,12 +1701,12 @@ function CommunityPage() {
                                                         children: "No comments yet. Be the first to comment!"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/community/page.tsx",
-                                                        lineNumber: 964,
+                                                        lineNumber: 1220,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/community/page.tsx",
-                                                    lineNumber: 963,
+                                                    lineNumber: 1219,
                                                     columnNumber: 23
                                                 }, this) : (commentsByPost[selectedPost.id] || []).map((c)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         className: "flex items-start gap-3 group",
@@ -1314,7 +1716,7 @@ function CommunityPage() {
                                                                 children: ((c.profiles?.first_name || "") + (c.profiles?.last_name ? ` ${c.profiles.last_name}` : "") || c.user_id || "?").slice(0, 1).toUpperCase()
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/community/page.tsx",
-                                                                lineNumber: 969,
+                                                                lineNumber: 1225,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1328,7 +1730,7 @@ function CommunityPage() {
                                                                                 children: (c.profiles?.first_name || "") + (c.profiles?.last_name ? ` ${c.profiles.last_name}` : "") || "Anonymous"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/community/page.tsx",
-                                                                                lineNumber: 974,
+                                                                                lineNumber: 1230,
                                                                                 columnNumber: 31
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1336,7 +1738,7 @@ function CommunityPage() {
                                                                                 children: "·"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/community/page.tsx",
-                                                                                lineNumber: 975,
+                                                                                lineNumber: 1231,
                                                                                 columnNumber: 31
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("time", {
@@ -1345,13 +1747,13 @@ function CommunityPage() {
                                                                                 children: new Date(c.created_at).toLocaleDateString()
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/community/page.tsx",
-                                                                                lineNumber: 976,
+                                                                                lineNumber: 1232,
                                                                                 columnNumber: 31
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/community/page.tsx",
-                                                                        lineNumber: 973,
+                                                                        lineNumber: 1229,
                                                                         columnNumber: 29
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1359,13 +1761,13 @@ function CommunityPage() {
                                                                         children: c.content
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/community/page.tsx",
-                                                                        lineNumber: 980,
+                                                                        lineNumber: 1236,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/community/page.tsx",
-                                                                lineNumber: 972,
+                                                                lineNumber: 1228,
                                                                 columnNumber: 27
                                                             }, this),
                                                             userId === c.user_id && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1390,12 +1792,12 @@ function CommunityPage() {
                                                                         d: "M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/community/page.tsx",
-                                                                        lineNumber: 996,
+                                                                        lineNumber: 1252,
                                                                         columnNumber: 35
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/community/page.tsx",
-                                                                    lineNumber: 995,
+                                                                    lineNumber: 1251,
                                                                     columnNumber: 33
                                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                                                     width: "16",
@@ -1408,28 +1810,28 @@ function CommunityPage() {
                                                                         d: "M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/community/page.tsx",
-                                                                        lineNumber: 1000,
+                                                                        lineNumber: 1256,
                                                                         columnNumber: 35
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/community/page.tsx",
-                                                                    lineNumber: 999,
+                                                                    lineNumber: 1255,
                                                                     columnNumber: 33
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/community/page.tsx",
-                                                                lineNumber: 983,
+                                                                lineNumber: 1239,
                                                                 columnNumber: 29
                                                             }, this)
                                                         ]
                                                     }, c.id, true, {
                                                         fileName: "[project]/app/community/page.tsx",
-                                                        lineNumber: 968,
+                                                        lineNumber: 1224,
                                                         columnNumber: 25
                                                     }, this))
                                             }, void 0, false, {
                                                 fileName: "[project]/app/community/page.tsx",
-                                                lineNumber: 961,
+                                                lineNumber: 1217,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1455,7 +1857,7 @@ function CommunityPage() {
                                                             }
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/community/page.tsx",
-                                                            lineNumber: 1013,
+                                                            lineNumber: 1269,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1470,52 +1872,52 @@ function CommunityPage() {
                                                             children: "Post"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/community/page.tsx",
-                                                            lineNumber: 1027,
+                                                            lineNumber: 1283,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/community/page.tsx",
-                                                    lineNumber: 1012,
+                                                    lineNumber: 1268,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/community/page.tsx",
-                                                lineNumber: 1011,
+                                                lineNumber: 1267,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/community/page.tsx",
-                                        lineNumber: 891,
+                                        lineNumber: 1147,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/community/page.tsx",
-                                lineNumber: 878,
+                                lineNumber: 1061,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/community/page.tsx",
-                        lineNumber: 866,
+                        lineNumber: 1049,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/community/page.tsx",
-                    lineNumber: 864,
+                    lineNumber: 1047,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/community/page.tsx",
-            lineNumber: 737,
+            lineNumber: 833,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/community/page.tsx",
-        lineNumber: 736,
+        lineNumber: 832,
         columnNumber: 5
     }, this);
 }

@@ -161,6 +161,7 @@ body {
 
 .ai-assistant-bg {
   min-height: 100vh;
+  height: 100vh;
   background: var(--assistant-gradient);
   transition: background 200ms ease;
 }

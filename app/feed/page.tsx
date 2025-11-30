@@ -207,10 +207,10 @@ export default function AIAssistantPage() {
   ];
 
   return (
-    <div className="ai-assistant-bg animate-fade-in">
+    <div className="ai-assistant-bg animate-fade-in h-screen flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-ai-surface border-b border-ai shadow-ai animate-fade-in-down">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="bg-ai-surface border-b border-ai shadow-ai animate-fade-in-down flex-shrink-0">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center animate-scale-in">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,10 +225,10 @@ export default function AIAssistantPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="bg-ai-surface rounded-2xl shadow-ai border border-ai overflow-hidden backdrop-blur">
+      <div className="max-w-4xl mx-auto px-4 py-4 flex-1 flex flex-col min-h-0 w-full">
+        <div className="bg-ai-surface rounded-2xl shadow-ai border border-ai overflow-hidden backdrop-blur flex flex-col flex-1 min-h-0">
           {/* Messages Container */}
-          <div className="h-[600px] overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 min-h-0">
             {messages.map((message) => (
               <div key={message.id} className="space-y-4 animate-fade-in-up">
                 {/* User Message */}
@@ -284,8 +284,8 @@ export default function AIAssistantPage() {
 
           {/* Quick Actions */}
           {locationReady && (
-            <div className="px-6 py-4 bg-ai-muted border-t border-ai">
-              <p className="text-sm text-gray-600 mb-3">Quick actions:</p>
+            <div className="px-6 py-3 bg-ai-muted border-t border-ai flex-shrink-0">
+              <p className="text-sm text-gray-600 mb-2">Quick actions:</p>
               <div className="flex flex-wrap gap-2">
                 {quickActions.map((action, index) => (
                   <button
@@ -301,7 +301,7 @@ export default function AIAssistantPage() {
           )}
 
           {/* Input Area */}
-          <div className="p-6 bg-ai-surface border-t border-ai">
+          <div className="p-4 bg-ai-surface border-t border-ai flex-shrink-0">
             {!locationReady ? (
               <div className="flex items-center justify-center gap-3 py-4">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-500"></div>
@@ -354,40 +354,6 @@ export default function AIAssistantPage() {
             )}
           </div>
         </div>
-
-        {/* Features Section */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-ai-card p-6 rounded-xl shadow-lg border border-ai">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Location-Based</h3>
-            <p className="text-ai-muted text-sm">Find restaurants and cafes near your current location with precise recommendations.</p>
-          </div>
-
-          <div className="bg-ai-card p-6 rounded-xl shadow-lg border border-ai">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Smart Filtering</h3>
-            <p className="text-ai-muted text-sm">Filter by cuisine, price range, features, and preferences to find exactly what you want.</p>
-          </div>
-
-          <div className="bg-ai-card p-6 rounded-xl shadow-lg border border-ai">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Personalized</h3>
-            <p className="text-ai-muted text-sm">Get recommendations tailored to your preferences, budget, and dining preferences.</p>
-          </div>
-          </div>
       </div>
     </div>
   );

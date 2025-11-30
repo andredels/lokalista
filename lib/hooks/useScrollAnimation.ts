@@ -41,3 +41,10 @@ export function useScrollAnimation(options?: {
   return { ref: elementRef, isVisible };
 }
 
+
+
+
+
+
+
+

@@ -1103,28 +1103,15 @@ export default function FoodMapPage() {
       `}</style>
       
       <div className="container py-4">
+        {/* Map Container - Moved to top */}
+        <div className="mb-4 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div ref={mapEl} style={{ width: "100%", height: "70vh" }} />
+        </div>
+
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">🍽️ Food Discovery Map</h1>
-          <p className="text-gray-600">Find the best restaurants, cafes, and food places in the Philippines</p>
-          <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-700">
-              <strong>Real Data Mode:</strong> Now showing real restaurants and cafes from OpenStreetMap! Use "My Location" to center the map, then click "Search Food Places" to find restaurants in the current view area.
-            </p>
-          </div>
-          <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-700">
-              <strong>🗺️ Click to Explore:</strong> Click anywhere on the map to automatically find and display nearby restaurants and cafes! The map will refresh with new places from the Places API around your clicked location.
-            </p>
-          </div>
-          <div className="mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-            <p className="text-sm text-purple-700">
-              <strong>🔍 Smart Zoom Filtering:</strong> 
-              <br />• <strong>Normal View (≤13):</strong> Shows 5 most popular food places (well-known chains & highest rated)
-              <br />• <strong>Slightly Zoomed (14-16):</strong> Shows 10 top-rated places
-              <br />• <strong>Max Zoom (17+):</strong> Shows 20 top-rated places
-            </p>
-          </div>
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">🍽️ Food Discovery Map</h1>
+          <p className="text-gray-600 text-sm">Find the best restaurants, cafes, and food places in the Philippines</p>
         </div>
 
         {/* Search and Filters */}
@@ -1227,10 +1214,32 @@ export default function FoodMapPage() {
           </div>
         </div>
 
-        {/* Map Container */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div ref={mapEl} style={{ width: "100%", height: "70vh" }} />
-        </div>
+        {/* Info Boxes - Collapsible */}
+        <details className="mb-4 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <summary className="p-3 cursor-pointer hover:bg-gray-50 font-medium text-gray-700">
+            ℹ️ Map Instructions & Tips
+          </summary>
+          <div className="px-3 pb-3 space-y-2">
+            <div className="p-2 bg-green-50 border border-green-200 rounded">
+              <p className="text-xs text-green-700">
+                <strong>Real Data Mode:</strong> Now showing real restaurants and cafes from OpenStreetMap! Use "My Location" to center the map, then click "Search Food Places" to find restaurants in the current view area.
+              </p>
+            </div>
+            <div className="p-2 bg-blue-50 border border-blue-200 rounded">
+              <p className="text-xs text-blue-700">
+                <strong>🗺️ Click to Explore:</strong> Click anywhere on the map to automatically find and display nearby restaurants and cafes! The map will refresh with new places from the Places API around your clicked location.
+              </p>
+            </div>
+            <div className="p-2 bg-purple-50 border border-purple-200 rounded">
+              <p className="text-xs text-purple-700">
+                <strong>🔍 Smart Zoom Filtering:</strong> 
+                <br />• <strong>Normal View (≤13):</strong> Shows 5 most popular food places (well-known chains & highest rated)
+                <br />• <strong>Slightly Zoomed (14-16):</strong> Shows 10 top-rated places
+                <br />• <strong>Max Zoom (17+):</strong> Shows 20 top-rated places
+              </p>
+            </div>
+          </div>
+        </details>
 
         {/* Food Places List */}
         <div className="mt-6">

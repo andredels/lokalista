@@ -32,6 +32,11 @@ type Comment = {
   profiles?: Profile | null;
 };
 
+const extractProfile = (profile: any): Profile | null => {
+  if (!profile) return null;
+  return Array.isArray(profile) ? (profile[0] ?? null) : profile;
+};
+
 export default function CommunityPage() {
   const supabase = useMemo(() => createClient(), []);
   const [userId, setUserId] = useState<string | null>(null);
@@ -42,12 +47,15 @@ export default function CommunityPage() {
   const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [newCommentContent, setNewCommentContent] = useState<Record<string, string>>({});
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [deletingPost, setDeletingPost] = useState<string | null>(null);
   const [deletingComment, setDeletingComment] = useState<string | null>(null);
+  const [currentPostImageIndex, setCurrentPostImageIndex] = useState<Record<string, number>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -88,6 +96,7 @@ export default function CommunityPage() {
 
     const normalized = (data as any[]).map((row) => ({
       ...row,
+      profiles: extractProfile(row.profiles),
       likes_count: Array.isArray(row.likes_count) ? row.likes_count[0]?.count ?? 0 : row.likes_count ?? 0,
       comments_count: Array.isArray(row.comments_count) ? row.comments_count[0]?.count ?? 0 : row.comments_count ?? 0,
       liked_by_me: false,
@@ -116,20 +125,20 @@ export default function CommunityPage() {
       return;
     }
     
-    // Validate that we have either content or image
-    if (!content.trim() && !imageFile) {
+    // Validate that we have either content or images
+    if (!content.trim() && imageFiles.length === 0) {
       alert("Please add a caption or an image to post.");
       return;
     }
     
     // Require image for community page
-    if (!imageFile) {
-      alert("Please add an image to post in the community page.");
+    if (imageFiles.length === 0) {
+      alert("Please add at least one image to post in the community page.");
       return;
     }
     
     setSubmitting(true);
-    let imageUrl: string | null = null;
+    let imageUrls: string[] = [];
     console.log("Submitting post...");
 
     try {
@@ -162,42 +171,45 @@ export default function CommunityPage() {
         }
       }
       
-      // Upload image if provided
-      if (imageFile) {
+      // Upload all images
+      if (imageFiles.length > 0) {
         try {
-          console.log("Uploading image...");
-          const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
-          const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-          
-          const { error: upErr, data: uploadData } = await supabase
-            .storage
-            .from("post-images")
-            .upload(path, imageFile, {
-              cacheControl: "3600",
-              upsert: false,
-              contentType: imageFile.type || "image/jpeg",
-            });
-          
-          if (upErr) {
-            console.error("Upload error:", upErr);
-            throw new Error(`Failed to upload image: ${upErr.message}`);
+          console.log(`Uploading ${imageFiles.length} image(s)...`);
+          for (const imageFile of imageFiles) {
+            const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+            const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+            
+            const { error: upErr } = await supabase
+              .storage
+              .from("post-images")
+              .upload(path, imageFile, {
+                cacheControl: "3600",
+                upsert: false,
+                contentType: imageFile.type || "image/jpeg",
+              });
+            
+            if (upErr) {
+              console.error("Upload error:", upErr);
+              throw new Error(`Failed to upload image: ${upErr.message}`);
+            }
+            
+            const { data: pub } = supabase.storage.from("post-images").getPublicUrl(path);
+            imageUrls.push(pub.publicUrl);
           }
-          
-          const { data: pub } = supabase.storage.from("post-images").getPublicUrl(path);
-          imageUrl = pub.publicUrl;
         } catch (uploadErr: any) {
           console.error("Image upload failed:", uploadErr);
           throw new Error(`Image upload failed: ${uploadErr.message || "Unknown error"}`);
         }
       }
       
-      // Insert post
+      // Insert post with JSON array of image URLs (or single URL for backward compatibility)
       console.log("Inserting post...");
+      const imageUrlValue = imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls);
       const { error: insertError, data: insertData } = await supabase
         .from("posts")
         .insert({ 
           content: content.trim() || "", // Use empty string instead of null to satisfy NOT NULL constraint
-          image_url: imageUrl, 
+          image_url: imageUrlValue, 
           user_id: userId 
         })
         .select()
@@ -213,13 +225,14 @@ export default function CommunityPage() {
       // Success - clear form and reload posts
       setContent("");
       
-      // Revoke object URL to prevent memory leaks
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
+      // Revoke object URLs to prevent memory leaks
+      imagePreviews.forEach(preview => {
+        URL.revokeObjectURL(preview);
+      });
       
-      setImageFile(null);
-      setImagePreview(null);
+      setImageFiles([]);
+      setImagePreviews([]);
+      setCurrentImageIndex(0);
       
       // Reset file input
       if (fileInputRef.current) {
@@ -229,18 +242,15 @@ export default function CommunityPage() {
       // Reload posts
       console.log("Post created successfully. Reloading posts...");
       await loadPosts(userId);
+      setIsComposerOpen(false);
       
     } catch (err: any) {
       console.error("Error in submitPost:", err);
       const errorMessage = err?.message || err?.error?.message || "Failed to post. Please try again.";
       alert(errorMessage);
       
-      // Don't clear form on error - let user retry with same content/image
-      // But still revoke object URL if there was an upload attempt
-      if (imagePreview && imageUrl) {
-        // Only revoke if we successfully uploaded but failed to insert
-        // Otherwise keep the preview so user can retry
-      }
+      // Don't clear form on error - let user retry with same content/images
+      // Keep the previews so user can retry
     } finally {
       // Always reset submitting state
       setSubmitting(false);
@@ -325,6 +335,7 @@ export default function CommunityPage() {
       if (updatedPosts.data && selectedPost && selectedPost.id === post.id) {
         const normalized = {
           ...updatedPosts.data,
+          profiles: extractProfile(updatedPosts.data.profiles),
           likes_count: Array.isArray(updatedPosts.data.likes_count) ? updatedPosts.data.likes_count[0]?.count ?? 0 : updatedPosts.data.likes_count ?? 0,
           comments_count: Array.isArray(updatedPosts.data.comments_count) ? updatedPosts.data.comments_count[0]?.count ?? 0 : updatedPosts.data.comments_count ?? 0,
           liked_by_me: false,
@@ -354,7 +365,11 @@ export default function CommunityPage() {
       .eq("post_id", postId)
       .order("created_at", { ascending: true });
     if (error) return alert(error.message);
-    setCommentsByPost((prev) => ({ ...prev, [postId]: (data as Comment[]) || [] }));
+    const normalizedComments = (data as any[]).map((comment) => ({
+      ...comment,
+      profiles: extractProfile(comment.profiles),
+    })) as Comment[];
+    setCommentsByPost((prev) => ({ ...prev, [postId]: normalizedComments || [] }));
   }
 
   async function deletePost(postId: string) {
@@ -406,13 +421,33 @@ export default function CommunityPage() {
       }
       
       if (postData?.image_url) {
-        // Extract path from URL
-        const urlParts = postData.image_url.split("/post-images/");
-        if (urlParts.length > 1) {
-          const filePath = urlParts[1].split("?")[0];
-          const { error: storageError } = await supabase.storage.from("post-images").remove([filePath]);
+        // Handle both single URL and JSON array of URLs
+        let imageUrls: string[] = [];
+        try {
+          const parsed = JSON.parse(postData.image_url);
+          if (Array.isArray(parsed)) {
+            imageUrls = parsed;
+          } else {
+            imageUrls = [postData.image_url];
+          }
+        } catch {
+          imageUrls = [postData.image_url];
+        }
+        
+        // Delete all images from storage
+        const filePaths: string[] = [];
+        for (const imageUrl of imageUrls) {
+          const urlParts = imageUrl.split("/post-images/");
+          if (urlParts.length > 1) {
+            const filePath = urlParts[1].split("?")[0];
+            filePaths.push(filePath);
+          }
+        }
+        
+        if (filePaths.length > 0) {
+          const { error: storageError } = await supabase.storage.from("post-images").remove(filePaths);
           if (storageError) {
-            console.warn("Error deleting image from storage (continuing anyway):", storageError);
+            console.warn("Error deleting images from storage (continuing anyway):", storageError);
           }
         }
       }
@@ -598,6 +633,7 @@ export default function CommunityPage() {
       if (updatedPosts.data && selectedPost && selectedPost.id === postId) {
         const normalized = {
           ...updatedPosts.data,
+          profiles: extractProfile(updatedPosts.data.profiles),
           likes_count: Array.isArray(updatedPosts.data.likes_count) ? updatedPosts.data.likes_count[0]?.count ?? 0 : updatedPosts.data.likes_count ?? 0,
           comments_count: Array.isArray(updatedPosts.data.comments_count) ? updatedPosts.data.comments_count[0]?.count ?? 0 : updatedPosts.data.comments_count ?? 0,
           liked_by_me: selectedPost.liked_by_me, // Preserve like status
@@ -633,6 +669,8 @@ export default function CommunityPage() {
   function openPostModal(post: Post) {
     setSelectedPost(post);
     setIsModalOpen(true);
+    // Reset image index when opening modal
+    setCurrentPostImageIndex(prev => ({ ...prev, [post.id]: 0 }));
     if (!commentsByPost[post.id]) {
       void loadComments(post.id);
     }
@@ -642,6 +680,21 @@ export default function CommunityPage() {
     setIsModalOpen(false);
     setSelectedPost(null);
   }
+
+  // Helper function to get image URLs from a post (handles both single URL and JSON array)
+  const getPostImages = (post: Post): string[] => {
+    if (!post.image_url) return [];
+    try {
+      // Try to parse as JSON array
+      const parsed = JSON.parse(post.image_url);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch {
+      // If not JSON, treat as single URL string
+    }
+    return [post.image_url];
+  };
 
   // Filter posts to only show those with images
   const postsWithImages = useMemo(() => {
@@ -694,16 +747,9 @@ export default function CommunityPage() {
               return;
             }
             
-            // Revoke old object URL to prevent memory leaks
-            setImagePreview((prev) => {
-              if (prev) {
-                URL.revokeObjectURL(prev);
-              }
-              return URL.createObjectURL(file);
-            });
-            
-            // Set the image file
-            setImageFile(file);
+            // Add to images array
+            setImageFiles(prev => [...prev, file]);
+            setImagePreviews(prev => [...prev, URL.createObjectURL(file)]);
             
             // Reset file input if it exists
             if (fileInputRef.current) {
@@ -726,84 +772,66 @@ export default function CommunityPage() {
   // Cleanup object URLs on unmount
   useEffect(() => {
     return () => {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
+      imagePreviews.forEach(preview => {
+        URL.revokeObjectURL(preview);
+      });
     };
-  }, [imagePreview]);
+  }, [imagePreviews]);
+
+  const handleOpenComposer = () => {
+    if (!userId) {
+      window.location.href = "/auth/login?next=/community";
+      return;
+    }
+    setIsComposerOpen(true);
+  };
+
+  const handleCloseComposer = () => {
+    // Clean up previews when closing
+    imagePreviews.forEach(preview => {
+      URL.revokeObjectURL(preview);
+    });
+    setImageFiles([]);
+    setImagePreviews([]);
+    setCurrentImageIndex(0);
+    setIsComposerOpen(false);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % imagePreviews.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + imagePreviews.length) % imagePreviews.length);
+  };
+
+  const nextPostImage = (postId: string, totalImages: number) => {
+    setCurrentPostImageIndex((prev) => ({
+      ...prev,
+      [postId]: ((prev[postId] || 0) + 1) % totalImages
+    }));
+  };
+
+  const prevPostImage = (postId: string, totalImages: number) => {
+    setCurrentPostImageIndex((prev) => ({
+      ...prev,
+      [postId]: ((prev[postId] || 0) - 1 + totalImages) % totalImages
+    }));
+  };
+
+  const removeImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    URL.revokeObjectURL(imagePreviews[index]);
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    if (currentImageIndex >= imagePreviews.length - 1 && currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 animate-fade-in">
       <div className="container max-w-7xl py-6">
         <h1 className="text-3xl font-bold mb-6 text-gray-900 animate-fade-in-down">Community</h1>
-
-        {/* Composer */}
-        <form onSubmit={submitPost} className="bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm animate-fade-in-up card-hover">
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder={userId ? "Share something with the community... (You can paste an image here!)" : "Sign in to post"}
-            className="w-full resize-none outline-none min-h-[90px] bg-transparent text-gray-900 placeholder:text-gray-500"
-            disabled={!userId || submitting}
-            onPaste={(e) => {
-              // Let the global paste handler handle images
-              // This prevents default text paste behavior for images
-              const items = e.clipboardData?.items;
-              if (items) {
-                for (let i = 0; i < items.length; i++) {
-                  if (items[i].type.indexOf('image') !== -1) {
-                    e.preventDefault();
-                    return;
-                  }
-                }
-              }
-            }}
-          />
-          {imagePreview && (
-            <div className="mt-3">
-              <img src={imagePreview} alt="Selected" className="max-h-64 rounded-lg border" />
-            </div>
-          )}
-          <div className="flex items-center justify-between mt-3">
-            <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                disabled={!userId || submitting}
-                onChange={(e) => {
-                  const file = e.target.files?.[0] || null;
-                  
-                  // Revoke old object URL to prevent memory leaks
-                  if (imagePreview) {
-                    URL.revokeObjectURL(imagePreview);
-                  }
-                  
-                  setImageFile(file);
-                  setImagePreview(file ? URL.createObjectURL(file) : null);
-                }}
-              />
-              <span className="px-3 h-9 inline-flex items-center rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700">📷 Add image</span>
-              {imageFile && <span className="text-gray-500 text-sm">{imageFile.name}</span>}
-            </label>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">{content.length}/280</span>
-              <button
-                type="submit"
-                disabled={!userId || submitting || content.length > 280 || !imageFile}
-                className="px-4 h-9 rounded-full bg-[#8c52ff] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-all hover-scale btn-press btn-ripple disabled:hover:scale-100"
-              >
-                {submitting ? (
-                  <span className="flex items-center gap-2">
-                    <div className="loading-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
-                    Posting...
-                  </span>
-                ) : "Post"}
-              </button>
-            </div>
-          </div>
-        </form>
 
         {/* Pinterest-style Masonry Grid */}
         {loading ? (
@@ -824,41 +852,196 @@ export default function CommunityPage() {
             {postsWithImages.map((post, index) => (
               <div
                 key={post.id}
-                className={`break-inside-avoid mb-4 bg-white rounded-lg overflow-hidden shadow-sm card-hover cursor-pointer border border-gray-200 stagger-item`}
+                className={`break-inside-avoid mb-4 bg-white rounded-lg overflow-hidden shadow-sm card-hover cursor-pointer border border-gray-200 stagger-item group`}
                 style={{ animationDelay: `${index * 0.05}s` }}
                 onClick={() => openPostModal(post)}
               >
-                {post.image_url && (
-                  <div className="relative w-full">
-                    <img
-                      src={post.image_url}
-                      alt={post.content || "Post image"}
-                      className="w-full h-auto object-cover transition-transform duration-300 hover:scale-105"
-                      loading="lazy"
-                    />
-                    {/* Overlay with likes and comments count */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                      <div className="flex items-center gap-4 text-white text-sm">
-                        <div className="flex items-center gap-1">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill={post.liked_by_me ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                          </svg>
-                          <span>{post.likes_count ?? 0}</span>
+                {(() => {
+                  const postImages = getPostImages(post);
+                  // Always show first image in grid view (no navigation)
+                  const currentIndex = 0;
+                  return postImages.length > 0 && (
+                    <div className="relative w-full">
+                      <div className="relative bg-gray-100 overflow-hidden">
+                        {postImages.map((imgUrl, index) => (
+                          <img
+                            key={index}
+                            src={imgUrl}
+                            alt={post.content || `Post image ${index + 1}`}
+                            className={`w-full h-auto transition-opacity duration-300 ${
+                              index === currentIndex ? 'opacity-100 block' : 'opacity-0 hidden'
+                            }`}
+                            loading="lazy"
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* Dots Indicator - Only show if multiple images */}
+                      {postImages.length > 1 && (
+                        <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10">
+                          {postImages.map((_, index) => (
+                            <div
+                              key={index}
+                              className={`h-1.5 rounded-full transition-all ${
+                                index === currentIndex
+                                  ? 'bg-white w-4'
+                                  : 'bg-white/50 w-1.5'
+                              }`}
+                            />
+                          ))}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2v10z"/>
-                          </svg>
-                          <span>{post.comments_count ?? 0}</span>
+                      )}
+                      
+                      {/* Overlay with likes and comments count */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 pointer-events-none">
+                        <div className="flex items-center gap-4 text-white text-sm">
+                          <div className="flex items-center gap-1">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill={post.liked_by_me ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                            <span>{post.likes_count ?? 0}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2v10z"/>
+                            </svg>
+                            <span>{post.comments_count ?? 0}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             ))}
           </div>
         )}
+
+        {/* Floating Create Button */}
+        <button
+          type="button"
+          onClick={handleOpenComposer}
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[#8c52ff] text-white shadow-lg hover:scale-105 transition-transform z-50 flex items-center justify-center"
+          aria-label="Create community post"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+
+        {/* Composer Modal */}
+        <Modal open={isComposerOpen} onClose={handleCloseComposer} title="Share something" className="max-w-2xl">
+          <form onSubmit={submitPost} className="bg-white space-y-4">
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 shadow-inner">
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder={userId ? "Share something with the community... (You can paste an image here!)" : "Sign in to post"}
+                className="w-full resize-none rounded-xl border border-transparent bg-white/80 p-4 text-gray-900 placeholder:text-gray-500 focus:border-[#c9adff] focus:ring-2 focus:ring-[#d9c5ff] min-h-[160px]"
+                disabled={!userId || submitting}
+                onPaste={(e) => {
+                  const items = e.clipboardData?.items;
+                  if (items) {
+                    for (let i = 0; i < items.length; i++) {
+                      if (items[i].type.indexOf('image') !== -1) {
+                        e.preventDefault();
+                        return;
+                      }
+                    }
+                  }
+                }}
+              />
+              <div className="mt-2 text-right text-xs text-gray-500">{content.length}/280</div>
+            </div>
+            {imagePreviews.length > 0 && (
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-gray-700">{imagePreviews.length} image{imagePreviews.length > 1 ? 's' : ''} selected</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {imagePreviews.map((preview, index) => (
+                    <div
+                      key={index}
+                      className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-300 bg-gray-100 group"
+                    >
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeImage(index);
+                        }}
+                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                        aria-label="Remove image"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                      </button>
+                      {/* Image number badge */}
+                      {imagePreviews.length > 1 && (
+                        <div className="absolute bottom-0.5 left-0.5 px-1.5 py-0.5 rounded bg-black/50 text-white text-xs font-medium">
+                          {index + 1}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <label className="inline-flex items-center gap-3 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 cursor-pointer transition">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  disabled={!userId || submitting}
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length > 0) {
+                      const newPreviews = files.map(file => URL.createObjectURL(file));
+                      setImageFiles(prev => [...prev, ...files]);
+                      setImagePreviews(prev => [...prev, ...newPreviews]);
+                    }
+                  }}
+                />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 16l6-6 4 4 6-6"/>
+                  <path d="M2 12l2-2 4 4 4-4 6 6 4-4"/>
+                </svg>
+                <span>{imageFiles.length > 0 ? `${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''}` : "Add images"}</span>
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleCloseComposer}
+                  className="px-4 h-10 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!userId || submitting || content.length > 280 || imageFiles.length === 0}
+                  className="px-6 h-10 rounded-full bg-[#8c52ff] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7a46e5] transition-all btn-press btn-ripple"
+                >
+                  {submitting ? (
+                    <span className="flex items-center gap-2">
+                      <div className="loading-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
+                      Posting...
+                    </span>
+                  ) : "Post"}
+                </button>
+              </div>
+            </div>
+          </form>
+        </Modal>
 
         {/* Post Detail Modal */}
         <Modal open={isModalOpen} onClose={closeModal} title="" className="max-w-5xl p-0" showCloseButton={false}>
@@ -877,15 +1060,88 @@ export default function CommunityPage() {
 
               <div className="flex flex-col md:flex-row max-h-[90vh]">
                 {/* Image Section */}
-                <div className="md:w-1/2 bg-black flex items-center justify-center">
-                  {selectedPost.image_url && (
-                    <img 
-                      src={selectedPost.image_url} 
-                      alt="Post image" 
-                      className="w-full h-auto max-h-[90vh] object-contain" 
-                    />
-                  )}
-                </div>
+                {(() => {
+                  const postImages = getPostImages(selectedPost);
+                  const currentIndex = currentPostImageIndex[selectedPost.id] || 0;
+                  return (
+                    <div className="md:w-1/2 bg-white flex items-center justify-center relative" style={{ minHeight: '400px', maxHeight: '90vh' }}>
+                      {postImages.length > 0 && (
+                        <>
+                          <div className="relative w-full h-full flex items-center justify-center p-4">
+                            {postImages.map((imgUrl, index) => (
+                              <img
+                                key={index}
+                                src={imgUrl}
+                                alt={`Post image ${index + 1}`}
+                                className={`max-w-full max-h-full w-auto h-auto object-contain transition-opacity duration-300 ${
+                                  index === currentIndex ? 'opacity-100' : 'opacity-0 absolute'
+                                }`}
+                                style={{ maxHeight: 'calc(90vh - 32px)' }}
+                              />
+                            ))}
+                            
+                            {/* Navigation Arrows */}
+                            {postImages.length > 1 && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    prevPostImage(selectedPost.id, postImages.length);
+                                  }}
+                                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors z-10"
+                                  aria-label="Previous image"
+                                >
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M15 18l-6-6 6-6"/>
+                                  </svg>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    nextPostImage(selectedPost.id, postImages.length);
+                                  }}
+                                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors z-10"
+                                  aria-label="Next image"
+                                >
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M9 18l6-6-6-6"/>
+                                  </svg>
+                                </button>
+                              </>
+                            )}
+                          </div>
+                          
+                          {/* Dots Indicator */}
+                          {postImages.length > 1 && (
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+                              {postImages.map((_, index) => (
+                                <button
+                                  key={index}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setCurrentPostImageIndex(prev => ({ ...prev, [selectedPost.id]: index }));
+                                  }}
+                                  className={`h-2 rounded-full transition-all ${
+                                    index === currentIndex
+                                      ? 'bg-white w-8'
+                                      : 'bg-white/50 hover:bg-white/75 w-2'
+                                  }`}
+                                  aria-label={`Go to image ${index + 1}`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Content Section */}
                 <div className="md:w-1/2 flex flex-col max-h-[90vh] overflow-hidden relative">
