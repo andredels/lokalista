@@ -9,6 +9,7 @@ type Profile = {
   id: string;
   first_name?: string | null;
   last_name?: string | null;
+  avatar_url?: string | null;
 };
 
 type Post = {
@@ -34,7 +35,29 @@ type Comment = {
 
 const extractProfile = (profile: any): Profile | null => {
   if (!profile) return null;
-  return Array.isArray(profile) ? (profile[0] ?? null) : profile;
+  // Handle array case (from Supabase joins)
+  if (Array.isArray(profile)) {
+    return profile[0] ?? null;
+  }
+  // Handle object case
+  if (typeof profile === 'object') {
+    return profile as Profile;
+  }
+  return null;
+};
+
+// Helper function to get display name from profile - ONLY uses profiles table data
+const getDisplayName = (profile: Profile | null | undefined, userId: string): string => {
+  // Use first_name and last_name from profiles table
+  if (profile?.first_name || profile?.last_name) {
+    const firstName = profile.first_name || "";
+    const lastName = profile.last_name || "";
+    const fullName = `${firstName}${lastName ? ` ${lastName}` : ""}`.trim();
+    if (fullName) return fullName;
+  }
+  
+  // Fallback: use first 8 characters of user_id if no name in profile
+  return userId ? `User ${userId.slice(0, 8)}` : "User";
 };
 
 export default function CommunityPage() {
@@ -65,12 +88,91 @@ export default function CommunityPage() {
       if (!mounted) return;
       const uid = data.user?.id ?? null;
       setUserId(uid);
+      
+      // Ensure current user's profile has first_name/last_name populated from metadata if missing
+      if (uid && data.user) {
+        try {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("first_name, last_name")
+            .eq("id", uid)
+            .single();
+          
+          // If profile doesn't have names, try to populate from auth metadata
+          if (profileData && !profileData.first_name && !profileData.last_name) {
+            const metadata = data.user.user_metadata as { full_name?: string; first_name?: string; last_name?: string };
+            if (metadata?.full_name) {
+              const nameParts = metadata.full_name.trim().split(/\s+/);
+              const firstName = nameParts[0] || "";
+              const lastName = nameParts.slice(1).join(" ") || "";
+              
+              if (firstName || lastName) {
+                await supabase
+                  .from("profiles")
+                  .update({
+                    first_name: firstName || null,
+                    last_name: lastName || null,
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq("id", uid);
+              }
+            }
+          }
+        } catch (e) {
+          // Ignore - profile might not exist yet or RLS might prevent update
+        }
+      }
+      
       await loadPosts(uid);
       setLoading(false);
     })();
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
       const uid = session?.user?.id ?? null;
       setUserId(uid);
+      
+      // Ensure profile is populated when user logs in
+      if (uid && session?.user) {
+        try {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("first_name, last_name")
+            .eq("id", uid)
+            .single();
+          
+          // If profile doesn't have names, populate from auth metadata
+          if (profileData && !profileData.first_name && !profileData.last_name) {
+            const metadata = session.user.user_metadata as { full_name?: string; first_name?: string; last_name?: string };
+            if (metadata?.full_name) {
+              const nameParts = metadata.full_name.trim().split(/\s+/);
+              const firstName = nameParts[0] || "";
+              const lastName = nameParts.slice(1).join(" ") || "";
+              
+              if (firstName || lastName) {
+                await supabase
+                  .from("profiles")
+                  .update({
+                    first_name: firstName || null,
+                    last_name: lastName || null,
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq("id", uid);
+              }
+            } else if (metadata?.first_name || metadata?.last_name) {
+              await supabase
+                .from("profiles")
+                .update({
+                  first_name: metadata.first_name || null,
+                  last_name: metadata.last_name || null,
+                  updated_at: new Date().toISOString()
+                })
+                .eq("id", uid);
+            }
+          }
+        } catch (e) {
+          // Ignore - profile might not exist yet or RLS might prevent update
+        }
+      }
+      
       await loadPosts(uid);
     });
     return () => {
@@ -84,7 +186,7 @@ export default function CommunityPage() {
     const { data, error } = await supabase
       .from("posts")
       .select(
-        `id, user_id, content, image_url, created_at, profiles:profiles!posts_user_id_fkey(id, first_name, last_name),
+        `id, user_id, content, image_url, created_at, profiles(id, first_name, last_name, avatar_url),
          likes_count:likes(count), comments_count:comments(count)`
       )
       .order("created_at", { ascending: false });
@@ -101,6 +203,10 @@ export default function CommunityPage() {
       comments_count: Array.isArray(row.comments_count) ? row.comments_count[0]?.count ?? 0 : row.comments_count ?? 0,
       liked_by_me: false,
     })) as Post[];
+
+    // Profile data (first_name, last_name, avatar_url) is already fetched from profiles table in the query above
+    // We use this data directly - if profiles don't have first_name/last_name, they need to be populated
+    // Profiles are automatically populated when users log in (see login page and community page useEffect)
 
     if (currentUserId && normalized.length) {
       const postIds = normalized.map((p) => p.id);
@@ -122,6 +228,11 @@ export default function CommunityPage() {
     e.preventDefault();
     if (!userId) {
       window.location.href = "/auth/login?next=/community";
+      return;
+    }
+    
+    // Prevent double submission
+    if (submitting) {
       return;
     }
     
@@ -326,7 +437,7 @@ export default function CommunityPage() {
       const updatedPosts = await supabase
         .from("posts")
         .select(
-          `id, user_id, content, image_url, created_at, profiles:profiles!posts_user_id_fkey(id, first_name, last_name),
+          `id, user_id, content, image_url, created_at, profiles(id, first_name, last_name, avatar_url),
            likes_count:likes(count), comments_count:comments(count)`
         )
         .eq("id", post.id)
@@ -361,7 +472,7 @@ export default function CommunityPage() {
   async function loadComments(postId: string) {
     const { data, error } = await supabase
       .from("comments")
-      .select("id, post_id, user_id, content, created_at, profiles:profiles!comments_user_id_fkey(id, first_name, last_name)")
+      .select("id, post_id, user_id, content, created_at, profiles(id, first_name, last_name, avatar_url)")
       .eq("post_id", postId)
       .order("created_at", { ascending: true });
     if (error) return alert(error.message);
@@ -369,6 +480,7 @@ export default function CommunityPage() {
       ...comment,
       profiles: extractProfile(comment.profiles),
     })) as Comment[];
+    
     setCommentsByPost((prev) => ({ ...prev, [postId]: normalizedComments || [] }));
   }
 
@@ -624,7 +736,7 @@ export default function CommunityPage() {
       const updatedPosts = await supabase
         .from("posts")
         .select(
-          `id, user_id, content, image_url, created_at, profiles:profiles!posts_user_id_fkey(id, first_name, last_name),
+          `id, user_id, content, image_url, created_at, profiles(id, first_name, last_name, avatar_url),
            likes_count:likes(count), comments_count:comments(count)`
         )
         .eq("id", postId)
@@ -1147,12 +1259,20 @@ export default function CommunityPage() {
                 <div className="md:w-1/2 flex flex-col max-h-[90vh] overflow-hidden relative">
                   {/* Author and Caption Section - Combined */}
                   <div className="p-4 border-b border-gray-200 flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium flex-shrink-0 text-gray-900">
-                      {(((selectedPost.profiles?.first_name || "") + (selectedPost.profiles?.last_name ? ` ${selectedPost.profiles.last_name}` : "")) || selectedPost.user_id || "?").slice(0, 1).toUpperCase()}
-                    </div>
+                    {selectedPost.profiles?.avatar_url ? (
+                      <img
+                        src={selectedPost.profiles.avatar_url}
+                        alt={getDisplayName(selectedPost.profiles, selectedPost.user_id)}
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium flex-shrink-0 text-gray-900">
+                        {getDisplayName(selectedPost.profiles, selectedPost.user_id).slice(0, 1).toUpperCase()}
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="font-semibold text-gray-900 text-sm">{(selectedPost.profiles?.first_name || "").toString() + (selectedPost.profiles?.last_name ? ` ${selectedPost.profiles.last_name}` : "") || "Anonymous"}</span>
+                        <span className="font-semibold text-gray-900 text-sm">{getDisplayName(selectedPost.profiles, selectedPost.user_id)}</span>
                         <span className="text-gray-400">·</span>
                         <time dateTime={selectedPost.created_at} className="text-gray-500 text-xs">
                           {new Date(selectedPost.created_at).toLocaleDateString()}
@@ -1222,12 +1342,20 @@ export default function CommunityPage() {
                     ) : (
                       (commentsByPost[selectedPost.id] || []).map((c) => (
                         <div key={c.id} className="flex items-start gap-3 group">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium flex-shrink-0 text-gray-900">
-                            {(((c.profiles?.first_name || "") + (c.profiles?.last_name ? ` ${c.profiles.last_name}` : "")) || c.user_id || "?").slice(0, 1).toUpperCase()}
-                          </div>
+                          {c.profiles?.avatar_url ? (
+                            <img
+                              src={c.profiles.avatar_url}
+                              alt={getDisplayName(c.profiles, c.user_id)}
+                              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium flex-shrink-0 text-gray-900">
+                              {getDisplayName(c.profiles, c.user_id).slice(0, 1).toUpperCase()}
+                            </div>
+                          )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold text-gray-900 text-sm">{(c.profiles?.first_name || "") + (c.profiles?.last_name ? ` ${c.profiles.last_name}` : "") || "Anonymous"}</span>
+                              <span className="font-semibold text-gray-900 text-sm">{getDisplayName(c.profiles, c.user_id)}</span>
                               <span className="text-gray-400">·</span>
                               <time dateTime={c.created_at} className="text-gray-500 text-xs">
                                 {new Date(c.created_at).toLocaleDateString()}

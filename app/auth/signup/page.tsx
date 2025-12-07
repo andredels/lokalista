@@ -81,20 +81,49 @@ export default function SignupPage() {
     setMessage(null);
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signUp({
+      
+      // Parse full_name into first_name and last_name
+      const nameParts = fullName.trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+      
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/login`,
           data: {
             full_name: fullName,
+            first_name: firstName,
+            last_name: lastName,
           }
         },
       });
+      
       if (error) {
         setMessage(error.message);
         return;
       }
+      
+      // Try to create/update profile with parsed name (if user is already confirmed)
+      if (signUpData.user) {
+        try {
+          await supabase
+            .from("profiles")
+            .upsert({
+              id: signUpData.user.id,
+              first_name: firstName || null,
+              last_name: lastName || null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }, { onConflict: "id" });
+        } catch (profileError) {
+          // Profile creation might fail if user hasn't confirmed email yet
+          // This is okay - it will be created by database trigger or on first login
+          console.log("Profile creation attempted:", profileError);
+        }
+      }
+      
       setMessage("Check your email to confirm your account, then sign in.");
       setTimeout(() => router.push("/auth/login"), 1200);
     } finally {

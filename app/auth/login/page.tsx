@@ -77,11 +77,57 @@ export default function LoginPage() {
     setMessage(null);
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setMessage(error.message);
         return;
       }
+      
+      // Ensure user's profile has first_name/last_name populated from metadata if missing
+      if (signInData.user) {
+        try {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("first_name, last_name")
+            .eq("id", signInData.user.id)
+            .single();
+          
+          // If profile doesn't have names, try to populate from auth metadata
+          if (profileData && !profileData.first_name && !profileData.last_name) {
+            const metadata = signInData.user.user_metadata as { full_name?: string; first_name?: string; last_name?: string };
+            if (metadata?.full_name) {
+              const nameParts = metadata.full_name.trim().split(/\s+/);
+              const firstName = nameParts[0] || "";
+              const lastName = nameParts.slice(1).join(" ") || "";
+              
+              if (firstName || lastName) {
+                await supabase
+                  .from("profiles")
+                  .update({
+                    first_name: firstName || null,
+                    last_name: lastName || null,
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq("id", signInData.user.id);
+              }
+            } else if (metadata?.first_name || metadata?.last_name) {
+              // Use first_name/last_name directly from metadata if available
+              await supabase
+                .from("profiles")
+                .update({
+                  first_name: metadata.first_name || null,
+                  last_name: metadata.last_name || null,
+                  updated_at: new Date().toISOString()
+                })
+                .eq("id", signInData.user.id);
+            }
+          }
+        } catch (profileError) {
+          // Ignore profile update errors - user can still log in
+          console.log("Profile update attempted on login:", profileError);
+        }
+      }
+      
       router.push("/dashboard");
     } finally {
       setSubmitting(false);

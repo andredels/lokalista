@@ -125,6 +125,18 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies RouteHandlerConfig<"/api/chat">
 }
 
+// Validate ../../app/api/profiles/sync/route.ts
+{
+  const handler = {} as typeof import("../../app/api/profiles/sync/route.js")
+  handler satisfies RouteHandlerConfig<"/api/profiles/sync">
+}
+
+// Validate ../../app/api/users/metadata/route.ts
+{
+  const handler = {} as typeof import("../../app/api/users/metadata/route.js")
+  handler satisfies RouteHandlerConfig<"/api/users/metadata">
+}
+
 
 
 
