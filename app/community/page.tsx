@@ -192,7 +192,7 @@ export default function CommunityPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error(error);
+      console.error("Error loading posts:", error);
       return;
     }
 
@@ -204,9 +204,33 @@ export default function CommunityPage() {
       liked_by_me: false,
     })) as Post[];
 
-    // Profile data (first_name, last_name, avatar_url) is already fetched from profiles table in the query above
-    // We use this data directly - if profiles don't have first_name/last_name, they need to be populated
-    // Profiles are automatically populated when users log in (see login page and community page useEffect)
+    // If profiles are missing (likely due to RLS), try to fetch them separately
+    const missingProfileUserIds = normalized
+      .filter(p => !p.profiles || (!p.profiles.first_name && !p.profiles.last_name))
+      .map(p => p.user_id)
+      .filter((id, index, self) => self.indexOf(id) === index); // unique IDs
+    
+    if (missingProfileUserIds.length > 0) {
+      console.log(`Fetching ${missingProfileUserIds.length} missing profiles separately...`);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, avatar_url")
+        .in("id", missingProfileUserIds);
+      
+      if (!profilesError && profilesData) {
+        const profilesMap = new Map(profilesData.map(p => [p.id, p]));
+        for (const post of normalized) {
+          if (!post.profiles || (!post.profiles.first_name && !post.profiles.last_name)) {
+            const profile = profilesMap.get(post.user_id);
+            if (profile) {
+              post.profiles = profile as Profile;
+            }
+          }
+        }
+      } else if (profilesError) {
+        console.error("Error fetching profiles separately:", profilesError);
+      }
+    }
 
     if (currentUserId && normalized.length) {
       const postIds = normalized.map((p) => p.id);
@@ -475,11 +499,41 @@ export default function CommunityPage() {
       .select("id, post_id, user_id, content, created_at, profiles(id, first_name, last_name, avatar_url)")
       .eq("post_id", postId)
       .order("created_at", { ascending: true });
-    if (error) return alert(error.message);
+    
+    if (error) {
+      console.error("Error loading comments:", error);
+      return alert(error.message);
+    }
+    
     const normalizedComments = (data as any[]).map((comment) => ({
       ...comment,
       profiles: extractProfile(comment.profiles),
     })) as Comment[];
+    
+    // If profiles are missing, try to fetch them separately
+    const missingProfileUserIds = normalizedComments
+      .filter(c => !c.profiles || (!c.profiles.first_name && !c.profiles.last_name))
+      .map(c => c.user_id)
+      .filter((id, index, self) => self.indexOf(id) === index); // unique IDs
+    
+    if (missingProfileUserIds.length > 0) {
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, avatar_url")
+        .in("id", missingProfileUserIds);
+      
+      if (!profilesError && profilesData) {
+        const profilesMap = new Map(profilesData.map(p => [p.id, p]));
+        for (const comment of normalizedComments) {
+          if (!comment.profiles || (!comment.profiles.first_name && !comment.profiles.last_name)) {
+            const profile = profilesMap.get(comment.user_id);
+            if (profile) {
+              comment.profiles = profile as Profile;
+            }
+          }
+        }
+      }
+    }
     
     setCommentsByPost((prev) => ({ ...prev, [postId]: normalizedComments || [] }));
   }
