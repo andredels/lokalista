@@ -44,8 +44,7 @@ export default function Header() {
       setTheme(stored);
       applyTheme(stored);
     } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initial = prefersDark ? "dark" : "light";
+      const initial = "light";
       setTheme(initial);
       applyTheme(initial);
     }
