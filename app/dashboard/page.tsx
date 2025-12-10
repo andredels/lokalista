@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @next/next/no-img-element */
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -162,7 +162,6 @@ export default function DashboardPage() {
   ];
 
   // Calculate distances and format recommendations (recalculate when location changes)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const recommendations = useMemo(() => {
     const center = userLocation || CEBU_CENTER;
     return restaurantData.map((restaurant) => {
@@ -177,7 +176,7 @@ export default function DashboardPage() {
         distanceKm, // Keep for sorting
       };
     }).sort((a, b) => a.distanceKm - b.distanceKm); // Sort by distance
-  }, [userLocation]);
+  }, [restaurantData, userLocation]);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 

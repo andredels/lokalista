@@ -173,8 +173,9 @@ export default function AIAssistantPage() {
       }
     } catch (error: unknown) {
       console.error("Chat completion error:", error);
-      assistantContent = error?.message 
-        ? `Sorry, I encountered an error: ${(error as Error).message}. Please try again.`
+      const errMessage = (error as Error)?.message;
+      assistantContent = errMessage
+        ? `Sorry, I encountered an error: ${errMessage}. Please try again.`
         : "Sorry, I couldn't fetch a response from our AI right now. Please try again in a moment.";
     }
 

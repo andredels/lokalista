@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @next/next/no-img-element */
 
 // Clone of journey page but with /community redirects
 import { useEffect, useMemo, useState, useRef } from "react";
@@ -120,7 +120,7 @@ export default function CommunityPage() {
               }
             }
           }
-        } catch (e) {
+        } catch (_e) {
           // Ignore - profile might not exist yet or RLS might prevent update
         }
       }
@@ -170,7 +170,7 @@ export default function CommunityPage() {
                 .eq("id", uid);
             }
           }
-        } catch (e) {
+        } catch (_e) {
           // Ignore - profile might not exist yet or RLS might prevent update
         }
       }
@@ -208,12 +208,12 @@ export default function CommunityPage() {
 
     // If profiles are missing (likely due to RLS), try to fetch them separately
     const missingProfileUserIds = normalized
-      .filter(p => !p.profiles || (!p.profiles.first_name && !p.profiles.last_name))
-      .map(p => p.user_id)
+      .filter((p) => !p.profiles || (!p.profiles.first_name && !p.profiles.last_name))
+      .map((p) => p.user_id)
       .filter((id, index, self) => self.indexOf(id) === index); // unique IDs
     
     if (missingProfileUserIds.length > 0) {
-      const { data: profilesData, error: profilesError } = await supabase
+    const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
         .select("id, first_name, last_name, avatar_url")
         .in("id", missingProfileUserIds);
@@ -338,7 +338,7 @@ export default function CommunityPage() {
       
       // Insert post with JSON array of image URLs (or single URL for backward compatibility)
       const imageUrlValue = imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls);
-      const { error: insertError, data: _insertData } = await supabase
+      const { error: insertError } = await supabase
         .from("posts")
         .insert({ 
           content: content.trim() || "", // Use empty string instead of null to satisfy NOT NULL constraint
@@ -376,9 +376,12 @@ export default function CommunityPage() {
       await loadPosts(userId);
       setIsComposerOpen(false);
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error in submitPost:", err);
-      const errorMessage = err?.message || err?.error?.message || "Failed to post. Please try again.";
+      const errorMessage =
+        (err as { message?: string; error?: { message?: string } })?.message ||
+        (err as { error?: { message?: string } })?.error?.message ||
+        "Failed to post. Please try again.";
       alert(errorMessage);
       
       // Don't clear form on error - let user retry with same content/images
@@ -748,7 +751,7 @@ export default function CommunityPage() {
     setNewCommentContent((p) => ({ ...p, [postId]: "" }));
     
     try {
-      const { error, data } = await supabase
+      const { error, data: _data } = await supabase
         .from("comments")
         .insert({ post_id: postId, content: text, user_id: userId })
         .select()
