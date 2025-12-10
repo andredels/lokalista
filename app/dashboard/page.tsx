@@ -92,7 +92,7 @@ export default function DashboardPage() {
   };
 
   // Real Cebu City restaurant coordinates
-  const restaurantData = [
+  const restaurantData = useMemo(() => ([
     {
       id: 1,
       name: "Jollibee Colon",
@@ -159,7 +159,7 @@ export default function DashboardPage() {
       rating: 4.4,
       image: "/restaurants/coffeebean1.jpg"
     }
-  ];
+  ]), []);
 
   // Calculate distances and format recommendations (recalculate when location changes)
   const recommendations = useMemo(() => {

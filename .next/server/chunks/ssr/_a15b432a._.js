@@ -496,74 +496,74 @@ function DashboardPage() {
         return icons[category] || '🍽️';
     };
     // Real Cebu City restaurant coordinates
-    const restaurantData = [
-        {
-            id: 1,
-            name: "Jollibee Colon",
-            description: "Popular Filipino fast food chain serving crispy fried chicken and spaghetti.",
-            latitude: 10.2975,
-            longitude: 123.8994,
-            status: "Open",
-            price: "$",
-            rating: 4.2,
-            image: "/restaurants/jollibee.png"
-        },
-        {
-            id: 2,
-            name: "Starbucks IT Park",
-            description: "Modern coffee shop perfect for work meetings and casual hangouts.",
-            latitude: 10.3294,
-            longitude: 123.9056,
-            status: "Open",
-            price: "$$$",
-            rating: 4.5,
-            image: "/restaurants/starbucks.png"
-        },
-        {
-            id: 3,
-            name: "Larsian Fuente",
-            description: "Iconic late-night barbecue stalls with unlimited rice and grilled favorites.",
-            latitude: 10.3097,
-            longitude: 123.8949,
-            status: "Open",
-            price: "$$",
-            rating: 4.4,
-            image: "/restaurants/larsian.jpg"
-        },
-        {
-            id: 4,
-            name: "Mang Inasal Ayala",
-            description: "Filipino grilled chicken restaurant with unlimited rice and sinigang soup.",
-            latitude: 10.3157,
-            longitude: 123.8854,
-            status: "Open",
-            price: "$$",
-            rating: 4.3,
-            image: "/restaurants/manginasal1.png"
-        },
-        {
-            id: 5,
-            name: "Chowking SM City",
-            description: "Chinese-Filipino fast food known for dimsum and noodle dishes.",
-            latitude: 10.3111,
-            longitude: 123.9181,
-            status: "Open",
-            price: "$",
-            rating: 4.0,
-            image: "/restaurants/chowking.png"
-        },
-        {
-            id: 6,
-            name: "Coffee Bean & Tea Leaf",
-            description: "Premium coffee and tea specialty cafe with cozy ambiance.",
-            latitude: 10.3157,
-            longitude: 123.8854,
-            status: "Open",
-            price: "$$$",
-            rating: 4.4,
-            image: "/restaurants/coffeebean1.jpg"
-        }
-    ];
+    const restaurantData = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>[
+            {
+                id: 1,
+                name: "Jollibee Colon",
+                description: "Popular Filipino fast food chain serving crispy fried chicken and spaghetti.",
+                latitude: 10.2975,
+                longitude: 123.8994,
+                status: "Open",
+                price: "$",
+                rating: 4.2,
+                image: "/restaurants/jollibee.png"
+            },
+            {
+                id: 2,
+                name: "Starbucks IT Park",
+                description: "Modern coffee shop perfect for work meetings and casual hangouts.",
+                latitude: 10.3294,
+                longitude: 123.9056,
+                status: "Open",
+                price: "$$$",
+                rating: 4.5,
+                image: "/restaurants/starbucks.png"
+            },
+            {
+                id: 3,
+                name: "Larsian Fuente",
+                description: "Iconic late-night barbecue stalls with unlimited rice and grilled favorites.",
+                latitude: 10.3097,
+                longitude: 123.8949,
+                status: "Open",
+                price: "$$",
+                rating: 4.4,
+                image: "/restaurants/larsian.jpg"
+            },
+            {
+                id: 4,
+                name: "Mang Inasal Ayala",
+                description: "Filipino grilled chicken restaurant with unlimited rice and sinigang soup.",
+                latitude: 10.3157,
+                longitude: 123.8854,
+                status: "Open",
+                price: "$$",
+                rating: 4.3,
+                image: "/restaurants/manginasal1.png"
+            },
+            {
+                id: 5,
+                name: "Chowking SM City",
+                description: "Chinese-Filipino fast food known for dimsum and noodle dishes.",
+                latitude: 10.3111,
+                longitude: 123.9181,
+                status: "Open",
+                price: "$",
+                rating: 4.0,
+                image: "/restaurants/chowking.png"
+            },
+            {
+                id: 6,
+                name: "Coffee Bean & Tea Leaf",
+                description: "Premium coffee and tea specialty cafe with cozy ambiance.",
+                latitude: 10.3157,
+                longitude: 123.8854,
+                status: "Open",
+                price: "$$$",
+                rating: 4.4,
+                image: "/restaurants/coffeebean1.jpg"
+            }
+        ], []);
     // Calculate distances and format recommendations (recalculate when location changes)
     const recommendations = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
         const center = userLocation || CEBU_CENTER;

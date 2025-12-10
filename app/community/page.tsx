@@ -94,7 +94,7 @@ export default function CommunityPage() {
       // Ensure current user's profile has first_name/last_name populated from metadata if missing
       if (uid && data.user) {
         try {
-          const { data: profileData } = await supabase
+      const { data: profileData } = await supabase
             .from("profiles")
             .select("first_name, last_name")
             .eq("id", uid)
@@ -120,7 +120,7 @@ export default function CommunityPage() {
               }
             }
           }
-        } catch (_e) {
+        } catch {
           // Ignore - profile might not exist yet or RLS might prevent update
         }
       }
@@ -128,7 +128,7 @@ export default function CommunityPage() {
       await loadPosts(uid);
       setLoading(false);
     })();
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (sessionEvent, session) => {
       const uid = session?.user?.id ?? null;
       setUserId(uid);
       
@@ -170,7 +170,7 @@ export default function CommunityPage() {
                 .eq("id", uid);
             }
           }
-        } catch (_e) {
+        } catch {
           // Ignore - profile might not exist yet or RLS might prevent update
         }
       }
@@ -751,7 +751,7 @@ export default function CommunityPage() {
     setNewCommentContent((p) => ({ ...p, [postId]: "" }));
     
     try {
-      const { error, data: _data } = await supabase
+      const { error } = await supabase
         .from("comments")
         .insert({ post_id: postId, content: text, user_id: userId })
         .select()

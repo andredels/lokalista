@@ -197,7 +197,7 @@ function CommunityPage() {
                                     }
                                 }
                             }
-                        } catch (_e) {
+                        } catch (e) {
                         // Ignore - profile might not exist yet or RLS might prevent update
                         }
                     }
@@ -206,7 +206,7 @@ function CommunityPage() {
                 }
             })["CommunityPage.useEffect"]();
             const { data: sub } = supabase.auth.onAuthStateChange({
-                "CommunityPage.useEffect": async (_event, session)=>{
+                "CommunityPage.useEffect": async (sessionEvent, session)=>{
                     var _session_user;
                     var _session_user_id;
                     const uid = (_session_user_id = session === null || session === void 0 ? void 0 : (_session_user = session.user) === null || _session_user === void 0 ? void 0 : _session_user.id) !== null && _session_user_id !== void 0 ? _session_user_id : null;
@@ -237,7 +237,7 @@ function CommunityPage() {
                                     }).eq("id", uid);
                                 }
                             }
-                        } catch (_e) {
+                        } catch (e) {
                         // Ignore - profile might not exist yet or RLS might prevent update
                         }
                     }
@@ -702,7 +702,7 @@ function CommunityPage() {
                 [postId]: ""
             }));
         try {
-            const { error, data: _data } = await supabase.from("comments").insert({
+            const { error } = await supabase.from("comments").insert({
                 post_id: postId,
                 content: text,
                 user_id: userId

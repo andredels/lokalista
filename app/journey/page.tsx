@@ -139,7 +139,15 @@ export default function JourneyPage() {
       .eq("post_id", postId)
       .order("created_at", { ascending: true });
     if (error) return alert(error.message);
-    setCommentsByPost((prev) => ({ ...prev, [postId]: (data as Comment[]) || [] }));
+
+    const normalized = (data as any[]).map((comment) => ({
+      ...comment,
+      profiles: Array.isArray(comment.profiles)
+        ? comment.profiles[0] ?? null
+        : comment.profiles ?? null,
+    })) as Comment[];
+
+    setCommentsByPost((prev) => ({ ...prev, [postId]: normalized || [] }));
   }
 
   async function submitComment(postId: string) {

@@ -173,14 +173,14 @@ function CommunityPage() {
                             }
                         }
                     }
-                } catch (_e) {
+                } catch  {
                 // Ignore - profile might not exist yet or RLS might prevent update
                 }
             }
             await loadPosts(uid);
             setLoading(false);
         })();
-        const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session)=>{
+        const { data: sub } = supabase.auth.onAuthStateChange(async (sessionEvent, session)=>{
             const uid = session?.user?.id ?? null;
             setUserId(uid);
             // Ensure profile is populated when user logs in
@@ -209,7 +209,7 @@ function CommunityPage() {
                             }).eq("id", uid);
                         }
                     }
-                } catch (_e) {
+                } catch  {
                 // Ignore - profile might not exist yet or RLS might prevent update
                 }
             }
@@ -658,7 +658,7 @@ function CommunityPage() {
                 [postId]: ""
             }));
         try {
-            const { error, data: _data } = await supabase.from("comments").insert({
+            const { error } = await supabase.from("comments").insert({
                 post_id: postId,
                 content: text,
                 user_id: userId
