@@ -139,15 +139,13 @@ export default function JourneyPage() {
       .eq("post_id", postId)
       .order("created_at", { ascending: true });
     if (error) return alert(error.message);
-
-    const normalized = (data as any[]).map((comment) => ({
-      ...comment,
-      profiles: Array.isArray(comment.profiles)
-        ? comment.profiles[0] ?? null
-        : comment.profiles ?? null,
-    })) as Comment[];
-
-    setCommentsByPost((prev) => ({ ...prev, [postId]: normalized || [] }));
+    const normalized: Comment[] =
+      (data || []).map((row) => ({
+        ...row,
+        // Supabase sometimes returns relational selects as an array; take the first profile.
+        profiles: Array.isArray(row.profiles) ? row.profiles[0] ?? null : row.profiles ?? null,
+      })) ?? [];
+    setCommentsByPost((prev) => ({ ...prev, [postId]: normalized }));
   }
 
   async function submitComment(postId: string) {
