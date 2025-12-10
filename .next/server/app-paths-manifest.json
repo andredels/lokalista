@@ -1,8 +1,7 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/account/settings/page": "app/account/settings/page.js",
   "/auth/login/page": "app/auth/login/page.js",
-  "/community/page": "app/community/page.js",
+  "/auth/reset-password/page": "app/auth/reset-password/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/map/page": "app/map/page.js",

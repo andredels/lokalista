@@ -884,10 +884,6 @@
     z-index: 500;
   }
 
-  .z-\[1000\] {
-    z-index: 1000;
-  }
-
   .col-span-full {
     grid-column: 1 / -1;
   }
@@ -2415,6 +2411,10 @@
   .underline {
     -webkit-text-decoration-line: underline;
     text-decoration-line: underline;
+  }
+
+  .underline-offset-2 {
+    text-underline-offset: 2px;
   }
 
   .underline-offset-4 {

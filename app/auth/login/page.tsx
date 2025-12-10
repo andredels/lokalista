@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
+import Modal from "@/app/ui/Modal";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,10 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
   const router = useRouter();
 
   // Check if user is already logged in
@@ -135,6 +140,39 @@ export default function LoginPage() {
     }
   }
 
+  async function onForgotPassword() {
+    if (!isEmail(resetEmail)) {
+      setResetMessage("Please enter a valid email address.");
+      return;
+    }
+
+    setResetSubmitting(true);
+    setResetMessage(null);
+    
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/reset-password`,
+      });
+
+      if (error) {
+        setResetMessage(error.message);
+        return;
+      }
+
+      setResetMessage("Password reset email sent! Check your inbox.");
+      setTimeout(() => {
+        setShowForgotPassword(false);
+        setResetEmail("");
+        setResetMessage(null);
+      }, 2000);
+    } catch (err: any) {
+      setResetMessage(err.message || "Failed to send reset email");
+    } finally {
+      setResetSubmitting(false);
+    }
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#eadbfd" }}>
       <div className="container py-12">
@@ -163,6 +201,16 @@ export default function LoginPage() {
                 <input id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" type="password" className="h-11 px-3 rounded-md border border-border/60 focus-ring" />
                 {errors.password && <div className="text-sm text-red-600">{errors.password}</div>}
 
+                <div className="text-right">
+                  <button 
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-sm text-[#8c52ff] hover:underline underline-offset-2"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+
                 <button onClick={onSubmit} disabled={submitting} className="mt-2 h-11 rounded-md bg-[#8c52ff] text-white hover:opacity-90 disabled:opacity-60">
                   {submitting ? "Signing in…" : "Continue"}
                 </button>
@@ -178,6 +226,72 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      <Modal
+        open={showForgotPassword}
+        onClose={() => {
+          setShowForgotPassword(false);
+          setResetEmail("");
+          setResetMessage(null);
+        }}
+        title="Reset Password"
+        showCloseButton={false}
+        className="max-w-md p-6"
+      >
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            onForgotPassword();
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <label className="block text-sm font-medium mb-2" htmlFor="resetEmail">
+              Email Address
+            </label>
+            <input
+              id="resetEmail"
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full h-11 px-3 rounded-md border border-border/60 focus-ring"
+            />
+          </div>
+
+          {resetMessage && (
+            <div className={`text-center text-sm p-3 rounded-md ${
+              resetMessage.includes('sent') 
+                ? 'bg-green-50 text-green-700 border border-green-200' 
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {resetMessage}
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-6">
+            <button
+              type="submit"
+              disabled={resetSubmitting}
+              className="flex-1 h-11 rounded-md bg-[#8c52ff] text-white hover:opacity-90 disabled:opacity-60 transition"
+            >
+              {resetSubmitting ? 'Sending...' : 'Send Reset Email'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowForgotPassword(false);
+                setResetEmail("");
+                setResetMessage(null);
+              }}
+              className="px-6 h-11 rounded-md border border-border/60 hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 } 
