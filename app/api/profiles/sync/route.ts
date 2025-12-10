@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "userIds must be a non-empty array" }, { status: 400 });
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Get current user to verify they're authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
