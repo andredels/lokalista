@@ -187,7 +187,7 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b border-border/60 backdrop-blur supports-[backdrop-filter]:bg-background/70 ${
+      className={`sticky top-0 z-[500] border-b border-border/60 backdrop-blur supports-[backdrop-filter]:bg-background/70 ${
         isScrolled ? "bg-background/70" : "bg-background/50"
       }`}
     >
@@ -213,9 +213,13 @@ export default function Header() {
             }`}
             aria-current={pathname?.startsWith("/dashboard") ? "page" : undefined}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9z" stroke="currentColor" strokeWidth="1.5"/>
-            </svg>
+            <Image
+              src="/lokalista.png"
+              alt="Home icon"
+              width={16}
+              height={16}
+              className="h-4 w-4 object-contain"
+            />
             Home
           </Link>
           <Link
@@ -227,9 +231,13 @@ export default function Header() {
             }`}
             aria-current={pathname?.startsWith("/feed") ? "page" : undefined}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M4 12h8m-8 4h12M4 8h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+            <Image
+              src="/brain.png"
+              alt="AI assistant icon"
+              width={16}
+              height={16}
+              className="h-4 w-4 object-contain"
+            />
             AI Assistant
           </Link>
           <Link
@@ -241,9 +249,13 @@ export default function Header() {
             }`}
             aria-current={pathname?.startsWith("/map") ? "page" : undefined}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M12 2v4m0 12v4m8-8h-4M8 12H4m12.95-6.95l-2.83 2.83M7.05 16.95l-2.83 2.83" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+            <Image
+              src="/gps.png"
+              alt="Food map icon"
+              width={16}
+              height={16}
+              className="h-4 w-4 object-contain"
+            />
             Food Map
           </Link>
           <Link
@@ -255,9 +267,13 @@ export default function Header() {
             }`}
             aria-current={pathname?.startsWith("/community") ? "page" : undefined}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M4 7a3 3 0 106 0 3 3 0 00-6 0zm0 0v10m6-10v10m10-5a3 3 0 11-6 0 3 3 0 016 0zm0 0v5m-6-5v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+            <Image
+              src="/social.png"
+              alt="Community icon"
+              width={16}
+              height={16}
+              className="h-4 w-4 object-contain"
+            />
             Community
           </Link>
         </nav>
@@ -291,7 +307,10 @@ export default function Header() {
                 </svg>
               </button>
               {menuOpen && (
-                <div role="menu" className="absolute right-0 top-[calc(100%+8px)] w-48 rounded-md border border-border/60 bg-background shadow-md p-1 text-sm">
+                <div
+                  role="menu"
+                  className="absolute right-0 top-[calc(100%+8px)] w-48 rounded-md border border-border/60 bg-background shadow-md p-1 text-sm z-50"
+                >
                   <Link href="/profile/edit" className="block px-3 py-2 rounded hover:bg-muted" role="menuitem" onClick={() => setMenuOpen(false)}>
                     Edit Profile
                   </Link>

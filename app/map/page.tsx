@@ -157,8 +157,9 @@ function FoodMapPageInner() {
       };
 
       // Add layer control to map
+      // Place layer control away from the profile dropdown (move to bottom right)
       L.control.layers(baseMaps, {}, {
-        position: 'topright',
+        position: 'bottomright',
         collapsed: true
       }).addTo(mapRef.current);
 
