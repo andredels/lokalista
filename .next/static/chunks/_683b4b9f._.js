@@ -372,7 +372,8 @@ const DEFAULT_CENTER = [
     10.3157,
     123.8854
 ];
-function FoodMapPage() {
+// FoodPlace interface is now imported from lib/restaurants
+function FoodMapPageInner() {
     _s();
     const searchParams = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSearchParams"])();
     const mapEl = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
@@ -401,7 +402,7 @@ function FoodMapPage() {
     const [clickMarker, setClickMarker] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const clickMarkersRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])([]);
     const calculateDistanceKm = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "FoodMapPage.useCallback[calculateDistanceKm]": (a, b)=>{
+        "FoodMapPageInner.useCallback[calculateDistanceKm]": (a, b)=>{
             const R = 6371;
             const dLat = (b[0] - a[0]) * Math.PI / 180;
             const dLon = (b[1] - a[1]) * Math.PI / 180;
@@ -413,12 +414,12 @@ function FoodMapPage() {
             const c = 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
             return R * c;
         }
-    }["FoodMapPage.useCallback[calculateDistanceKm]"], []);
+    }["FoodMapPageInner.useCallback[calculateDistanceKm]"], []);
     // Initialize Leaflet map with satellite view focused on food places
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "FoodMapPage.useEffect": ()=>{
+        "FoodMapPageInner.useEffect": ()=>{
             const ensureAssets = {
-                "FoodMapPage.useEffect.ensureAssets": async ()=>{
+                "FoodMapPageInner.useEffect.ensureAssets": async ()=>{
                     if (!document.querySelector('link[data-leaflet-css="true"]')) {
                         const link = document.createElement("link");
                         link.rel = "stylesheet";
@@ -428,21 +429,21 @@ function FoodMapPage() {
                     }
                     if (!window.L) {
                         await new Promise({
-                            "FoodMapPage.useEffect.ensureAssets": (resolve)=>{
+                            "FoodMapPageInner.useEffect.ensureAssets": (resolve)=>{
                                 const script = document.createElement("script");
                                 script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
                                 script.async = true;
                                 script.onload = ({
-                                    "FoodMapPage.useEffect.ensureAssets": ()=>resolve()
-                                })["FoodMapPage.useEffect.ensureAssets"];
+                                    "FoodMapPageInner.useEffect.ensureAssets": ()=>resolve()
+                                })["FoodMapPageInner.useEffect.ensureAssets"];
                                 document.body.appendChild(script);
                             }
-                        }["FoodMapPage.useEffect.ensureAssets"]);
+                        }["FoodMapPageInner.useEffect.ensureAssets"]);
                     }
                 }
-            }["FoodMapPage.useEffect.ensureAssets"];
+            }["FoodMapPageInner.useEffect.ensureAssets"];
             const init = {
-                "FoodMapPage.useEffect.init": async ()=>{
+                "FoodMapPageInner.useEffect.init": async ()=>{
                     if (initializingRef.current || mapRef.current) return;
                     initializingRef.current = true;
                     await ensureAssets();
@@ -549,7 +550,7 @@ function FoodMapPage() {
                     locateUser();
                     // Click anywhere on map to show nearby places
                     mapRef.current.on("click", {
-                        "FoodMapPage.useEffect.init": async (e)=>{
+                        "FoodMapPageInner.useEffect.init": async (e)=>{
                             const latlng = e.latlng;
                             const clickedLatLng = [
                                 latlng.lat,
@@ -559,14 +560,14 @@ function FoodMapPage() {
                             // Remove ALL previous click markers
                             if (mapRef.current) {
                                 clickMarkersRef.current.forEach({
-                                    "FoodMapPage.useEffect.init": (marker)=>{
+                                    "FoodMapPageInner.useEffect.init": (marker)=>{
                                         try {
                                             mapRef.current.removeLayer(marker);
                                         } catch (error) {
                                             console.warn('Error removing click marker:', error);
                                         }
                                     }
-                                }["FoodMapPage.useEffect.init"]);
+                                }["FoodMapPageInner.useEffect.init"]);
                                 clickMarkersRef.current = [];
                                 setClickMarker(null);
                             }
@@ -625,52 +626,52 @@ function FoodMapPage() {
                                 setLoadingPlaces(false);
                             }
                         }
-                    }["FoodMapPage.useEffect.init"]);
+                    }["FoodMapPageInner.useEffect.init"]);
                     // Track zoom level changes
                     mapRef.current.on("zoomend", {
-                        "FoodMapPage.useEffect.init": ()=>{
+                        "FoodMapPageInner.useEffect.init": ()=>{
                             if (mapRef.current) {
                                 const zoom = mapRef.current.getZoom();
                                 setCurrentZoom(zoom);
                             }
                         }
-                    }["FoodMapPage.useEffect.init"]);
+                    }["FoodMapPageInner.useEffect.init"]);
                     // Set initial zoom level
                     setCurrentZoom(mapRef.current.getZoom());
                     // Load initial food places around default center
                     setTimeout({
-                        "FoodMapPage.useEffect.init": ()=>{
+                        "FoodMapPageInner.useEffect.init": ()=>{
                             searchFoodPlaces(DEFAULT_CENTER);
                         }
-                    }["FoodMapPage.useEffect.init"], 1000);
+                    }["FoodMapPageInner.useEffect.init"], 1000);
                     initializingRef.current = false;
                 }
-            }["FoodMapPage.useEffect.init"];
+            }["FoodMapPageInner.useEffect.init"];
             init();
             return ({
-                "FoodMapPage.useEffect": ()=>{
+                "FoodMapPageInner.useEffect": ()=>{
                     if (mapRef.current) {
                         // Clean up ALL click markers
                         clickMarkersRef.current.forEach({
-                            "FoodMapPage.useEffect": (marker)=>{
+                            "FoodMapPageInner.useEffect": (marker)=>{
                                 try {
                                     mapRef.current.removeLayer(marker);
                                 } catch (error) {
                                     console.warn('Error removing click marker during cleanup:', error);
                                 }
                             }
-                        }["FoodMapPage.useEffect"]);
+                        }["FoodMapPageInner.useEffect"]);
                         clickMarkersRef.current = [];
                         mapRef.current.remove();
                         mapRef.current = null;
                     }
                 }
-            })["FoodMapPage.useEffect"];
+            })["FoodMapPageInner.useEffect"];
         }
-    }["FoodMapPage.useEffect"], []);
+    }["FoodMapPageInner.useEffect"], []);
     // Handle URL parameters for restaurant navigation
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "FoodMapPage.useEffect": ()=>{
+        "FoodMapPageInner.useEffect": ()=>{
             if (!mapRef.current) return;
             const lat = searchParams.get('lat');
             const lng = searchParams.get('lng');
@@ -706,7 +707,7 @@ function FoodMapPage() {
                     restaurantMarker.bindPopup('\n          <div style="text-align: center; padding: 8px;">\n            <h3 style="margin: 0 0 8px 0; color: #8c52ff; font-weight: bold;">'.concat(restaurant || 'Selected Restaurant', '</h3>\n            <p style="margin: 0; color: #666; font-size: 14px;">Click on the map to explore nearby places!</p>\n          </div>\n        ')).openPopup();
                     // Clean up the marker when component unmounts or params change
                     return ({
-                        "FoodMapPage.useEffect": ()=>{
+                        "FoodMapPageInner.useEffect": ()=>{
                             try {
                                 var _mapRef_current;
                                 (_mapRef_current = mapRef.current) === null || _mapRef_current === void 0 ? void 0 : _mapRef_current.removeLayer(restaurantMarker);
@@ -714,11 +715,11 @@ function FoodMapPage() {
                                 console.warn('Error removing restaurant marker:', error);
                             }
                         }
-                    })["FoodMapPage.useEffect"];
+                    })["FoodMapPageInner.useEffect"];
                 }
             }
         }
-    }["FoodMapPage.useEffect"], [
+    }["FoodMapPageInner.useEffect"], [
         searchParams,
         mapRef.current
     ]);
@@ -1076,16 +1077,16 @@ function FoodMapPage() {
     }
     // Load initial food places only once
     const loadInitialFoodPlaces = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
-        "FoodMapPage.useMemo[loadInitialFoodPlaces]": ()=>{
+        "FoodMapPageInner.useMemo[loadInitialFoodPlaces]": ()=>{
             return ({
-                "FoodMapPage.useMemo[loadInitialFoodPlaces]": ()=>{
+                "FoodMapPageInner.useMemo[loadInitialFoodPlaces]": ()=>{
                     searchFoodPlaces(DEFAULT_CENTER);
                 }
-            })["FoodMapPage.useMemo[loadInitialFoodPlaces]"];
+            })["FoodMapPageInner.useMemo[loadInitialFoodPlaces]"];
         }
-    }["FoodMapPage.useMemo[loadInitialFoodPlaces]"], []);
+    }["FoodMapPageInner.useMemo[loadInitialFoodPlaces]"], []);
     const plotFoodMarkers = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "FoodMapPage.useCallback[plotFoodMarkers]": (places)=>{
+        "FoodMapPageInner.useCallback[plotFoodMarkers]": (places)=>{
             const L = window.L;
             // Check if Leaflet is loaded and map is ready
             if (!L || !mapRef.current) {
@@ -1094,7 +1095,7 @@ function FoodMapPage() {
             }
             // Clear existing food markers and custom popups
             foodMarkersRef.current.forEach({
-                "FoodMapPage.useCallback[plotFoodMarkers]": (marker)=>{
+                "FoodMapPageInner.useCallback[plotFoodMarkers]": (marker)=>{
                     try {
                         // Call cleanup function if it exists
                         if (marker.cleanup) {
@@ -1103,19 +1104,19 @@ function FoodMapPage() {
                         marker.remove();
                     } catch (e) {}
                 }
-            }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+            }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
             foodMarkersRef.current = [];
             // Also remove any remaining custom popups
             const customPopups = document.querySelectorAll('.custom-popup');
             customPopups.forEach({
-                "FoodMapPage.useCallback[plotFoodMarkers]": (popup)=>popup.remove()
-            }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+                "FoodMapPageInner.useCallback[plotFoodMarkers]": (popup)=>popup.remove()
+            }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
             console.log("Plotting", places.length, "food places");
             // Add markers for each food place with modern styling
             places.forEach({
-                "FoodMapPage.useCallback[plotFoodMarkers]": (place)=>{
+                "FoodMapPageInner.useCallback[plotFoodMarkers]": (place)=>{
                     const getCategoryIcon = {
-                        "FoodMapPage.useCallback[plotFoodMarkers].getCategoryIcon": (category)=>{
+                        "FoodMapPageInner.useCallback[plotFoodMarkers].getCategoryIcon": (category)=>{
                             const cat = category.toLowerCase();
                             if (cat.includes("restaurant") || cat.includes("food")) return "🍽️";
                             if (cat.includes("cafe") || cat.includes("coffee")) return "☕";
@@ -1125,9 +1126,9 @@ function FoodMapPage() {
                             if (cat.includes("bakery")) return "🥖";
                             return "🍴";
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers].getCategoryIcon"];
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers].getCategoryIcon"];
                     const getCategoryColor = {
-                        "FoodMapPage.useCallback[plotFoodMarkers].getCategoryColor": (category)=>{
+                        "FoodMapPageInner.useCallback[plotFoodMarkers].getCategoryColor": (category)=>{
                             const cat = category.toLowerCase();
                             if (cat.includes("cafe") || cat.includes("coffee")) return "#059669";
                             if (cat.includes("fast")) return "#dc2626";
@@ -1135,7 +1136,7 @@ function FoodMapPage() {
                             if (cat.includes("bakery")) return "#d97706";
                             return "#8c52ff";
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers].getCategoryColor"];
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers].getCategoryColor"];
                     const iconHtml = '\n        <div style="\n          display: flex;\n          align-items: center;\n          gap: 6px;\n          background: linear-gradient(135deg, '.concat(getCategoryColor(place.category), ", ").concat(getCategoryColor(place.category), 'dd);\n          color: #fff;\n          border-radius: 25px;\n          padding: 8px 14px;\n          box-shadow: 0 6px 20px rgba(0,0,0,0.25);\n          font-size: 13px;\n          font-weight: 700;\n          border: 3px solid #fff;\n          cursor: pointer;\n          min-width: 60px;\n          justify-content: center;\n        ">\n          <span style="font-size: 16px;">').concat(getCategoryIcon(place.category), "</span>\n          <span>").concat(place.rating ? place.rating.toFixed(1) : "★", "</span>\n        </div>\n      ");
                     const customIcon = L.divIcon({
                         html: iconHtml,
@@ -1172,7 +1173,7 @@ function FoodMapPage() {
                     }
                     // Position popup relative to marker with improved accuracy
                     const updatePopupPosition = {
-                        "FoodMapPage.useCallback[plotFoodMarkers].updatePopupPosition": ()=>{
+                        "FoodMapPageInner.useCallback[plotFoodMarkers].updatePopupPosition": ()=>{
                             if (mapRef.current && popupElement) {
                                 try {
                                     const markerPoint = mapRef.current.latLngToContainerPoint([
@@ -1203,13 +1204,13 @@ function FoodMapPage() {
                                 }
                             }
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers].updatePopupPosition"];
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers].updatePopupPosition"];
                     // Add hover effects with custom popup
                     let hoverTimeout;
                     let isHovering = false;
                     let isPopupVisible = false;
                     marker.on('mouseover', {
-                        "FoodMapPage.useCallback[plotFoodMarkers]": function() {
+                        "FoodMapPageInner.useCallback[plotFoodMarkers]": function() {
                             clearTimeout(hoverTimeout);
                             isHovering = true;
                             if (!isPopupVisible) {
@@ -1219,35 +1220,35 @@ function FoodMapPage() {
                                 isPopupVisible = true;
                             }
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
                     marker.on('mouseout', {
-                        "FoodMapPage.useCallback[plotFoodMarkers]": function() {
+                        "FoodMapPageInner.useCallback[plotFoodMarkers]": function() {
                             isHovering = false;
                             hoverTimeout = setTimeout({
-                                "FoodMapPage.useCallback[plotFoodMarkers]": ()=>{
+                                "FoodMapPageInner.useCallback[plotFoodMarkers]": ()=>{
                                     if (!isHovering && isPopupVisible) {
                                         popupElement.style.opacity = '0';
                                         popupElement.style.transform = 'translateY(10px)';
                                         isPopupVisible = false;
                                     }
                                 }
-                            }["FoodMapPage.useCallback[plotFoodMarkers]"], 150);
+                            }["FoodMapPageInner.useCallback[plotFoodMarkers]"], 150);
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
                     // Update popup position on map events with throttling
                     let positionUpdateTimeout;
                     const throttledUpdatePosition = {
-                        "FoodMapPage.useCallback[plotFoodMarkers].throttledUpdatePosition": ()=>{
+                        "FoodMapPageInner.useCallback[plotFoodMarkers].throttledUpdatePosition": ()=>{
                             clearTimeout(positionUpdateTimeout);
                             positionUpdateTimeout = setTimeout({
-                                "FoodMapPage.useCallback[plotFoodMarkers].throttledUpdatePosition": ()=>{
+                                "FoodMapPageInner.useCallback[plotFoodMarkers].throttledUpdatePosition": ()=>{
                                     if (isPopupVisible) {
                                         updatePopupPosition();
                                     }
                                 }
-                            }["FoodMapPage.useCallback[plotFoodMarkers].throttledUpdatePosition"], 16); // ~60fps
+                            }["FoodMapPageInner.useCallback[plotFoodMarkers].throttledUpdatePosition"], 16); // ~60fps
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers].throttledUpdatePosition"];
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers].throttledUpdatePosition"];
                     // Update popup position on map move/zoom
                     if (mapRef.current) {
                         mapRef.current.on('move', throttledUpdatePosition);
@@ -1256,11 +1257,11 @@ function FoodMapPage() {
                         mapRef.current.on('zoomend', updatePopupPosition);
                     }
                     marker.on('click', {
-                        "FoodMapPage.useCallback[plotFoodMarkers]": ()=>setSelectedPlace(place)
-                    }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+                        "FoodMapPageInner.useCallback[plotFoodMarkers]": ()=>setSelectedPlace(place)
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
                     // Store cleanup function for this marker
                     marker.cleanup = ({
-                        "FoodMapPage.useCallback[plotFoodMarkers]": ()=>{
+                        "FoodMapPageInner.useCallback[plotFoodMarkers]": ()=>{
                             if (popupElement && popupElement.parentNode) {
                                 popupElement.parentNode.removeChild(popupElement);
                             }
@@ -1271,20 +1272,20 @@ function FoodMapPage() {
                                 mapRef.current.off('zoomend', updatePopupPosition);
                             }
                         }
-                    })["FoodMapPage.useCallback[plotFoodMarkers]"];
+                    })["FoodMapPageInner.useCallback[plotFoodMarkers]"];
                     marker.addTo(mapRef.current);
                     foodMarkersRef.current.push(marker);
                 }
-            }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+            }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
         }
-    }["FoodMapPage.useCallback[plotFoodMarkers]"], []);
+    }["FoodMapPageInner.useCallback[plotFoodMarkers]"], []);
     const filterPlacesByZoom = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "FoodMapPage.useCallback[filterPlacesByZoom]": (places, zoom)=>{
+        "FoodMapPageInner.useCallback[filterPlacesByZoom]": (places, zoom)=>{
             console.log("Filtering ".concat(places.length, " places at zoom level ").concat(zoom));
             var _ref;
             const center = (_ref = clickedLocation !== null && clickedLocation !== void 0 ? clickedLocation : lastSearchCenter) !== null && _ref !== void 0 ? _ref : DEFAULT_CENTER;
             const placesWithDistance = places.map({
-                "FoodMapPage.useCallback[filterPlacesByZoom].placesWithDistance": (place)=>{
+                "FoodMapPageInner.useCallback[filterPlacesByZoom].placesWithDistance": (place)=>{
                     const distance = place.distance !== undefined ? place.distance : calculateDistanceKm(center, [
                         place.latitude,
                         place.longitude
@@ -1294,9 +1295,9 @@ function FoodMapPage() {
                         distance
                     };
                 }
-            }["FoodMapPage.useCallback[filterPlacesByZoom].placesWithDistance"]);
+            }["FoodMapPageInner.useCallback[filterPlacesByZoom].placesWithDistance"]);
             const sortByDistanceThenRating = {
-                "FoodMapPage.useCallback[filterPlacesByZoom].sortByDistanceThenRating": (a, b)=>{
+                "FoodMapPageInner.useCallback[filterPlacesByZoom].sortByDistanceThenRating": (a, b)=>{
                     var _a_distance;
                     const distanceA = (_a_distance = a.distance) !== null && _a_distance !== void 0 ? _a_distance : calculateDistanceKm(center, [
                         a.latitude,
@@ -1314,7 +1315,7 @@ function FoodMapPage() {
                     const ratingB = (_b_rating = b.rating) !== null && _b_rating !== void 0 ? _b_rating : 0;
                     return ratingB - ratingA;
                 }
-            }["FoodMapPage.useCallback[filterPlacesByZoom].sortByDistanceThenRating"];
+            }["FoodMapPageInner.useCallback[filterPlacesByZoom].sortByDistanceThenRating"];
             let limit = 12;
             if (zoom <= 13) {
                 limit = 8;
@@ -1325,12 +1326,12 @@ function FoodMapPage() {
             console.log("Zoom ".concat(zoom, ": showing ").concat(filtered.length, " closest places (limit ").concat(limit, ")"));
             setFilteredPlaces(filtered);
             setTimeout({
-                "FoodMapPage.useCallback[filterPlacesByZoom]": ()=>{
+                "FoodMapPageInner.useCallback[filterPlacesByZoom]": ()=>{
                     plotFoodMarkers(filtered);
                 }
-            }["FoodMapPage.useCallback[filterPlacesByZoom]"], 100);
+            }["FoodMapPageInner.useCallback[filterPlacesByZoom]"], 100);
         }
-    }["FoodMapPage.useCallback[filterPlacesByZoom]"], [
+    }["FoodMapPageInner.useCallback[filterPlacesByZoom]"], [
         calculateDistanceKm,
         clickedLocation,
         lastSearchCenter,
@@ -1426,27 +1427,27 @@ function FoodMapPage() {
     };
     // Test function to verify sample data works
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "FoodMapPage.useEffect": ()=>{
+        "FoodMapPageInner.useEffect": ()=>{
             console.log("Food places state:", foodPlaces);
         }
-    }["FoodMapPage.useEffect"], [
+    }["FoodMapPageInner.useEffect"], [
         foodPlaces
     ]);
     // Re-filter places when zoom level or foodPlaces change
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "FoodMapPage.useEffect": ()=>{
+        "FoodMapPageInner.useEffect": ()=>{
             if (foodPlaces.length > 0) {
                 filterPlacesByZoom(foodPlaces, currentZoom);
             }
         }
-    }["FoodMapPage.useEffect"], [
+    }["FoodMapPageInner.useEffect"], [
         currentZoom,
         foodPlaces,
         filterPlacesByZoom
     ]);
     // Filter food places when filters change
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "FoodMapPage.useEffect": ()=>{
+        "FoodMapPageInner.useEffect": ()=>{
             if (mapRef.current && foodPlaces.length > 0) {
                 const filteredPlaces = getSampleFoodPlaces([
                     10.3157,
@@ -1456,7 +1457,7 @@ function FoodMapPage() {
                 plotFoodMarkers(filteredPlaces);
             }
         }
-    }["FoodMapPage.useEffect"], [
+    }["FoodMapPageInner.useEffect"], [
         categoryFilter,
         featureFilter
     ]);
@@ -2518,14 +2519,37 @@ function FoodMapPage() {
         columnNumber: 5
     }, this);
 }
-_s(FoodMapPage, "dvWYPBWtg3x1uzn+bYEmZZa0TXs=", false, function() {
+_s(FoodMapPageInner, "dvWYPBWtg3x1uzn+bYEmZZa0TXs=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSearchParams"]
     ];
 });
-_c = FoodMapPage;
-var _c;
-__turbopack_context__.k.register(_c, "FoodMapPage");
+_c = FoodMapPageInner;
+function FoodMapPage() {
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Suspense"], {
+        fallback: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            className: "min-h-screen flex items-center justify-center",
+            children: "Loading map…"
+        }, void 0, false, {
+            fileName: "[project]/app/map/page.tsx",
+            lineNumber: 1444,
+            columnNumber: 25
+        }, void 0),
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FoodMapPageInner, {}, void 0, false, {
+            fileName: "[project]/app/map/page.tsx",
+            lineNumber: 1445,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "[project]/app/map/page.tsx",
+        lineNumber: 1444,
+        columnNumber: 5
+    }, this);
+}
+_c1 = FoodMapPage;
+var _c, _c1;
+__turbopack_context__.k.register(_c, "FoodMapPageInner");
+__turbopack_context__.k.register(_c1, "FoodMapPage");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
