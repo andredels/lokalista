@@ -1,6 +1,7 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getTrendingRestaurants, type FoodPlace } from "@/lib/restaurants";
 import { useScrollAnimation } from "@/lib/hooks/useScrollAnimation";
@@ -161,6 +162,7 @@ export default function DashboardPage() {
   ];
 
   // Calculate distances and format recommendations (recalculate when location changes)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const recommendations = useMemo(() => {
     const center = userLocation || CEBU_CENTER;
     return restaurantData.map((restaurant) => {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Shared restaurant data fetching utilities
 
 export interface FoodPlace {

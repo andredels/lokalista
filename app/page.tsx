@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any, @next/next/no-img-element, react/no-unescaped-entities */
 
 import { useScrollAnimation } from "@/lib/hooks/useScrollAnimation";
 

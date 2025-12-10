@@ -45,12 +45,14 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ metadata: metadataMap });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in users/metadata route:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: (error as Error)?.message || "Internal server error" },
       { status: 500 }
     );
   }
 }
+
+
 

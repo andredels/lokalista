@@ -21,7 +21,7 @@ export default function AIAssistantPage() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [chatHistory, setChatHistory] = useState<ChatHistoryMessage[]>([]);
+  const [, setChatHistory] = useState<ChatHistoryMessage[]>([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -171,10 +171,10 @@ export default function AIAssistantPage() {
           assistantContent = content;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Chat completion error:", error);
       assistantContent = error?.message 
-        ? `Sorry, I encountered an error: ${error.message}. Please try again.`
+        ? `Sorry, I encountered an error: ${(error as Error).message}. Please try again.`
         : "Sorry, I couldn't fetch a response from our AI right now. Please try again in a moment.";
     }
 

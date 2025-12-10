@@ -42,12 +42,14 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ profiles: profilesMap });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in profiles/sync route:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: (error as Error)?.message || "Internal server error" },
       { status: 500 }
     );
   }
 }
+
+
 

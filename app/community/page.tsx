@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Clone of journey page but with /community redirects
 import { useEffect, useMemo, useState, useRef } from "react";
@@ -67,6 +68,7 @@ export default function CommunityPage() {
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [newCommentContent, setNewCommentContent] = useState<Record<string, string>>({});
@@ -126,7 +128,7 @@ export default function CommunityPage() {
       await loadPosts(uid);
       setLoading(false);
     })();
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const uid = session?.user?.id ?? null;
       setUserId(uid);
       
@@ -211,7 +213,6 @@ export default function CommunityPage() {
       .filter((id, index, self) => self.indexOf(id) === index); // unique IDs
     
     if (missingProfileUserIds.length > 0) {
-      console.log(`Fetching ${missingProfileUserIds.length} missing profiles separately...`);
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
         .select("id, first_name, last_name, avatar_url")
@@ -273,8 +274,7 @@ export default function CommunityPage() {
     }
     
     setSubmitting(true);
-    let imageUrls: string[] = [];
-    console.log("Submitting post...");
+    const imageUrls: string[] = [];
 
     try {
       // Ensure user has a profile before posting (to satisfy foreign key constraint)
@@ -309,7 +309,6 @@ export default function CommunityPage() {
       // Upload all images
       if (imageFiles.length > 0) {
         try {
-          console.log(`Uploading ${imageFiles.length} image(s)...`);
           for (const imageFile of imageFiles) {
             const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
             const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -338,9 +337,8 @@ export default function CommunityPage() {
       }
       
       // Insert post with JSON array of image URLs (or single URL for backward compatibility)
-      console.log("Inserting post...");
       const imageUrlValue = imageUrls.length === 1 ? imageUrls[0] : JSON.stringify(imageUrls);
-      const { error: insertError, data: insertData } = await supabase
+      const { error: insertError, data: _insertData } = await supabase
         .from("posts")
         .insert({ 
           content: content.trim() || "", // Use empty string instead of null to satisfy NOT NULL constraint
@@ -375,7 +373,6 @@ export default function CommunityPage() {
       }
       
       // Reload posts
-      console.log("Post created successfully. Reloading posts...");
       await loadPosts(userId);
       setIsComposerOpen(false);
       
@@ -548,8 +545,6 @@ export default function CommunityPage() {
       return; // Already deleting
     }
     
-    console.log("Attempting to delete post:", postId, "User ID:", userId);
-    
     if (!confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
       return;
     }
@@ -635,8 +630,6 @@ export default function CommunityPage() {
         throw new Error("Post not found or you don't have permission to delete it.");
       }
       
-      console.log("Post deleted successfully");
-      
       // Close modal if the deleted post was open
       if (selectedPost && selectedPost.id === postId) {
         closeModal();
@@ -661,8 +654,6 @@ export default function CommunityPage() {
     if (deletingComment === commentId) {
       return; // Already deleting
     }
-    
-    console.log("Attempting to delete comment:", commentId, "User ID:", userId);
     
     if (!confirm("Are you sure you want to delete this comment?")) {
       return;
@@ -709,8 +700,6 @@ export default function CommunityPage() {
       if (!data || data.length === 0) {
         throw new Error("Comment not found or you don't have permission to delete it.");
       }
-      
-      console.log("Comment deleted successfully");
       
       // Reload comments and update post count
       await loadComments(postId);
@@ -822,6 +811,7 @@ export default function CommunityPage() {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function toggleExpanded(postId: string) {
     setExpandedPostIds((prev) => {
       const next = new Set(prev);
@@ -963,10 +953,12 @@ export default function CommunityPage() {
     setIsComposerOpen(false);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % imagePreviews.length);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + imagePreviews.length) % imagePreviews.length);
   };

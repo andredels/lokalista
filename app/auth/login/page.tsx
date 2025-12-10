@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
 
@@ -171,9 +172,9 @@ export default function LoginPage() {
                 New here? <a href="/auth/signup" className="underline underline-offset-4 text-[#8c52ff]">Sign up</a>
               </div>
             </div>
-            <div className="mt-6 text-sm text-center">
-              <a href="/" className="underline underline-offset-4">Back to home</a>
-            </div>
+              <div className="mt-6 text-sm text-center">
+                <Link href="/" className="underline underline-offset-4">Back to home</Link>
+              </div>
           </div>
         </div>
       </div>

@@ -61,25 +61,26 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(completion);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Groq chat route error:", error);
     
     // Handle specific Groq API errors
-    if (error?.status === 401 || error?.code === 'invalid_api_key') {
+    const err = error as { status?: number; code?: string; message?: string; response?: { data?: { error?: { message?: string } } } };
+    if (err?.status === 401 || err?.code === 'invalid_api_key') {
       return NextResponse.json({ 
         error: "Invalid API key. Please check your GROQ_API_KEY in .env.local file. Make sure it's correct and starts with 'gsk_'." 
       }, { status: 401 });
     }
     
-    if (error?.status === 429) {
+    if (err?.status === 429) {
       return NextResponse.json({ 
         error: "Rate limit exceeded. Please try again in a moment." 
       }, { status: 429 });
     }
     
     const message =
-      error?.response?.data?.error?.message ||
-      error?.message ||
+      err?.response?.data?.error?.message ||
+      err?.message ||
       "Unexpected error while generating chat response.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
