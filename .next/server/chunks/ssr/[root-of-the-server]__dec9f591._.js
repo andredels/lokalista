@@ -539,17 +539,6 @@ function Header() {
                                         lineNumber: 295,
                                         columnNumber: 19
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
-                                        href: "/account/settings",
-                                        className: "block px-3 py-2 rounded hover:bg-muted",
-                                        role: "menuitem",
-                                        onClick: ()=>setMenuOpen(false),
-                                        children: "Account Settings"
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 298,
-                                        columnNumber: 19
-                                    }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "px-3 py-2 rounded hover:bg-muted flex items-center justify-between gap-3",
                                         children: [
@@ -561,7 +550,7 @@ function Header() {
                                                         children: "Dark Mode"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/ui/Header.tsx",
-                                                        lineNumber: 303,
+                                                        lineNumber: 300,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -569,13 +558,13 @@ function Header() {
                                                         children: theme === "dark" ? "On" : "Off"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/ui/Header.tsx",
-                                                        lineNumber: 304,
+                                                        lineNumber: 301,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/ui/Header.tsx",
-                                                lineNumber: 302,
+                                                lineNumber: 299,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -592,18 +581,18 @@ function Header() {
                                                     className: `absolute top-[3px] left-[3px] h-4 w-4 rounded-full bg-white shadow transition-transform ${theme === "dark" ? "translate-x-6" : "translate-x-0"}`
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/ui/Header.tsx",
-                                                    lineNumber: 319,
+                                                    lineNumber: 316,
                                                     columnNumber: 23
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/ui/Header.tsx",
-                                                lineNumber: 306,
+                                                lineNumber: 303,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 301,
+                                        lineNumber: 298,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -616,7 +605,7 @@ function Header() {
                                         children: "Sign out"
                                     }, void 0, false, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 326,
+                                        lineNumber: 323,
                                         columnNumber: 19
                                     }, this)
                                 ]
@@ -651,7 +640,7 @@ function Header() {
                                                 strokeWidth: "1.5"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/ui/Header.tsx",
-                                                lineNumber: 336,
+                                                lineNumber: 333,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -661,20 +650,20 @@ function Header() {
                                                 strokeLinecap: "round"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/ui/Header.tsx",
-                                                lineNumber: 337,
+                                                lineNumber: 334,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/ui/Header.tsx",
-                                        lineNumber: 335,
+                                        lineNumber: 332,
                                         columnNumber: 17
                                     }, this),
                                     "Find Places"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/ui/Header.tsx",
-                                lineNumber: 334,
+                                lineNumber: 331,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -683,7 +672,7 @@ function Header() {
                                 children: "Get Started"
                             }, void 0, false, {
                                 fileName: "[project]/app/ui/Header.tsx",
-                                lineNumber: 341,
+                                lineNumber: 338,
                                 columnNumber: 15
                             }, this)
                         ]

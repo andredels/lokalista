@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
+import Modal from "@/app/ui/Modal";
 
 interface UserProfile {
   id: string;
@@ -25,6 +26,15 @@ export default function EditProfilePage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordErrors, setPasswordErrors] = useState<{ [key: string]: string }>({});
+  const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -147,6 +157,91 @@ export default function EditProfilePage() {
       setErrors(prev => ({ ...prev, avatar: 'Failed to upload image' }));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordMessage(null);
+    setPasswordErrors({});
+
+    // Validate form
+    const newErrors: { [key: string]: string } = {};
+
+    if (!passwordData.currentPassword) {
+      newErrors.currentPassword = 'Current password is required';
+    }
+
+    if (!passwordData.newPassword) {
+      newErrors.newPassword = 'New password is required';
+    } else if (passwordData.newPassword.length < 6) {
+      newErrors.newPassword = 'Password must be at least 6 characters';
+    }
+
+    if (!passwordData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    // Check if new password is same as current password
+    if (passwordData.currentPassword && passwordData.newPassword && 
+        passwordData.currentPassword === passwordData.newPassword) {
+      newErrors.newPassword = 'New password must be different from current password';
+    }
+
+    setPasswordErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
+    try {
+      setUpdatingPassword(true);
+      const supabase = createClient();
+
+      // Get current user email
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user || !user.email) {
+        throw new Error('Unable to verify user identity');
+      }
+
+      // Verify current password by attempting to sign in
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: passwordData.currentPassword
+      });
+
+      if (verifyError) {
+        setPasswordErrors({ currentPassword: 'Current password is incorrect' });
+        return;
+      }
+
+      // Update password using Supabase
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setPasswordMessage('Password updated successfully!');
+      // Reset form
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      // Close modal after a short delay
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setPasswordMessage(null);
+      }, 1500);
+    } catch (error: any) {
+      console.error('Error updating password:', error);
+      if (!error.message.includes('incorrect')) {
+        setPasswordMessage(error.message || 'Failed to update password');
+      }
+    } finally {
+      setUpdatingPassword(false);
     }
   };
 
@@ -313,6 +408,18 @@ export default function EditProfilePage() {
                   <p className="text-xs text-ai-muted mt-1">Email cannot be changed</p>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-ai-muted">Password</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordModal(true)}
+                    className="px-4 py-2 text-sm border border-ai rounded-md hover:bg-ai-muted transition text-foreground"
+                  >
+                    Reset Password
+                  </button>
+                  <p className="text-xs text-ai-muted mt-1">Click to change your password</p>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-ai-muted" htmlFor="first_name">First Name</label>
@@ -431,6 +538,114 @@ export default function EditProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Password Reset Modal */}
+      <Modal
+        open={showPasswordModal}
+        onClose={() => {
+          setShowPasswordModal(false);
+          setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+          setPasswordErrors({});
+          setPasswordMessage(null);
+        }}
+        title="Reset Password"
+        showCloseButton={false}
+        className="max-w-md p-6 bg-ai-card border border-ai"
+      >
+        <form onSubmit={handlePasswordUpdate} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-ai-muted" htmlFor="currentPassword">
+              Current Password
+            </label>
+            <input
+              id="currentPassword"
+              type="password"
+              value={passwordData.currentPassword}
+              onChange={(e) => {
+                setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }));
+                setPasswordErrors(prev => ({ ...prev, currentPassword: '' }));
+              }}
+              placeholder="Enter your current password"
+              className="w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground"
+            />
+            {passwordErrors.currentPassword && (
+              <div className="text-sm text-red-600 mt-1">{passwordErrors.currentPassword}</div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-ai-muted" htmlFor="newPassword">
+              New Password
+            </label>
+            <input
+              id="newPassword"
+              type="password"
+              value={passwordData.newPassword}
+              onChange={(e) => {
+                setPasswordData(prev => ({ ...prev, newPassword: e.target.value }));
+                setPasswordErrors(prev => ({ ...prev, newPassword: '' }));
+              }}
+              placeholder="Enter new password"
+              className="w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground"
+            />
+            {passwordErrors.newPassword && (
+              <div className="text-sm text-red-600 mt-1">{passwordErrors.newPassword}</div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-ai-muted" htmlFor="confirmPassword">
+              Confirm New Password
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={passwordData.confirmPassword}
+              onChange={(e) => {
+                setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }));
+                setPasswordErrors(prev => ({ ...prev, confirmPassword: '' }));
+              }}
+              placeholder="Confirm new password"
+              className="w-full h-11 px-3 rounded-md border border-ai focus-ring bg-transparent text-foreground"
+            />
+            {passwordErrors.confirmPassword && (
+              <div className="text-sm text-red-600 mt-1">{passwordErrors.confirmPassword}</div>
+            )}
+          </div>
+
+          {passwordMessage && (
+            <div className={`text-center text-sm p-3 rounded-md ${
+              passwordMessage.includes('success') 
+                ? 'bg-green-50 text-green-700 border border-green-200' 
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {passwordMessage}
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-6">
+            <button
+              type="submit"
+              disabled={updatingPassword}
+              className="flex-1 h-11 rounded-md bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white hover:opacity-90 disabled:opacity-60 transition"
+            >
+              {updatingPassword ? 'Updating...' : 'Update Password'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowPasswordModal(false);
+                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                setPasswordErrors({});
+                setPasswordMessage(null);
+              }}
+              className="px-6 h-11 rounded-md border border-ai hover:bg-ai-muted transition text-ai-muted"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

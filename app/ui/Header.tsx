@@ -295,9 +295,6 @@ export default function Header() {
                   <Link href="/profile/edit" className="block px-3 py-2 rounded hover:bg-muted" role="menuitem" onClick={() => setMenuOpen(false)}>
                     Edit Profile
                   </Link>
-                  <Link href="/account/settings" className="block px-3 py-2 rounded hover:bg-muted" role="menuitem" onClick={() => setMenuOpen(false)}>
-                    Account Settings
-                  </Link>
                   <div className="px-3 py-2 rounded hover:bg-muted flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="font-medium">Dark Mode</span>
