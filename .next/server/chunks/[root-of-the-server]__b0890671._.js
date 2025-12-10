@@ -179,21 +179,22 @@ async function POST(request) {
     } catch (error) {
         console.error("Groq chat route error:", error);
         // Handle specific Groq API errors
-        if (error?.status === 401 || error?.code === 'invalid_api_key') {
+        const err = error;
+        if (err?.status === 401 || err?.code === 'invalid_api_key') {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: "Invalid API key. Please check your GROQ_API_KEY in .env.local file. Make sure it's correct and starts with 'gsk_'."
             }, {
                 status: 401
             });
         }
-        if (error?.status === 429) {
+        if (err?.status === 429) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: "Rate limit exceeded. Please try again in a moment."
             }, {
                 status: 429
             });
         }
-        const message = error?.response?.data?.error?.message || error?.message || "Unexpected error while generating chat response.";
+        const message = err?.response?.data?.error?.message || err?.message || "Unexpected error while generating chat response.";
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: message
         }, {

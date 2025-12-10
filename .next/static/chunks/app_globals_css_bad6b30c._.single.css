@@ -220,6 +220,7 @@
     --text-4xl--line-height: calc(2.5 / 2.25);
     --text-6xl: 3.75rem;
     --text-6xl--line-height: 1;
+    --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
@@ -2256,6 +2257,11 @@
     font-weight: var(--font-weight-medium);
   }
 
+  .font-normal {
+    --tw-font-weight: var(--font-weight-normal);
+    font-weight: var(--font-weight-normal);
+  }
+
   .font-semibold {
     --tw-font-weight: var(--font-weight-semibold);
     font-weight: var(--font-weight-semibold);
@@ -2485,6 +2491,10 @@
 
   .blur-3xl {
     --tw-blur: blur(var(--blur-3xl));
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+
+  .filter {
     filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
   }
 

@@ -8,14 +8,28 @@ import { fetchRealFoodPlaces, type FoodPlace } from "@/lib/restaurants";
 
 const DEFAULT_CENTER: [number, number] = [10.3157, 123.8854];
 
+// Cebu City bounding box (approximate)
+const CEBU_BOUNDS = {
+  north: 10.5,
+  south: 10.2,
+  east: 123.95,
+  west: 123.8
+};
+
+// Maximum distance from Cebu center (in km) to filter results
+const MAX_DISTANCE_FROM_CEBU = 25; // 25km radius from Cebu center
+
 // FoodPlace interface is now imported from lib/restaurants
 
 function FoodMapPageInner() {
   const searchParams = useSearchParams();
   const mapEl = useRef<HTMLDivElement | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const userMarkerRef = useRef<any>(null);
   const foodMarkersRef = useRef<any[]>([]);
+  const restaurantMarkerRef = useRef<any>(null);
+  const searchMarkerRef = useRef<any>(null);
   const initializingRef = useRef<boolean>(false);
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -53,6 +67,69 @@ function FoodMapPageInner() {
     const c = 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
     return R * c;
   }, []);
+
+  // Function to scroll to the map container
+  const scrollToMap = useCallback(() => {
+    if (mapContainerRef.current) {
+      mapContainerRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  }, []);
+
+  // Helper function to add a restaurant marker on the map
+  const addRestaurantMarker = useCallback((place: FoodPlace) => {
+    const L = (window as any).L;
+    if (!mapRef.current || !L) return;
+
+    // Remove existing restaurant marker
+    if (restaurantMarkerRef.current) {
+      try {
+        mapRef.current.removeLayer(restaurantMarkerRef.current);
+      } catch (error) {
+        console.warn('Error removing restaurant marker:', error);
+      }
+      restaurantMarkerRef.current = null;
+    }
+
+    const placeLatLng: [number, number] = [place.latitude, place.longitude];
+    
+    // Create a special marker for the selected restaurant
+    const restaurantIcon = L.divIcon({
+      html: `<div style="background:#8c52ff;color:#fff;border-radius:9999px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold;font-size:12px;border:3px solid white">📍 ${place.name}</div>`,
+      className: 'restaurant-marker',
+      iconSize: [120, 32],
+      iconAnchor: [60, 16]
+    });
+    
+    const restaurantMarker = L.marker(placeLatLng, { icon: restaurantIcon });
+    restaurantMarker.addTo(mapRef.current);
+    
+    // Show popup with restaurant info
+    const popupContent = `
+      <div style="text-align: center; padding: 8px; min-width: 200px;">
+        <h3 style="margin: 0 0 8px 0; color: #8c52ff; font-weight: bold; font-size: 16px;">${place.name}</h3>
+        <p style="margin: 4px 0; color: #666; font-size: 13px;">${place.category}</p>
+        ${place.rating ? `<p style="margin: 4px 0; color: #666; font-size: 12px;">⭐ ${place.rating.toFixed(1)}</p>` : ''}
+        ${place.price_range ? `<p style="margin: 4px 0; color: #666; font-size: 12px;">${place.price_range}</p>` : ''}
+        ${place.distance ? `<p style="margin: 4px 0; color: #666; font-size: 12px;">📏 ${(place.distance * 1000).toFixed(0)}m away</p>` : ''}
+        <p style="margin: 8px 0 0 0; color: #999; font-size: 11px;">${place.latitude.toFixed(6)}, ${place.longitude.toFixed(6)}</p>
+      </div>
+    `;
+    restaurantMarker.bindPopup(popupContent).openPopup();
+    
+    // Store marker reference
+    restaurantMarkerRef.current = restaurantMarker;
+    
+    // Center map on the restaurant
+    mapRef.current.setView(placeLatLng, 16);
+    
+    // Scroll to map so user can see the marker
+    scrollToMap();
+    
+    return restaurantMarker;
+  }, [scrollToMap]);
 
   // Initialize Leaflet map with satellite view focused on food places
   useEffect(() => {
@@ -169,8 +246,22 @@ function FoodMapPageInner() {
       // Click anywhere on map to show nearby places
       mapRef.current.on("click", async (e: any) => {
         const latlng = e.latlng;
-        const clickedLatLng: [number, number] = [latlng.lat, latlng.lng];
+        let clickedLatLng: [number, number] = [latlng.lat, latlng.lng];
         console.log('Map clicked at:', clickedLatLng);
+        
+        // Check if clicked location is within Cebu bounds
+        const inCebuBounds = 
+          clickedLatLng[0] >= CEBU_BOUNDS.south && 
+          clickedLatLng[0] <= CEBU_BOUNDS.north &&
+          clickedLatLng[1] >= CEBU_BOUNDS.west && 
+          clickedLatLng[1] <= CEBU_BOUNDS.east;
+        
+        const distanceFromCebu = calculateDistanceKm(DEFAULT_CENTER, clickedLatLng);
+        
+        if (!inCebuBounds || distanceFromCebu > MAX_DISTANCE_FROM_CEBU) {
+          alert("Please click within Cebu area. The map is restricted to Cebu locations only.");
+          return;
+        }
         
         // Remove ALL previous click markers
         if (mapRef.current) {
@@ -210,27 +301,48 @@ function FoodMapPageInner() {
           // Fetch new places around the clicked location using Places API
           console.log('Fetching new places for clicked location...');
           const newPlaces = await fetchRealFoodPlaces(clickedLatLng);
-          console.log('Found', newPlaces.length, 'new places for clicked location');
           
-          // Update the main food places state with the new places
-          setFoodPlaces(newPlaces);
+          // Filter places to only show those within Cebu area
+          const referenceLocation = userLocation || DEFAULT_CENTER;
+          const filteredPlaces = newPlaces.filter((place) => {
+            // Check if place is within Cebu bounds
+            const placeInBounds = 
+              place.latitude >= CEBU_BOUNDS.south && 
+              place.latitude <= CEBU_BOUNDS.north &&
+              place.longitude >= CEBU_BOUNDS.west && 
+              place.longitude <= CEBU_BOUNDS.east;
+            
+            if (!placeInBounds) return false;
+            
+            // Check distance from reference location
+            const distanceFromRef = calculateDistanceKm(referenceLocation, [
+              place.latitude,
+              place.longitude,
+            ]);
+            return distanceFromRef <= MAX_DISTANCE_FROM_CEBU;
+          });
+          
+          console.log('Found', filteredPlaces.length, 'places within Cebu area for clicked location');
+          
+          // Update the main food places state with the filtered places
+          setFoodPlaces(filteredPlaces);
           
           // Filter places based on current zoom level
           if (mapRef.current) {
             const zoom = mapRef.current.getZoom();
-            filterPlacesByZoom(newPlaces, zoom);
+            filterPlacesByZoom(filteredPlaces, zoom);
           } else {
-            filterPlacesByZoom(newPlaces, currentZoom);
+            filterPlacesByZoom(filteredPlaces, currentZoom);
           }
           
-          // Find nearby places around the clicked location from the newly fetched places
-          const nearby = findNearbyPlaces(clickedLatLng, newPlaces, 1); // 1km radius
-          console.log('Found nearby places from new data:', nearby.length);
+          // Find nearby places around the clicked location from the filtered places
+          const nearby = findNearbyPlaces(clickedLatLng, filteredPlaces, 1); // 1km radius
+          console.log('Found nearby places from filtered data:', nearby.length);
           setNearbyPlaces(nearby);
           
         } catch (error) {
           console.error("Error fetching places for clicked location:", error);
-          // Fallback: find nearby places from existing foodPlaces
+          // Fallback: find nearby places from existing foodPlaces (already filtered)
           const nearby = findNearbyPlaces(clickedLatLng, foodPlaces, 1);
           console.log('Using fallback nearby places:', nearby.length);
           setNearbyPlaces(nearby);
@@ -591,19 +703,55 @@ function FoodMapPageInner() {
     try {
       console.log("Searching for real food places at:", centerLatLng);
       
+      // Check if the search center is within Cebu bounds
+      const inCebuBounds = 
+        centerLatLng[0] >= CEBU_BOUNDS.south && 
+        centerLatLng[0] <= CEBU_BOUNDS.north &&
+        centerLatLng[1] >= CEBU_BOUNDS.west && 
+        centerLatLng[1] <= CEBU_BOUNDS.east;
+      
+      const distanceFromCebu = calculateDistanceKm(DEFAULT_CENTER, centerLatLng);
+      
+      if (!inCebuBounds || distanceFromCebu > MAX_DISTANCE_FROM_CEBU) {
+        console.warn("Search location is outside Cebu area. Restricting to Cebu center.");
+        // Use Cebu center instead
+        centerLatLng = DEFAULT_CENTER;
+      }
+      
       // Use OpenStreetMap Overpass API for real restaurant data
       const places = await fetchRealFoodPlaces(centerLatLng);
-      const placesWithDistance = places.map((place) => ({
-        ...place,
-        distance:
-          place.distance ??
-          calculateDistanceKm(centerLatLng, [
+      
+      // Filter places to only show those within max distance from user location or Cebu center
+      const referenceLocation = userLocation || DEFAULT_CENTER;
+      const placesWithDistance = places
+        .map((place) => ({
+          ...place,
+          distance:
+            place.distance ??
+            calculateDistanceKm(centerLatLng, [
+              place.latitude,
+              place.longitude,
+            ]),
+        }))
+        .filter((place) => {
+          // Check if place is within Cebu bounds
+          const inBounds = 
+            place.latitude >= CEBU_BOUNDS.south && 
+            place.latitude <= CEBU_BOUNDS.north &&
+            place.longitude >= CEBU_BOUNDS.west && 
+            place.longitude <= CEBU_BOUNDS.east;
+          
+          if (!inBounds) return false;
+          
+          // Check distance from reference location (user location or Cebu center)
+          const distanceFromRef = calculateDistanceKm(referenceLocation, [
             place.latitude,
             place.longitude,
-          ]),
-      }));
+          ]);
+          return distanceFromRef <= MAX_DISTANCE_FROM_CEBU;
+        });
       
-      console.log("Found", placesWithDistance.length, "real places");
+      console.log("Found", placesWithDistance.length, "real places within Cebu area");
       setFoodPlaces(placesWithDistance);
       
       // Filter places based on current zoom level
@@ -620,14 +768,25 @@ function FoodMapPageInner() {
       // Fallback to sample data if real data fails
       console.log("Falling back to sample data");
       const fallbackPlaces = getSampleFoodPlaces(centerLatLng);
-      setFoodPlaces(fallbackPlaces);
+      
+      // Filter fallback places to only show those within Cebu area
+      const referenceLocation = userLocation || DEFAULT_CENTER;
+      const filteredFallback = fallbackPlaces.filter((place) => {
+        const distanceFromRef = calculateDistanceKm(referenceLocation, [
+          place.latitude,
+          place.longitude,
+        ]);
+        return distanceFromRef <= MAX_DISTANCE_FROM_CEBU;
+      });
+      
+      setFoodPlaces(filteredFallback);
       
       // Filter places based on current zoom level
       if (mapRef.current) {
         const zoom = mapRef.current.getZoom();
-        filterPlacesByZoom(fallbackPlaces, zoom);
+        filterPlacesByZoom(filteredFallback, zoom);
       } else {
-        filterPlacesByZoom(fallbackPlaces, currentZoom);
+        filterPlacesByZoom(filteredFallback, currentZoom);
       }
     } finally {
       setLoadingPlaces(false);
@@ -895,9 +1054,30 @@ function FoodMapPageInner() {
       const center =
         clickedLocation ??
         lastSearchCenter ??
+        userLocation ??
         DEFAULT_CENTER;
 
-      const placesWithDistance = places.map((place) => {
+      // Filter places to only include those within Cebu area
+      const placesInCebu = places.filter((place) => {
+        // Check if place is within Cebu bounds
+        const inBounds = 
+          place.latitude >= CEBU_BOUNDS.south && 
+          place.latitude <= CEBU_BOUNDS.north &&
+          place.longitude >= CEBU_BOUNDS.west && 
+          place.longitude <= CEBU_BOUNDS.east;
+        
+        if (!inBounds) return false;
+        
+        // Check distance from reference location (user location or Cebu center)
+        const referenceLocation = userLocation || DEFAULT_CENTER;
+        const distanceFromRef = calculateDistanceKm(referenceLocation, [
+          place.latitude,
+          place.longitude,
+        ]);
+        return distanceFromRef <= MAX_DISTANCE_FROM_CEBU;
+      });
+
+      const placesWithDistance = placesInCebu.map((place) => {
         const distance =
           place.distance !== undefined
             ? place.distance
@@ -930,7 +1110,7 @@ function FoodMapPageInner() {
         .slice(0, Math.min(limit, placesWithDistance.length));
 
       console.log(
-        `Zoom ${zoom}: showing ${filtered.length} closest places (limit ${limit})`
+        `Zoom ${zoom}: showing ${filtered.length} closest places within Cebu area (limit ${limit})`
       );
 
       setFilteredPlaces(filtered);
@@ -939,7 +1119,7 @@ function FoodMapPageInner() {
         plotFoodMarkers(filtered);
       }, 100);
     },
-    [calculateDistanceKm, clickedLocation, lastSearchCenter, plotFoodMarkers]
+    [calculateDistanceKm, clickedLocation, lastSearchCenter, plotFoodMarkers, userLocation]
   );
 
   async function geocodeSearch(e: React.FormEvent) {
@@ -947,29 +1127,54 @@ function FoodMapPageInner() {
     if (!query.trim()) return;
     setSearching(true);
     try {
-      // Restrict to Philippines results where possible
-      const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=ph&limit=5&q=${encodeURIComponent(query)}`;
+      // Restrict to Cebu area using bounding box
+      const bbox = `${CEBU_BOUNDS.west},${CEBU_BOUNDS.south},${CEBU_BOUNDS.east},${CEBU_BOUNDS.north}`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=ph&limit=5&q=${encodeURIComponent(query)}&bounded=1&viewbox=${bbox}`;
       const res = await fetch(url, { headers: { "Accept-Language": "en" } });
       const data = await res.json();
       if (data && data.length > 0) {
-        const best = data[0];
-        const lat = parseFloat(best.lat);
-        const lon = parseFloat(best.lon);
-        const latlng: [number, number] = [lat, lon];
+        // Filter results to only include places within Cebu bounds and max distance
+        const filteredData = data
+          .map((d: any) => ({
+            display: d.display_name,
+            lat: parseFloat(d.lat),
+            lon: parseFloat(d.lon)
+          }))
+          .filter((d: { lat: number; lon: number }) => {
+            // Check if within bounding box
+            const inBounds = 
+              d.lat >= CEBU_BOUNDS.south && 
+              d.lat <= CEBU_BOUNDS.north &&
+              d.lon >= CEBU_BOUNDS.west && 
+              d.lon <= CEBU_BOUNDS.east;
+            
+            if (!inBounds) return false;
+            
+            // Check distance from Cebu center
+            const distance = calculateDistanceKm(DEFAULT_CENTER, [d.lat, d.lon]);
+            return distance <= MAX_DISTANCE_FROM_CEBU;
+          });
         
-        // Center map on search result
-        mapRef.current.setView(latlng, 15);
-        // Only search for food places when explicitly searching for a location
-        searchFoodPlaces(latlng);
-        
-        setSuggestions(
-          data.map((d: any) => ({ display: d.display_name, lat: parseFloat(d.lat), lon: parseFloat(d.lon) }))
-        );
-        setShowSuggestions(true);
+        if (filteredData.length > 0) {
+          const best = filteredData[0];
+          const latlng: [number, number] = [best.lat, best.lon];
+          
+          // Center map on search result
+          mapRef.current.setView(latlng, 15);
+          // Only search for food places when explicitly searching for a location
+          searchFoodPlaces(latlng);
+          
+          setSuggestions(filteredData);
+          setShowSuggestions(true);
+        } else {
+          setSuggestions([]);
+          setShowSuggestions(false);
+          alert("No results found in Cebu area. Please search for locations within Cebu.");
+        }
       } else {
         setSuggestions([]);
         setShowSuggestions(false);
-        alert("No results found in the Philippines.");
+        alert("No results found in Cebu area. Please search for locations within Cebu.");
       }
     } finally {
       setSearching(false);
@@ -987,11 +1192,37 @@ function FoodMapPageInner() {
     }
     debounceRef.current = setTimeout(async () => {
       try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=ph&limit=5&q=${encodeURIComponent(v)}`;
+        // Restrict to Cebu area using bounding box
+        const bbox = `${CEBU_BOUNDS.west},${CEBU_BOUNDS.south},${CEBU_BOUNDS.east},${CEBU_BOUNDS.north}`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=ph&limit=10&q=${encodeURIComponent(v)}&bounded=1&viewbox=${bbox}`;
         const res = await fetch(url, { headers: { "Accept-Language": "en" } });
         const data = await res.json();
-        setSuggestions((data || []).map((d: any) => ({ display: d.display_name, lat: parseFloat(d.lat), lon: parseFloat(d.lon) })));
-        setShowSuggestions(true);
+        
+        // Filter results to only include places within Cebu bounds and max distance
+        const filteredData = (data || [])
+          .map((d: any) => ({
+            display: d.display_name,
+            lat: parseFloat(d.lat),
+            lon: parseFloat(d.lon)
+          }))
+          .filter((d: { lat: number; lon: number }) => {
+            // Check if within bounding box
+            const inBounds = 
+              d.lat >= CEBU_BOUNDS.south && 
+              d.lat <= CEBU_BOUNDS.north &&
+              d.lon >= CEBU_BOUNDS.west && 
+              d.lon <= CEBU_BOUNDS.east;
+            
+            if (!inBounds) return false;
+            
+            // Check distance from Cebu center
+            const distance = calculateDistanceKm(DEFAULT_CENTER, [d.lat, d.lon]);
+            return distance <= MAX_DISTANCE_FROM_CEBU;
+          })
+          .slice(0, 5); // Limit to 5 suggestions
+        
+        setSuggestions(filteredData);
+        setShowSuggestions(filteredData.length > 0);
       } catch {
         // ignore
       }
@@ -1052,6 +1283,37 @@ function FoodMapPageInner() {
     }
   }, [categoryFilter, featureFilter]);
 
+  // Scroll to food places section when hash is present
+  useEffect(() => {
+    const scrollToFoodPlaces = () => {
+      const hash = window.location.hash;
+      if (hash === '#food-places') {
+        // Small delay to ensure the page has rendered
+        setTimeout(() => {
+          const foodPlacesSection = document.getElementById('food-places');
+          if (foodPlacesSection) {
+            foodPlacesSection.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start' 
+            });
+          }
+        }, 300);
+      }
+    };
+
+    // Check on mount
+    if (typeof window !== 'undefined') {
+      scrollToFoodPlaces();
+      
+      // Listen for hash changes
+      window.addEventListener('hashchange', scrollToFoodPlaces);
+      
+      return () => {
+        window.removeEventListener('hashchange', scrollToFoodPlaces);
+      };
+    }
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1106,7 +1368,7 @@ function FoodMapPageInner() {
       
       <div className="container py-4">
         {/* Map Container - Moved to top */}
-        <div className="mb-4 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div ref={mapContainerRef} className="mb-4 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div ref={mapEl} style={{ width: "100%", height: "70vh" }} />
         </div>
 
@@ -1144,9 +1406,53 @@ function FoodMapPageInner() {
                     key={`${s.lat}-${s.lon}-${i}`}
                     onClick={() => {
                         const latlng: [number, number] = [s.lat, s.lon];
-                        mapRef.current.setView(latlng, 15);
+                        const L = (window as any).L;
+                        if (mapRef.current && L) {
+                          // Remove existing search marker
+                          if (searchMarkerRef.current) {
+                            try {
+                              mapRef.current.removeLayer(searchMarkerRef.current);
+                            } catch (error) {
+                              console.warn('Error removing search marker:', error);
+                            }
+                            searchMarkerRef.current = null;
+                          }
+                          
+                          // Create a marker for the searched location
+                          const locationName = s.display.split(',')[0];
+                          const searchIcon = L.divIcon({
+                            html: `<div style="background:#10b981;color:#fff;border-radius:9999px;padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.25);font-weight:bold;font-size:12px;border:3px solid white">📍 ${locationName}</div>`,
+                            className: 'search-location-marker',
+                            iconSize: [150, 32],
+                            iconAnchor: [75, 16]
+                          });
+                          
+                          const searchMarker = L.marker(latlng, { icon: searchIcon });
+                          searchMarker.addTo(mapRef.current);
+                          
+                          // Show popup with location info
+                          const popupContent = `
+                            <div style="text-align: center; padding: 8px; min-width: 200px;">
+                              <h3 style="margin: 0 0 8px 0; color: #10b981; font-weight: bold; font-size: 14px;">${s.display}</h3>
+                              <p style="margin: 8px 0 0 0; color: #999; font-size: 11px;">${s.lat.toFixed(6)}, ${s.lon.toFixed(6)}</p>
+                            </div>
+                          `;
+                          searchMarker.bindPopup(popupContent).openPopup();
+                          
+                          // Store marker reference
+                          searchMarkerRef.current = searchMarker;
+                          
+                          // Center map on selected location
+                          mapRef.current.setView(latlng, 15);
+                        }
+                        
+                        // Search for food places at this location
                         searchFoodPlaces(latlng);
-                      setShowSuggestions(false);
+                        setShowSuggestions(false);
+                        setQuery(s.display.split(',')[0]); // Update search input with location name
+                        
+                        // Scroll to map so user can see the location
+                        scrollToMap();
                     }}
                       className="block w-full text-left px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-b-0"
                   >
@@ -1201,7 +1507,24 @@ function FoodMapPageInner() {
                 onClick={() => {
                   if (mapRef.current) {
                     const center = mapRef.current.getCenter();
-                    searchFoodPlaces([center.lat, center.lng]);
+                    const centerLatLng: [number, number] = [center.lat, center.lng];
+                    
+                    // Check if current map center is within Cebu bounds
+                    const inCebuBounds = 
+                      centerLatLng[0] >= CEBU_BOUNDS.south && 
+                      centerLatLng[0] <= CEBU_BOUNDS.north &&
+                      centerLatLng[1] >= CEBU_BOUNDS.west && 
+                      centerLatLng[1] <= CEBU_BOUNDS.east;
+                    
+                    const distanceFromCebu = calculateDistanceKm(DEFAULT_CENTER, centerLatLng);
+                    
+                    if (!inCebuBounds || distanceFromCebu > MAX_DISTANCE_FROM_CEBU) {
+                      // Center map on Cebu and search there
+                      mapRef.current.setView(DEFAULT_CENTER, 14);
+                      searchFoodPlaces(DEFAULT_CENTER);
+                    } else {
+                      searchFoodPlaces(centerLatLng);
+                    }
                   }
                 }}
                 disabled={loadingPlaces}
@@ -1244,7 +1567,7 @@ function FoodMapPageInner() {
         </details>
 
         {/* Food Places List */}
-        <div className="mt-6">
+        <div id="food-places" className="mt-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-900">
               🍴 Food Places {loadingPlaces ? "(loading...)" : `(${foodPlaces.length})`}
@@ -1271,7 +1594,10 @@ function FoodMapPageInner() {
                 className={`bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer ${
                   selectedPlace?.id === place.id ? 'ring-2 ring-[#8c52ff]' : ''
                 }`}
-                onClick={() => setSelectedPlace(place)}
+                onClick={() => {
+                  addRestaurantMarker(place);
+                  setSelectedPlace(place);
+                }}
               >
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-semibold text-gray-900 text-lg">{place.name}</h3>
@@ -1297,8 +1623,8 @@ function FoodMapPageInner() {
                     className="text-[#8c52ff] text-sm font-medium hover:underline"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Center map on this place
-                      mapRef.current.setView([place.latitude, place.longitude], 16);
+                      addRestaurantMarker(place);
+                      setSelectedPlace(place);
                     }}
                   >
                     View on Map
@@ -1373,8 +1699,7 @@ function FoodMapPageInner() {
                   key={place.id} 
                   className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() => {
-                    // Center map on this nearby place and select it
-                    mapRef.current.setView([place.latitude, place.longitude], 16);
+                    addRestaurantMarker(place);
                     setSelectedPlace(place);
                     setShowNearbyPlaces(false); // Hide nearby places when selecting a specific place
                   }}
@@ -1410,8 +1735,7 @@ function FoodMapPageInner() {
                       className="text-[#8c52ff] text-sm font-medium hover:underline"
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Center map on this place and select it
-                        mapRef.current.setView([place.latitude, place.longitude], 16);
+                        addRestaurantMarker(place);
                         setSelectedPlace(place);
                         setShowNearbyPlaces(false);
                       }}

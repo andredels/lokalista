@@ -77,6 +77,12 @@ export default function DashboardPage() {
     router.push(url);
   };
 
+  const handleRecommendationClick = (item: typeof restaurantData[0]) => {
+    // Navigate to map page with restaurant location
+    const url = `/map?lat=${item.latitude}&lng=${item.longitude}&restaurant=${encodeURIComponent(item.name)}`;
+    router.push(url);
+  };
+
   const getCategoryIcon = (category: string) => {
     const icons: { [key: string]: string } = {
       'Cafe': '☕',
@@ -178,33 +184,73 @@ export default function DashboardPage() {
     }).sort((a, b) => a.distanceKm - b.distanceKm); // Sort by distance
   }, [restaurantData, userLocation]);
 
+  // Get greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return "Good morning!";
+    } else if (hour >= 12 && hour < 17) {
+      return "Good afternoon!";
+    } else if (hour >= 17 && hour < 22) {
+      return "Good evening!";
+    } else {
+      return "Good night!";
+    }
+  };
+
+  // Improved search function that handles partial matches and multiple words
+  const searchMatches = (text: string | null | undefined, query: string): boolean => {
+    if (!text || !query) return false;
+    const normalizedText = String(text).toLowerCase().trim();
+    const normalizedQuery = query.toLowerCase().trim();
+    
+    if (normalizedText.length === 0 || normalizedQuery.length === 0) return false;
+    
+    // Check for exact match or contains match
+    if (normalizedText.includes(normalizedQuery)) return true;
+    
+    // Check if all words in query are present in text (for multi-word searches)
+    const queryWords = normalizedQuery.split(/\s+/).filter(w => w.length > 0);
+    if (queryWords.length > 1) {
+      return queryWords.every(word => normalizedText.includes(word));
+    }
+    
+    return false;
+  };
+
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
+  // Filter recommendations with improved search
   const filteredRecommendations = normalizedQuery
-    ? recommendations.filter((item) =>
-        [
+    ? recommendations.filter((item) => {
+        const searchFields = [
           item.name,
           item.description,
           item.price,
           item.status
-        ].some((value) =>
-          value.toLowerCase().includes(normalizedQuery)
-        )
-      )
+        ].filter(Boolean); // Remove null/undefined values
+        
+        return searchFields.length > 0 && searchFields.some((value) => 
+          searchMatches(String(value), normalizedQuery)
+        );
+      })
     : recommendations;
 
+  // Filter trending restaurants with improved search
   const filteredTrendingRestaurants = normalizedQuery
-    ? trendingRestaurants.filter((item) =>
-        [
+    ? trendingRestaurants.filter((item) => {
+        const searchFields = [
           item.name,
-          item.category ?? "",
-          item.description ?? "",
-          item.price_range ?? "",
-          item.cuisine_type ?? ""
-        ].some((value) =>
-          value.toLowerCase().includes(normalizedQuery)
-        )
-      )
+          item.category,
+          item.description,
+          item.price_range,
+          item.cuisine_type
+        ].filter(Boolean); // Remove null/undefined values
+        
+        return searchFields.length > 0 && searchFields.some((value) => 
+          searchMatches(String(value), normalizedQuery)
+        );
+      })
     : trendingRestaurants;
 
 
@@ -226,7 +272,7 @@ export default function DashboardPage() {
             ref={heroRef.ref as any}
             className={`text-center mb-8 ${heroRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
           >
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Good evening!</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">{getGreeting()}</h1>
             <p className="text-lg text-gray-600">Discover your next favorite spot</p>
           </div>
           
@@ -284,11 +330,6 @@ export default function DashboardPage() {
               </svg>
               Map
             </a>
-            <button className="flex items-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-all hover-scale btn-press">
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-              </svg>
-            </button>
           </div>
         </div>
       </section>
@@ -300,22 +341,40 @@ export default function DashboardPage() {
             ref={recommendationsRef.ref as any}
             className={`flex justify-between items-center mb-8 ${recommendationsRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
           >
-            <h2 className="text-2xl font-bold text-gray-900">AI Recommendations</h2>
-            <a href="#" className="text-blue-600 hover:text-blue-800 font-medium transition-colors hover-scale">See all</a>
+            <h2 className="text-2xl font-bold text-gray-900">
+              AI Recommendations
+              {normalizedQuery && (
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  ({filteredRecommendations.length} {filteredRecommendations.length === 1 ? 'result' : 'results'})
+                </span>
+              )}
+            </h2>
+            <button 
+              onClick={() => router.push('/map#food-places')}
+              className="text-blue-600 hover:text-blue-800 font-medium transition-colors hover-scale"
+            >
+              See all
+            </button>
           </div>
           
           <div className="space-y-4">
-            {filteredRecommendations.length === 0 ? (
+            {normalizedQuery && filteredRecommendations.length === 0 ? (
               <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300 animate-fade-in">
-                <p className="text-gray-600 font-medium mb-1">No matches found</p>
-                <p className="text-sm text-gray-400">Try another dish, place, or landmark.</p>
+                <p className="text-gray-600 font-medium mb-1">No matches found for &quot;{searchQuery}&quot;</p>
+                <p className="text-sm text-gray-400">Try searching for: Jollibee, Starbucks, Coffee, Fast Food, etc.</p>
+              </div>
+            ) : filteredRecommendations.length === 0 ? (
+              <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300 animate-fade-in">
+                <p className="text-gray-600 font-medium mb-1">No recommendations available</p>
+                <p className="text-sm text-gray-400">Check back later for new recommendations.</p>
               </div>
             ) : (
               filteredRecommendations.map((item, index) => (
               <div 
                 key={item.id} 
-                className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center gap-4 card-hover stagger-item`}
+                className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center gap-4 card-hover stagger-item cursor-pointer`}
                 style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => handleRecommendationClick(item)}
               >
                 <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 hover-brighten">
                   <img
@@ -369,10 +428,22 @@ export default function DashboardPage() {
             className={`flex items-center justify-between mb-8 ${trendingRef.isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
           >
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Trending in your area</h2>
-              <p className="text-sm text-gray-600 mt-1">Based on recent visits and ratings</p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Trending in your area
+                {normalizedQuery && (
+                  <span className="text-sm font-normal text-gray-500 ml-2">
+                    ({filteredTrendingRestaurants.length} {filteredTrendingRestaurants.length === 1 ? 'result' : 'results'})
+                  </span>
+                )}
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {normalizedQuery ? `Search results for "${searchQuery}"` : 'Based on recent visits and ratings'}
+              </p>
             </div>
-            <button className="text-[#8c52ff] hover:text-[#7c42ef] font-medium transition-all hover-scale">
+            <button 
+              onClick={() => router.push('/map#food-places')}
+              className="text-[#8c52ff] hover:text-[#7c42ef] font-medium transition-all hover-scale"
+            >
               View all →
             </button>
           </div>
@@ -391,6 +462,11 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))
+            ) : normalizedQuery && filteredTrendingRestaurants.length === 0 ? (
+              <div className="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+                <p className="text-gray-600 font-medium mb-1">No trending restaurants found for &quot;{searchQuery}&quot;</p>
+                <p className="text-sm text-gray-400 mt-1">Try searching for: Cafe, Restaurant, Fast Food, Pizza, etc.</p>
+              </div>
             ) : filteredTrendingRestaurants.length > 0 ? (
               filteredTrendingRestaurants.map((item, index) => (
               <div 
