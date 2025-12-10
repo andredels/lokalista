@@ -2,7 +2,7 @@
 "[project]/lib/restaurants.ts [app-client] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
-// Shared restaurant data fetching utilities
+/* eslint-disable @typescript-eslint/no-explicit-any */ // Shared restaurant data fetching utilities
 __turbopack_context__.s([
     "fetchRealFoodPlaces",
     ()=>fetchRealFoodPlaces,
@@ -358,7 +358,7 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$styled$2d$jsx$2f$style$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/styled-jsx/style.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps, react/no-unescaped-entities */ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$restaurants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/restaurants.ts [app-client] (ecmascript)");
 ;
@@ -372,7 +372,8 @@ const DEFAULT_CENTER = [
     10.3157,
     123.8854
 ];
-function FoodMapPage() {
+// FoodPlace interface is now imported from lib/restaurants
+function FoodMapPageInner() {
     _s();
     const searchParams = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSearchParams"])();
     const mapEl = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
@@ -401,7 +402,7 @@ function FoodMapPage() {
     const [clickMarker, setClickMarker] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const clickMarkersRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])([]);
     const calculateDistanceKm = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "FoodMapPage.useCallback[calculateDistanceKm]": (a, b)=>{
+        "FoodMapPageInner.useCallback[calculateDistanceKm]": (a, b)=>{
             const R = 6371;
             const dLat = (b[0] - a[0]) * Math.PI / 180;
             const dLon = (b[1] - a[1]) * Math.PI / 180;
@@ -413,12 +414,12 @@ function FoodMapPage() {
             const c = 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
             return R * c;
         }
-    }["FoodMapPage.useCallback[calculateDistanceKm]"], []);
+    }["FoodMapPageInner.useCallback[calculateDistanceKm]"], []);
     // Initialize Leaflet map with satellite view focused on food places
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "FoodMapPage.useEffect": ()=>{
+        "FoodMapPageInner.useEffect": ()=>{
             const ensureAssets = {
-                "FoodMapPage.useEffect.ensureAssets": async ()=>{
+                "FoodMapPageInner.useEffect.ensureAssets": async ()=>{
                     if (!document.querySelector('link[data-leaflet-css="true"]')) {
                         const link = document.createElement("link");
                         link.rel = "stylesheet";
@@ -428,21 +429,21 @@ function FoodMapPage() {
                     }
                     if (!window.L) {
                         await new Promise({
-                            "FoodMapPage.useEffect.ensureAssets": (resolve)=>{
+                            "FoodMapPageInner.useEffect.ensureAssets": (resolve)=>{
                                 const script = document.createElement("script");
                                 script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
                                 script.async = true;
                                 script.onload = ({
-                                    "FoodMapPage.useEffect.ensureAssets": ()=>resolve()
-                                })["FoodMapPage.useEffect.ensureAssets"];
+                                    "FoodMapPageInner.useEffect.ensureAssets": ()=>resolve()
+                                })["FoodMapPageInner.useEffect.ensureAssets"];
                                 document.body.appendChild(script);
                             }
-                        }["FoodMapPage.useEffect.ensureAssets"]);
+                        }["FoodMapPageInner.useEffect.ensureAssets"]);
                     }
                 }
-            }["FoodMapPage.useEffect.ensureAssets"];
+            }["FoodMapPageInner.useEffect.ensureAssets"];
             const init = {
-                "FoodMapPage.useEffect.init": async ()=>{
+                "FoodMapPageInner.useEffect.init": async ()=>{
                     if (initializingRef.current || mapRef.current) return;
                     initializingRef.current = true;
                     await ensureAssets();
@@ -549,7 +550,7 @@ function FoodMapPage() {
                     locateUser();
                     // Click anywhere on map to show nearby places
                     mapRef.current.on("click", {
-                        "FoodMapPage.useEffect.init": async (e)=>{
+                        "FoodMapPageInner.useEffect.init": async (e)=>{
                             const latlng = e.latlng;
                             const clickedLatLng = [
                                 latlng.lat,
@@ -559,14 +560,14 @@ function FoodMapPage() {
                             // Remove ALL previous click markers
                             if (mapRef.current) {
                                 clickMarkersRef.current.forEach({
-                                    "FoodMapPage.useEffect.init": (marker)=>{
+                                    "FoodMapPageInner.useEffect.init": (marker)=>{
                                         try {
                                             mapRef.current.removeLayer(marker);
                                         } catch (error) {
                                             console.warn('Error removing click marker:', error);
                                         }
                                     }
-                                }["FoodMapPage.useEffect.init"]);
+                                }["FoodMapPageInner.useEffect.init"]);
                                 clickMarkersRef.current = [];
                                 setClickMarker(null);
                             }
@@ -625,52 +626,52 @@ function FoodMapPage() {
                                 setLoadingPlaces(false);
                             }
                         }
-                    }["FoodMapPage.useEffect.init"]);
+                    }["FoodMapPageInner.useEffect.init"]);
                     // Track zoom level changes
                     mapRef.current.on("zoomend", {
-                        "FoodMapPage.useEffect.init": ()=>{
+                        "FoodMapPageInner.useEffect.init": ()=>{
                             if (mapRef.current) {
                                 const zoom = mapRef.current.getZoom();
                                 setCurrentZoom(zoom);
                             }
                         }
-                    }["FoodMapPage.useEffect.init"]);
+                    }["FoodMapPageInner.useEffect.init"]);
                     // Set initial zoom level
                     setCurrentZoom(mapRef.current.getZoom());
                     // Load initial food places around default center
                     setTimeout({
-                        "FoodMapPage.useEffect.init": ()=>{
+                        "FoodMapPageInner.useEffect.init": ()=>{
                             searchFoodPlaces(DEFAULT_CENTER);
                         }
-                    }["FoodMapPage.useEffect.init"], 1000);
+                    }["FoodMapPageInner.useEffect.init"], 1000);
                     initializingRef.current = false;
                 }
-            }["FoodMapPage.useEffect.init"];
+            }["FoodMapPageInner.useEffect.init"];
             init();
             return ({
-                "FoodMapPage.useEffect": ()=>{
+                "FoodMapPageInner.useEffect": ()=>{
                     if (mapRef.current) {
                         // Clean up ALL click markers
                         clickMarkersRef.current.forEach({
-                            "FoodMapPage.useEffect": (marker)=>{
+                            "FoodMapPageInner.useEffect": (marker)=>{
                                 try {
                                     mapRef.current.removeLayer(marker);
                                 } catch (error) {
                                     console.warn('Error removing click marker during cleanup:', error);
                                 }
                             }
-                        }["FoodMapPage.useEffect"]);
+                        }["FoodMapPageInner.useEffect"]);
                         clickMarkersRef.current = [];
                         mapRef.current.remove();
                         mapRef.current = null;
                     }
                 }
-            })["FoodMapPage.useEffect"];
+            })["FoodMapPageInner.useEffect"];
         }
-    }["FoodMapPage.useEffect"], []);
+    }["FoodMapPageInner.useEffect"], []);
     // Handle URL parameters for restaurant navigation
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "FoodMapPage.useEffect": ()=>{
+        "FoodMapPageInner.useEffect": ()=>{
             if (!mapRef.current) return;
             const lat = searchParams.get('lat');
             const lng = searchParams.get('lng');
@@ -706,7 +707,7 @@ function FoodMapPage() {
                     restaurantMarker.bindPopup('\n          <div style="text-align: center; padding: 8px;">\n            <h3 style="margin: 0 0 8px 0; color: #8c52ff; font-weight: bold;">'.concat(restaurant || 'Selected Restaurant', '</h3>\n            <p style="margin: 0; color: #666; font-size: 14px;">Click on the map to explore nearby places!</p>\n          </div>\n        ')).openPopup();
                     // Clean up the marker when component unmounts or params change
                     return ({
-                        "FoodMapPage.useEffect": ()=>{
+                        "FoodMapPageInner.useEffect": ()=>{
                             try {
                                 var _mapRef_current;
                                 (_mapRef_current = mapRef.current) === null || _mapRef_current === void 0 ? void 0 : _mapRef_current.removeLayer(restaurantMarker);
@@ -714,11 +715,11 @@ function FoodMapPage() {
                                 console.warn('Error removing restaurant marker:', error);
                             }
                         }
-                    })["FoodMapPage.useEffect"];
+                    })["FoodMapPageInner.useEffect"];
                 }
             }
         }
-    }["FoodMapPage.useEffect"], [
+    }["FoodMapPageInner.useEffect"], [
         searchParams,
         mapRef.current
     ]);
@@ -1076,16 +1077,16 @@ function FoodMapPage() {
     }
     // Load initial food places only once
     const loadInitialFoodPlaces = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
-        "FoodMapPage.useMemo[loadInitialFoodPlaces]": ()=>{
+        "FoodMapPageInner.useMemo[loadInitialFoodPlaces]": ()=>{
             return ({
-                "FoodMapPage.useMemo[loadInitialFoodPlaces]": ()=>{
+                "FoodMapPageInner.useMemo[loadInitialFoodPlaces]": ()=>{
                     searchFoodPlaces(DEFAULT_CENTER);
                 }
-            })["FoodMapPage.useMemo[loadInitialFoodPlaces]"];
+            })["FoodMapPageInner.useMemo[loadInitialFoodPlaces]"];
         }
-    }["FoodMapPage.useMemo[loadInitialFoodPlaces]"], []);
+    }["FoodMapPageInner.useMemo[loadInitialFoodPlaces]"], []);
     const plotFoodMarkers = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "FoodMapPage.useCallback[plotFoodMarkers]": (places)=>{
+        "FoodMapPageInner.useCallback[plotFoodMarkers]": (places)=>{
             const L = window.L;
             // Check if Leaflet is loaded and map is ready
             if (!L || !mapRef.current) {
@@ -1094,7 +1095,7 @@ function FoodMapPage() {
             }
             // Clear existing food markers and custom popups
             foodMarkersRef.current.forEach({
-                "FoodMapPage.useCallback[plotFoodMarkers]": (marker)=>{
+                "FoodMapPageInner.useCallback[plotFoodMarkers]": (marker)=>{
                     try {
                         // Call cleanup function if it exists
                         if (marker.cleanup) {
@@ -1103,19 +1104,19 @@ function FoodMapPage() {
                         marker.remove();
                     } catch (e) {}
                 }
-            }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+            }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
             foodMarkersRef.current = [];
             // Also remove any remaining custom popups
             const customPopups = document.querySelectorAll('.custom-popup');
             customPopups.forEach({
-                "FoodMapPage.useCallback[plotFoodMarkers]": (popup)=>popup.remove()
-            }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+                "FoodMapPageInner.useCallback[plotFoodMarkers]": (popup)=>popup.remove()
+            }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
             console.log("Plotting", places.length, "food places");
             // Add markers for each food place with modern styling
             places.forEach({
-                "FoodMapPage.useCallback[plotFoodMarkers]": (place)=>{
+                "FoodMapPageInner.useCallback[plotFoodMarkers]": (place)=>{
                     const getCategoryIcon = {
-                        "FoodMapPage.useCallback[plotFoodMarkers].getCategoryIcon": (category)=>{
+                        "FoodMapPageInner.useCallback[plotFoodMarkers].getCategoryIcon": (category)=>{
                             const cat = category.toLowerCase();
                             if (cat.includes("restaurant") || cat.includes("food")) return "🍽️";
                             if (cat.includes("cafe") || cat.includes("coffee")) return "☕";
@@ -1125,9 +1126,9 @@ function FoodMapPage() {
                             if (cat.includes("bakery")) return "🥖";
                             return "🍴";
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers].getCategoryIcon"];
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers].getCategoryIcon"];
                     const getCategoryColor = {
-                        "FoodMapPage.useCallback[plotFoodMarkers].getCategoryColor": (category)=>{
+                        "FoodMapPageInner.useCallback[plotFoodMarkers].getCategoryColor": (category)=>{
                             const cat = category.toLowerCase();
                             if (cat.includes("cafe") || cat.includes("coffee")) return "#059669";
                             if (cat.includes("fast")) return "#dc2626";
@@ -1135,7 +1136,7 @@ function FoodMapPage() {
                             if (cat.includes("bakery")) return "#d97706";
                             return "#8c52ff";
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers].getCategoryColor"];
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers].getCategoryColor"];
                     const iconHtml = '\n        <div style="\n          display: flex;\n          align-items: center;\n          gap: 6px;\n          background: linear-gradient(135deg, '.concat(getCategoryColor(place.category), ", ").concat(getCategoryColor(place.category), 'dd);\n          color: #fff;\n          border-radius: 25px;\n          padding: 8px 14px;\n          box-shadow: 0 6px 20px rgba(0,0,0,0.25);\n          font-size: 13px;\n          font-weight: 700;\n          border: 3px solid #fff;\n          cursor: pointer;\n          min-width: 60px;\n          justify-content: center;\n        ">\n          <span style="font-size: 16px;">').concat(getCategoryIcon(place.category), "</span>\n          <span>").concat(place.rating ? place.rating.toFixed(1) : "★", "</span>\n        </div>\n      ");
                     const customIcon = L.divIcon({
                         html: iconHtml,
@@ -1172,7 +1173,7 @@ function FoodMapPage() {
                     }
                     // Position popup relative to marker with improved accuracy
                     const updatePopupPosition = {
-                        "FoodMapPage.useCallback[plotFoodMarkers].updatePopupPosition": ()=>{
+                        "FoodMapPageInner.useCallback[plotFoodMarkers].updatePopupPosition": ()=>{
                             if (mapRef.current && popupElement) {
                                 try {
                                     const markerPoint = mapRef.current.latLngToContainerPoint([
@@ -1203,13 +1204,13 @@ function FoodMapPage() {
                                 }
                             }
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers].updatePopupPosition"];
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers].updatePopupPosition"];
                     // Add hover effects with custom popup
                     let hoverTimeout;
                     let isHovering = false;
                     let isPopupVisible = false;
                     marker.on('mouseover', {
-                        "FoodMapPage.useCallback[plotFoodMarkers]": function() {
+                        "FoodMapPageInner.useCallback[plotFoodMarkers]": function() {
                             clearTimeout(hoverTimeout);
                             isHovering = true;
                             if (!isPopupVisible) {
@@ -1219,35 +1220,35 @@ function FoodMapPage() {
                                 isPopupVisible = true;
                             }
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
                     marker.on('mouseout', {
-                        "FoodMapPage.useCallback[plotFoodMarkers]": function() {
+                        "FoodMapPageInner.useCallback[plotFoodMarkers]": function() {
                             isHovering = false;
                             hoverTimeout = setTimeout({
-                                "FoodMapPage.useCallback[plotFoodMarkers]": ()=>{
+                                "FoodMapPageInner.useCallback[plotFoodMarkers]": ()=>{
                                     if (!isHovering && isPopupVisible) {
                                         popupElement.style.opacity = '0';
                                         popupElement.style.transform = 'translateY(10px)';
                                         isPopupVisible = false;
                                     }
                                 }
-                            }["FoodMapPage.useCallback[plotFoodMarkers]"], 150);
+                            }["FoodMapPageInner.useCallback[plotFoodMarkers]"], 150);
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
                     // Update popup position on map events with throttling
                     let positionUpdateTimeout;
                     const throttledUpdatePosition = {
-                        "FoodMapPage.useCallback[plotFoodMarkers].throttledUpdatePosition": ()=>{
+                        "FoodMapPageInner.useCallback[plotFoodMarkers].throttledUpdatePosition": ()=>{
                             clearTimeout(positionUpdateTimeout);
                             positionUpdateTimeout = setTimeout({
-                                "FoodMapPage.useCallback[plotFoodMarkers].throttledUpdatePosition": ()=>{
+                                "FoodMapPageInner.useCallback[plotFoodMarkers].throttledUpdatePosition": ()=>{
                                     if (isPopupVisible) {
                                         updatePopupPosition();
                                     }
                                 }
-                            }["FoodMapPage.useCallback[plotFoodMarkers].throttledUpdatePosition"], 16); // ~60fps
+                            }["FoodMapPageInner.useCallback[plotFoodMarkers].throttledUpdatePosition"], 16); // ~60fps
                         }
-                    }["FoodMapPage.useCallback[plotFoodMarkers].throttledUpdatePosition"];
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers].throttledUpdatePosition"];
                     // Update popup position on map move/zoom
                     if (mapRef.current) {
                         mapRef.current.on('move', throttledUpdatePosition);
@@ -1256,11 +1257,11 @@ function FoodMapPage() {
                         mapRef.current.on('zoomend', updatePopupPosition);
                     }
                     marker.on('click', {
-                        "FoodMapPage.useCallback[plotFoodMarkers]": ()=>setSelectedPlace(place)
-                    }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+                        "FoodMapPageInner.useCallback[plotFoodMarkers]": ()=>setSelectedPlace(place)
+                    }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
                     // Store cleanup function for this marker
                     marker.cleanup = ({
-                        "FoodMapPage.useCallback[plotFoodMarkers]": ()=>{
+                        "FoodMapPageInner.useCallback[plotFoodMarkers]": ()=>{
                             if (popupElement && popupElement.parentNode) {
                                 popupElement.parentNode.removeChild(popupElement);
                             }
@@ -1271,20 +1272,20 @@ function FoodMapPage() {
                                 mapRef.current.off('zoomend', updatePopupPosition);
                             }
                         }
-                    })["FoodMapPage.useCallback[plotFoodMarkers]"];
+                    })["FoodMapPageInner.useCallback[plotFoodMarkers]"];
                     marker.addTo(mapRef.current);
                     foodMarkersRef.current.push(marker);
                 }
-            }["FoodMapPage.useCallback[plotFoodMarkers]"]);
+            }["FoodMapPageInner.useCallback[plotFoodMarkers]"]);
         }
-    }["FoodMapPage.useCallback[plotFoodMarkers]"], []);
+    }["FoodMapPageInner.useCallback[plotFoodMarkers]"], []);
     const filterPlacesByZoom = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "FoodMapPage.useCallback[filterPlacesByZoom]": (places, zoom)=>{
+        "FoodMapPageInner.useCallback[filterPlacesByZoom]": (places, zoom)=>{
             console.log("Filtering ".concat(places.length, " places at zoom level ").concat(zoom));
             var _ref;
             const center = (_ref = clickedLocation !== null && clickedLocation !== void 0 ? clickedLocation : lastSearchCenter) !== null && _ref !== void 0 ? _ref : DEFAULT_CENTER;
             const placesWithDistance = places.map({
-                "FoodMapPage.useCallback[filterPlacesByZoom].placesWithDistance": (place)=>{
+                "FoodMapPageInner.useCallback[filterPlacesByZoom].placesWithDistance": (place)=>{
                     const distance = place.distance !== undefined ? place.distance : calculateDistanceKm(center, [
                         place.latitude,
                         place.longitude
@@ -1294,9 +1295,9 @@ function FoodMapPage() {
                         distance
                     };
                 }
-            }["FoodMapPage.useCallback[filterPlacesByZoom].placesWithDistance"]);
+            }["FoodMapPageInner.useCallback[filterPlacesByZoom].placesWithDistance"]);
             const sortByDistanceThenRating = {
-                "FoodMapPage.useCallback[filterPlacesByZoom].sortByDistanceThenRating": (a, b)=>{
+                "FoodMapPageInner.useCallback[filterPlacesByZoom].sortByDistanceThenRating": (a, b)=>{
                     var _a_distance;
                     const distanceA = (_a_distance = a.distance) !== null && _a_distance !== void 0 ? _a_distance : calculateDistanceKm(center, [
                         a.latitude,
@@ -1314,7 +1315,7 @@ function FoodMapPage() {
                     const ratingB = (_b_rating = b.rating) !== null && _b_rating !== void 0 ? _b_rating : 0;
                     return ratingB - ratingA;
                 }
-            }["FoodMapPage.useCallback[filterPlacesByZoom].sortByDistanceThenRating"];
+            }["FoodMapPageInner.useCallback[filterPlacesByZoom].sortByDistanceThenRating"];
             let limit = 12;
             if (zoom <= 13) {
                 limit = 8;
@@ -1325,12 +1326,12 @@ function FoodMapPage() {
             console.log("Zoom ".concat(zoom, ": showing ").concat(filtered.length, " closest places (limit ").concat(limit, ")"));
             setFilteredPlaces(filtered);
             setTimeout({
-                "FoodMapPage.useCallback[filterPlacesByZoom]": ()=>{
+                "FoodMapPageInner.useCallback[filterPlacesByZoom]": ()=>{
                     plotFoodMarkers(filtered);
                 }
-            }["FoodMapPage.useCallback[filterPlacesByZoom]"], 100);
+            }["FoodMapPageInner.useCallback[filterPlacesByZoom]"], 100);
         }
-    }["FoodMapPage.useCallback[filterPlacesByZoom]"], [
+    }["FoodMapPageInner.useCallback[filterPlacesByZoom]"], [
         calculateDistanceKm,
         clickedLocation,
         lastSearchCenter,
@@ -1426,27 +1427,27 @@ function FoodMapPage() {
     };
     // Test function to verify sample data works
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "FoodMapPage.useEffect": ()=>{
+        "FoodMapPageInner.useEffect": ()=>{
             console.log("Food places state:", foodPlaces);
         }
-    }["FoodMapPage.useEffect"], [
+    }["FoodMapPageInner.useEffect"], [
         foodPlaces
     ]);
     // Re-filter places when zoom level or foodPlaces change
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "FoodMapPage.useEffect": ()=>{
+        "FoodMapPageInner.useEffect": ()=>{
             if (foodPlaces.length > 0) {
                 filterPlacesByZoom(foodPlaces, currentZoom);
             }
         }
-    }["FoodMapPage.useEffect"], [
+    }["FoodMapPageInner.useEffect"], [
         currentZoom,
         foodPlaces,
         filterPlacesByZoom
     ]);
     // Filter food places when filters change
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "FoodMapPage.useEffect": ()=>{
+        "FoodMapPageInner.useEffect": ()=>{
             if (mapRef.current && foodPlaces.length > 0) {
                 const filteredPlaces = getSampleFoodPlaces([
                     10.3157,
@@ -1456,104 +1457,104 @@ function FoodMapPage() {
                 plotFoodMarkers(filteredPlaces);
             }
         }
-    }["FoodMapPage.useEffect"], [
+    }["FoodMapPageInner.useEffect"], [
         categoryFilter,
         featureFilter
     ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "jsx-45a80fbd985ccec3" + " " + "min-h-screen bg-gray-50",
+        className: "jsx-f4eca385f45045ad" + " " + "min-h-screen bg-gray-50",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$styled$2d$jsx$2f$style$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                id: "45a80fbd985ccec3",
+                id: "f4eca385f45045ad",
                 children: ".modern-food-marker{transition:box-shadow .2s!important;position:relative!important}.modern-food-marker:hover{transform:none!important;box-shadow:0 8px 25px rgba(0,0,0,.35)!important}.leaflet-marker-icon{position:absolute!important}.leaflet-marker-icon:hover{z-index:1000!important}.custom-popup{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif}.leaflet-control-layers{border-radius:8px!important;box-shadow:0 4px 12px rgba(0,0,0,.15)!important}.leaflet-control-layers-toggle{background:#fff!important;border-radius:8px!important;box-shadow:0 2px 8px rgba(0,0,0,.1)!important}.leaflet-control-zoom a{color:#374151!important;background:#fff!important;border-radius:6px!important;font-weight:600!important;box-shadow:0 2px 8px rgba(0,0,0,.1)!important}.leaflet-control-zoom a:hover{color:#111827!important;background:#f9fafb!important}"
             }, void 0, false, void 0, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "jsx-45a80fbd985ccec3" + " " + "container py-4",
+                className: "jsx-f4eca385f45045ad" + " " + "container py-4",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "jsx-45a80fbd985ccec3" + " " + "mb-4 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden",
+                        className: "jsx-f4eca385f45045ad" + " " + "mb-4 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden",
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             ref: mapEl,
                             style: {
                                 width: "100%",
                                 height: "70vh"
                             },
-                            className: "jsx-45a80fbd985ccec3"
+                            className: "jsx-f4eca385f45045ad"
                         }, void 0, false, {
                             fileName: "[project]/app/map/page.tsx",
-                            lineNumber: 1108,
+                            lineNumber: 1109,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/map/page.tsx",
-                        lineNumber: 1107,
+                        lineNumber: 1108,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "jsx-45a80fbd985ccec3" + " " + "mb-4",
+                        className: "jsx-f4eca385f45045ad" + " " + "mb-4",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "text-2xl font-bold text-gray-900 mb-1",
+                                className: "jsx-f4eca385f45045ad" + " " + "text-2xl font-bold text-gray-900 mb-1",
                                 children: "🍽️ Food Discovery Map"
                             }, void 0, false, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1113,
+                                lineNumber: 1114,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "text-gray-600 text-sm",
+                                className: "jsx-f4eca385f45045ad" + " " + "text-gray-600 text-sm",
                                 children: "Find the best restaurants, cafes, and food places in the Philippines"
                             }, void 0, false, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1114,
+                                lineNumber: 1115,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/map/page.tsx",
-                        lineNumber: 1112,
+                        lineNumber: 1113,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "jsx-45a80fbd985ccec3" + " " + "mb-4 bg-white rounded-lg shadow-sm border border-gray-200 p-4",
+                        className: "jsx-f4eca385f45045ad" + " " + "mb-4 bg-white rounded-lg shadow-sm border border-gray-200 p-4",
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "jsx-45a80fbd985ccec3" + " " + "flex flex-col lg:flex-row gap-4",
+                            className: "jsx-f4eca385f45045ad" + " " + "flex flex-col lg:flex-row gap-4",
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
                                     onSubmit: geocodeSearch,
-                                    className: "jsx-45a80fbd985ccec3" + " " + "relative flex-1",
+                                    className: "jsx-f4eca385f45045ad" + " " + "relative flex-1",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "jsx-45a80fbd985ccec3" + " " + "relative",
+                                            className: "jsx-f4eca385f45045ad" + " " + "relative",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                                     value: query,
                                                     onChange: (e)=>onQueryChange(e.target.value),
                                                     onFocus: ()=>suggestions.length && setShowSuggestions(true),
                                                     placeholder: "Search for restaurants, cafes, or food places...",
-                                                    className: "jsx-45a80fbd985ccec3" + " " + "h-12 w-full px-4 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent outline-none"
+                                                    className: "jsx-f4eca385f45045ad" + " " + "h-12 w-full px-4 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent outline-none"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1123,
+                                                    lineNumber: 1124,
                                                     columnNumber: 13
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                     type: "submit",
-                                                    className: "jsx-45a80fbd985ccec3" + " " + "absolute right-2 top-1/2 -translate-y-1/2 h-8 px-4 rounded-md bg-[#8c52ff] text-white text-sm hover:opacity-90",
+                                                    className: "jsx-f4eca385f45045ad" + " " + "absolute right-2 top-1/2 -translate-y-1/2 h-8 px-4 rounded-md bg-[#8c52ff] text-white text-sm hover:opacity-90",
                                                     children: searching ? "..." : "Search"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1130,
+                                                    lineNumber: 1131,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/map/page.tsx",
-                                            lineNumber: 1122,
+                                            lineNumber: 1123,
                                             columnNumber: 15
                                         }, this),
                                         showSuggestions && suggestions.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "jsx-45a80fbd985ccec3" + " " + "absolute top-14 left-0 right-0 z-20 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto",
+                                            className: "jsx-f4eca385f45045ad" + " " + "absolute top-14 left-0 right-0 z-20 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto",
                                             children: suggestions.map((s, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                     type: "button",
                                                     onClick: ()=>{
@@ -1565,186 +1566,186 @@ function FoodMapPage() {
                                                         searchFoodPlaces(latlng);
                                                         setShowSuggestions(false);
                                                     },
-                                                    className: "jsx-45a80fbd985ccec3" + " " + "block w-full text-left px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-b-0",
+                                                    className: "jsx-f4eca385f45045ad" + " " + "block w-full text-left px-4 py-3 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-b-0",
                                                     children: s.display
                                                 }, "".concat(s.lat, "-").concat(s.lon, "-").concat(i), false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1140,
+                                                    lineNumber: 1141,
                                                     columnNumber: 19
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/app/map/page.tsx",
-                                            lineNumber: 1138,
+                                            lineNumber: 1139,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/map/page.tsx",
-                                    lineNumber: 1121,
+                                    lineNumber: 1122,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "jsx-45a80fbd985ccec3" + " " + "flex gap-3",
+                                    className: "jsx-f4eca385f45045ad" + " " + "flex gap-3",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                                             value: categoryFilter,
                                             onChange: (e)=>setCategoryFilter(e.target.value),
-                                            className: "jsx-45a80fbd985ccec3" + " " + "h-12 px-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent outline-none",
+                                            className: "jsx-f4eca385f45045ad" + " " + "h-12 px-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent outline-none",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                     value: "",
-                                                    className: "jsx-45a80fbd985ccec3",
+                                                    className: "jsx-f4eca385f45045ad",
                                                     children: "All Categories"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1165,
-                                                    columnNumber: 17
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "Cafes",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "Cafes"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1166,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "Bakeries/Pastries",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "Bakeries/Pastries"
+                                                    value: "Cafes",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "Cafes"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1167,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "Bars/Pubs",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "Bars/Pubs"
+                                                    value: "Bakeries/Pastries",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "Bakeries/Pastries"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1168,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "Fine Dining",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "Fine Dining"
+                                                    value: "Bars/Pubs",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "Bars/Pubs"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1169,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "Fast Foods",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "Fast Foods"
+                                                    value: "Fine Dining",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "Fine Dining"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1170,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "Local Cuisine",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "Local Cuisine"
+                                                    value: "Fast Foods",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "Fast Foods"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1171,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "International Cuisine",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "International Cuisine"
+                                                    value: "Local Cuisine",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "Local Cuisine"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1172,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                    value: "International Cuisine",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "International Cuisine"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/map/page.tsx",
+                                                    lineNumber: 1173,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/map/page.tsx",
-                                            lineNumber: 1160,
+                                            lineNumber: 1161,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                                             value: featureFilter,
                                             onChange: (e)=>setFeatureFilter(e.target.value),
-                                            className: "jsx-45a80fbd985ccec3" + " " + "h-12 px-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent outline-none",
+                                            className: "jsx-f4eca385f45045ad" + " " + "h-12 px-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#8c52ff] focus:border-transparent outline-none",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                     value: "",
-                                                    className: "jsx-45a80fbd985ccec3",
+                                                    className: "jsx-f4eca385f45045ad",
                                                     children: "All Features"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1180,
-                                                    columnNumber: 17
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "Budget-Friendly",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "Budget-Friendly"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1181,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "Family-Friendly",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "Family-Friendly"
+                                                    value: "Budget-Friendly",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "Budget-Friendly"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1182,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "Open 24 Hours",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "Open 24 Hours"
+                                                    value: "Family-Friendly",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "Family-Friendly"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1183,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                    value: "Pet-Friendly",
-                                                    className: "jsx-45a80fbd985ccec3",
-                                                    children: "Pet-Friendly"
+                                                    value: "Open 24 Hours",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "Open 24 Hours"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
                                                     lineNumber: 1184,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                    value: "Pet-Friendly",
+                                                    className: "jsx-f4eca385f45045ad",
+                                                    children: "Pet-Friendly"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/map/page.tsx",
+                                                    lineNumber: 1185,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/map/page.tsx",
-                                            lineNumber: 1175,
+                                            lineNumber: 1176,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                             onClick: locateUser,
                                             disabled: loadingLoc,
-                                            className: "jsx-45a80fbd985ccec3" + " " + "h-12 px-6 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 flex items-center gap-2",
+                                            className: "jsx-f4eca385f45045ad" + " " + "h-12 px-6 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 flex items-center gap-2",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                                     fill: "none",
                                                     stroke: "currentColor",
                                                     viewBox: "0 0 24 24",
-                                                    className: "jsx-45a80fbd985ccec3" + " " + "w-4 h-4",
+                                                    className: "jsx-f4eca385f45045ad" + " " + "w-4 h-4",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                                             strokeLinecap: "round",
                                                             strokeLinejoin: "round",
                                                             strokeWidth: 2,
                                                             d: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z",
-                                                            className: "jsx-45a80fbd985ccec3"
+                                                            className: "jsx-f4eca385f45045ad"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/map/page.tsx",
-                                                            lineNumber: 1193,
+                                                            lineNumber: 1194,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -1752,23 +1753,23 @@ function FoodMapPage() {
                                                             strokeLinejoin: "round",
                                                             strokeWidth: 2,
                                                             d: "M15 11a3 3 0 11-6 0 3 3 0 016 0z",
-                                                            className: "jsx-45a80fbd985ccec3"
+                                                            className: "jsx-f4eca385f45045ad"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/map/page.tsx",
-                                                            lineNumber: 1194,
+                                                            lineNumber: 1195,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1192,
+                                                    lineNumber: 1193,
                                                     columnNumber: 17
                                                 }, this),
                                                 loadingLoc ? "Locating..." : "My Location"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/map/page.tsx",
-                                            lineNumber: 1187,
+                                            lineNumber: 1188,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1782,341 +1783,341 @@ function FoodMapPage() {
                                                 }
                                             },
                                             disabled: loadingPlaces,
-                                            className: "jsx-45a80fbd985ccec3" + " " + "h-12 px-6 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2",
+                                            className: "jsx-f4eca385f45045ad" + " " + "h-12 px-6 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                                     fill: "none",
                                                     stroke: "currentColor",
                                                     viewBox: "0 0 24 24",
-                                                    className: "jsx-45a80fbd985ccec3" + " " + "w-4 h-4",
+                                                    className: "jsx-f4eca385f45045ad" + " " + "w-4 h-4",
                                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                                         strokeLinecap: "round",
                                                         strokeLinejoin: "round",
                                                         strokeWidth: 2,
                                                         d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z",
-                                                        className: "jsx-45a80fbd985ccec3"
+                                                        className: "jsx-f4eca385f45045ad"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/map/page.tsx",
-                                                        lineNumber: 1209,
+                                                        lineNumber: 1210,
                                                         columnNumber: 19
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1208,
+                                                    lineNumber: 1209,
                                                     columnNumber: 17
                                                 }, this),
                                                 loadingPlaces ? "Searching..." : "Search Food Places"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/map/page.tsx",
-                                            lineNumber: 1198,
+                                            lineNumber: 1199,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/map/page.tsx",
-                                    lineNumber: 1159,
+                                    lineNumber: 1160,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/map/page.tsx",
-                            lineNumber: 1119,
+                            lineNumber: 1120,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/map/page.tsx",
-                        lineNumber: 1118,
+                        lineNumber: 1119,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("details", {
-                        className: "jsx-45a80fbd985ccec3" + " " + "mb-4 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden",
+                        className: "jsx-f4eca385f45045ad" + " " + "mb-4 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("summary", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "p-3 cursor-pointer hover:bg-gray-50 font-medium text-gray-700",
+                                className: "jsx-f4eca385f45045ad" + " " + "p-3 cursor-pointer hover:bg-gray-50 font-medium text-gray-700",
                                 children: "ℹ️ Map Instructions & Tips"
                             }, void 0, false, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1219,
+                                lineNumber: 1220,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "px-3 pb-3 space-y-2",
+                                className: "jsx-f4eca385f45045ad" + " " + "px-3 pb-3 space-y-2",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "p-2 bg-green-50 border border-green-200 rounded",
+                                        className: "jsx-f4eca385f45045ad" + " " + "p-2 bg-green-50 border border-green-200 rounded",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            className: "jsx-45a80fbd985ccec3" + " " + "text-xs text-green-700",
+                                            className: "jsx-f4eca385f45045ad" + " " + "text-xs text-green-700",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                    className: "jsx-45a80fbd985ccec3",
+                                                    className: "jsx-f4eca385f45045ad",
                                                     children: "Real Data Mode:"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1225,
+                                                    lineNumber: 1226,
                                                     columnNumber: 17
                                                 }, this),
                                                 ' Now showing real restaurants and cafes from OpenStreetMap! Use "My Location" to center the map, then click "Search Food Places" to find restaurants in the current view area.'
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/map/page.tsx",
-                                            lineNumber: 1224,
+                                            lineNumber: 1225,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1223,
+                                        lineNumber: 1224,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "p-2 bg-blue-50 border border-blue-200 rounded",
+                                        className: "jsx-f4eca385f45045ad" + " " + "p-2 bg-blue-50 border border-blue-200 rounded",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            className: "jsx-45a80fbd985ccec3" + " " + "text-xs text-blue-700",
+                                            className: "jsx-f4eca385f45045ad" + " " + "text-xs text-blue-700",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                    className: "jsx-45a80fbd985ccec3",
+                                                    className: "jsx-f4eca385f45045ad",
                                                     children: "🗺️ Click to Explore:"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1230,
+                                                    lineNumber: 1231,
                                                     columnNumber: 17
                                                 }, this),
                                                 " Click anywhere on the map to automatically find and display nearby restaurants and cafes! The map will refresh with new places from the Places API around your clicked location."
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/map/page.tsx",
-                                            lineNumber: 1229,
+                                            lineNumber: 1230,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1228,
+                                        lineNumber: 1229,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "p-2 bg-purple-50 border border-purple-200 rounded",
+                                        className: "jsx-f4eca385f45045ad" + " " + "p-2 bg-purple-50 border border-purple-200 rounded",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            className: "jsx-45a80fbd985ccec3" + " " + "text-xs text-purple-700",
+                                            className: "jsx-f4eca385f45045ad" + " " + "text-xs text-purple-700",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                    className: "jsx-45a80fbd985ccec3",
+                                                    className: "jsx-f4eca385f45045ad",
                                                     children: "🔍 Smart Zoom Filtering:"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1235,
+                                                    lineNumber: 1236,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {
-                                                    className: "jsx-45a80fbd985ccec3"
+                                                    className: "jsx-f4eca385f45045ad"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1236,
+                                                    lineNumber: 1237,
                                                     columnNumber: 17
                                                 }, this),
                                                 "• ",
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                    className: "jsx-45a80fbd985ccec3",
+                                                    className: "jsx-f4eca385f45045ad",
                                                     children: "Normal View (≤13):"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1236,
+                                                    lineNumber: 1237,
                                                     columnNumber: 25
                                                 }, this),
                                                 " Shows 5 most popular food places (well-known chains & highest rated)",
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {
-                                                    className: "jsx-45a80fbd985ccec3"
+                                                    className: "jsx-f4eca385f45045ad"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1237,
+                                                    lineNumber: 1238,
                                                     columnNumber: 17
                                                 }, this),
                                                 "• ",
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                    className: "jsx-45a80fbd985ccec3",
+                                                    className: "jsx-f4eca385f45045ad",
                                                     children: "Slightly Zoomed (14-16):"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1237,
+                                                    lineNumber: 1238,
                                                     columnNumber: 25
                                                 }, this),
                                                 " Shows 10 top-rated places",
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {
-                                                    className: "jsx-45a80fbd985ccec3"
+                                                    className: "jsx-f4eca385f45045ad"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1238,
+                                                    lineNumber: 1239,
                                                     columnNumber: 17
                                                 }, this),
                                                 "• ",
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                    className: "jsx-45a80fbd985ccec3",
+                                                    className: "jsx-f4eca385f45045ad",
                                                     children: "Max Zoom (17+):"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1238,
+                                                    lineNumber: 1239,
                                                     columnNumber: 25
                                                 }, this),
                                                 " Shows 20 top-rated places"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/map/page.tsx",
-                                            lineNumber: 1234,
+                                            lineNumber: 1235,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1233,
+                                        lineNumber: 1234,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1222,
+                                lineNumber: 1223,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/map/page.tsx",
-                        lineNumber: 1218,
+                        lineNumber: 1219,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "jsx-45a80fbd985ccec3" + " " + "mt-6",
+                        className: "jsx-f4eca385f45045ad" + " " + "mt-6",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "flex items-center justify-between mb-4",
+                                className: "jsx-f4eca385f45045ad" + " " + "flex items-center justify-between mb-4",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-xl font-semibold text-gray-900",
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-xl font-semibold text-gray-900",
                                         children: [
                                             "🍴 Food Places ",
                                             loadingPlaces ? "(loading...)" : "(".concat(foodPlaces.length, ")")
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1247,
+                                        lineNumber: 1248,
                                         columnNumber: 13
                                     }, this),
                                     userLocation && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-sm text-gray-500",
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-sm text-gray-500",
                                         children: "📍 Showing places near your location"
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1251,
+                                        lineNumber: 1252,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1246,
+                                lineNumber: 1247,
                                 columnNumber: 11
                             }, this),
                             foodPlaces.length === 0 && !loadingPlaces && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "text-center py-12 bg-white rounded-lg border border-gray-200",
+                                className: "jsx-f4eca385f45045ad" + " " + "text-center py-12 bg-white rounded-lg border border-gray-200",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-6xl mb-4",
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-6xl mb-4",
                                         children: "🍽️"
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1259,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-lg font-medium text-gray-900 mb-2",
-                                        children: "No food places found"
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
                                         lineNumber: 1260,
                                         columnNumber: 15
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-gray-600",
-                                        children: "Try searching for a different area or adjust your filters"
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-lg font-medium text-gray-900 mb-2",
+                                        children: "No food places found"
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
                                         lineNumber: 1261,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-gray-600",
+                                        children: "Try searching for a different area or adjust your filters"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/map/page.tsx",
+                                        lineNumber: 1262,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1258,
+                                lineNumber: 1259,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "grid md:grid-cols-2 lg:grid-cols-3 gap-4",
+                                className: "jsx-f4eca385f45045ad" + " " + "grid md:grid-cols-2 lg:grid-cols-3 gap-4",
                                 children: foodPlaces.map((place)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         onClick: ()=>setSelectedPlace(place),
-                                        className: "jsx-45a80fbd985ccec3" + " " + "bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer ".concat((selectedPlace === null || selectedPlace === void 0 ? void 0 : selectedPlace.id) === place.id ? 'ring-2 ring-[#8c52ff]' : ''),
+                                        className: "jsx-f4eca385f45045ad" + " " + "bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer ".concat((selectedPlace === null || selectedPlace === void 0 ? void 0 : selectedPlace.id) === place.id ? 'ring-2 ring-[#8c52ff]' : ''),
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "jsx-45a80fbd985ccec3" + " " + "flex items-start justify-between mb-2",
+                                                className: "jsx-f4eca385f45045ad" + " " + "flex items-start justify-between mb-2",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                                        className: "jsx-45a80fbd985ccec3" + " " + "font-semibold text-gray-900 text-lg",
+                                                        className: "jsx-f4eca385f45045ad" + " " + "font-semibold text-gray-900 text-lg",
                                                         children: place.name
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/map/page.tsx",
-                                                        lineNumber: 1275,
+                                                        lineNumber: 1276,
                                                         columnNumber: 19
                                                     }, this),
                                                     place.rating && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "jsx-45a80fbd985ccec3" + " " + "flex items-center gap-1 text-yellow-500",
+                                                        className: "jsx-f4eca385f45045ad" + " " + "flex items-center gap-1 text-yellow-500",
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                className: "jsx-45a80fbd985ccec3" + " " + "text-sm",
+                                                                className: "jsx-f4eca385f45045ad" + " " + "text-sm",
                                                                 children: "⭐"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/map/page.tsx",
-                                                                lineNumber: 1278,
+                                                                lineNumber: 1279,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                className: "jsx-45a80fbd985ccec3" + " " + "text-sm font-medium",
+                                                                className: "jsx-f4eca385f45045ad" + " " + "text-sm font-medium",
                                                                 children: place.rating.toFixed(1)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/map/page.tsx",
-                                                                lineNumber: 1279,
+                                                                lineNumber: 1280,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/map/page.tsx",
-                                                        lineNumber: 1277,
+                                                        lineNumber: 1278,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1274,
+                                                lineNumber: 1275,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "jsx-45a80fbd985ccec3" + " " + "text-gray-600 text-sm mb-2",
+                                                className: "jsx-f4eca385f45045ad" + " " + "text-gray-600 text-sm mb-2",
                                                 children: place.category
                                             }, void 0, false, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1284,
+                                                lineNumber: 1285,
                                                 columnNumber: 17
                                             }, this),
                                             place.cuisine_type && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "jsx-45a80fbd985ccec3" + " " + "text-gray-500 text-xs mb-2",
+                                                className: "jsx-f4eca385f45045ad" + " " + "text-gray-500 text-xs mb-2",
                                                 children: place.cuisine_type
                                             }, void 0, false, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1287,
+                                                lineNumber: 1288,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "jsx-45a80fbd985ccec3" + " " + "flex items-center justify-between",
+                                                className: "jsx-f4eca385f45045ad" + " " + "flex items-center justify-between",
                                                 children: [
                                                     place.price_range && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                        className: "jsx-45a80fbd985ccec3" + " " + "text-green-600 font-medium text-sm",
+                                                        className: "jsx-f4eca385f45045ad" + " " + "text-green-600 font-medium text-sm",
                                                         children: place.price_range
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/map/page.tsx",
-                                                        lineNumber: 1292,
+                                                        lineNumber: 1293,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2128,58 +2129,58 @@ function FoodMapPage() {
                                                                 place.longitude
                                                             ], 16);
                                                         },
-                                                        className: "jsx-45a80fbd985ccec3" + " " + "text-[#8c52ff] text-sm font-medium hover:underline",
+                                                        className: "jsx-f4eca385f45045ad" + " " + "text-[#8c52ff] text-sm font-medium hover:underline",
                                                         children: "View on Map"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/map/page.tsx",
-                                                        lineNumber: 1294,
+                                                        lineNumber: 1295,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1290,
+                                                lineNumber: 1291,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, place.id, true, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1267,
+                                        lineNumber: 1268,
                                         columnNumber: 15
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1265,
+                                lineNumber: 1266,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/map/page.tsx",
-                        lineNumber: 1245,
+                        lineNumber: 1246,
                         columnNumber: 9
                     }, this),
                     showNearbyPlaces && clickedLocation && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "jsx-45a80fbd985ccec3" + " " + "mt-6",
+                        className: "jsx-f4eca385f45045ad" + " " + "mt-6",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "flex items-center justify-between mb-4",
+                                className: "jsx-f4eca385f45045ad" + " " + "flex items-center justify-between mb-4",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-xl font-semibold text-gray-900",
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-xl font-semibold text-gray-900",
                                         children: [
                                             "🗺️ Food Places Near Clicked Location",
                                             loadingPlaces && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: "jsx-45a80fbd985ccec3" + " " + "text-sm text-gray-500 ml-2",
+                                                className: "jsx-f4eca385f45045ad" + " " + "text-sm text-gray-500 ml-2",
                                                 children: "(Loading...)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1316,
+                                                lineNumber: 1317,
                                                 columnNumber: 35
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1314,
+                                        lineNumber: 1315,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2200,54 +2201,54 @@ function FoodMapPage() {
                                                 setClickMarker(null);
                                             }
                                         },
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1",
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1",
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                                 fill: "none",
                                                 stroke: "currentColor",
                                                 viewBox: "0 0 24 24",
-                                                className: "jsx-45a80fbd985ccec3" + " " + "w-4 h-4",
+                                                className: "jsx-f4eca385f45045ad" + " " + "w-4 h-4",
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
                                                     strokeLinecap: "round",
                                                     strokeLinejoin: "round",
                                                     strokeWidth: 2,
                                                     d: "M6 18L18 6M6 6l12 12",
-                                                    className: "jsx-45a80fbd985ccec3"
+                                                    className: "jsx-f4eca385f45045ad"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/map/page.tsx",
-                                                    lineNumber: 1339,
+                                                    lineNumber: 1340,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1338,
+                                                lineNumber: 1339,
                                                 columnNumber: 17
                                             }, this),
                                             "Close"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1318,
+                                        lineNumber: 1319,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1313,
+                                lineNumber: 1314,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4",
+                                className: "jsx-f4eca385f45045ad" + " " + "bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-sm text-blue-700",
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-sm text-blue-700",
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                className: "jsx-45a80fbd985ccec3",
+                                                className: "jsx-f4eca385f45045ad",
                                                 children: "📍 Clicked Location:"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1347,
+                                                lineNumber: 1348,
                                                 columnNumber: 17
                                             }, this),
                                             " ",
@@ -2257,71 +2258,71 @@ function FoodMapPage() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1346,
+                                        lineNumber: 1347,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-xs text-blue-600 mt-1",
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-xs text-blue-600 mt-1",
                                         children: loadingPlaces ? "Fetching nearby places from Places API..." : "Showing ".concat(nearbyPlaces.length, " food places within 1km radius • Places automatically fetched from Places API")
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1349,
+                                        lineNumber: 1350,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1345,
+                                lineNumber: 1346,
                                 columnNumber: 13
                             }, this),
                             loadingPlaces ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "text-center py-12 bg-white rounded-lg border border-gray-200",
+                                className: "jsx-f4eca385f45045ad" + " " + "text-center py-12 bg-white rounded-lg border border-gray-200",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-4xl mb-4",
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-4xl mb-4",
                                         children: "🔍"
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1360,
-                                        columnNumber: 17
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-lg font-medium text-gray-900 mb-2",
-                                        children: "Finding nearby places..."
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
                                         lineNumber: 1361,
                                         columnNumber: 17
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-gray-600",
-                                        children: "Searching for restaurants and cafes around the clicked location"
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-lg font-medium text-gray-900 mb-2",
+                                        children: "Finding nearby places..."
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
                                         lineNumber: 1362,
                                         columnNumber: 17
                                     }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-gray-600",
+                                        children: "Searching for restaurants and cafes around the clicked location"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/map/page.tsx",
+                                        lineNumber: 1363,
+                                        columnNumber: 17
+                                    }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "mt-4 flex justify-center",
+                                        className: "jsx-f4eca385f45045ad" + " " + "mt-4 flex justify-center",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "jsx-45a80fbd985ccec3" + " " + "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+                                            className: "jsx-f4eca385f45045ad" + " " + "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
                                         }, void 0, false, {
                                             fileName: "[project]/app/map/page.tsx",
-                                            lineNumber: 1364,
+                                            lineNumber: 1365,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1363,
+                                        lineNumber: 1364,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1359,
+                                lineNumber: 1360,
                                 columnNumber: 15
                             }, this) : nearbyPlaces.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "grid md:grid-cols-2 lg:grid-cols-3 gap-4",
+                                className: "jsx-f4eca385f45045ad" + " " + "grid md:grid-cols-2 lg:grid-cols-3 gap-4",
                                 children: nearbyPlaces.map((place)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         onClick: ()=>{
                                             // Center map on this nearby place and select it
@@ -2332,49 +2333,49 @@ function FoodMapPage() {
                                             setSelectedPlace(place);
                                             setShowNearbyPlaces(false); // Hide nearby places when selecting a specific place
                                         },
-                                        className: "jsx-45a80fbd985ccec3" + " " + "bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer",
+                                        className: "jsx-f4eca385f45045ad" + " " + "bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer",
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "jsx-45a80fbd985ccec3" + " " + "flex items-start justify-between mb-2",
+                                                className: "jsx-f4eca385f45045ad" + " " + "flex items-start justify-between mb-2",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                                        className: "jsx-45a80fbd985ccec3" + " " + "font-semibold text-gray-900 text-lg",
+                                                        className: "jsx-f4eca385f45045ad" + " " + "font-semibold text-gray-900 text-lg",
                                                         children: place.name
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/map/page.tsx",
-                                                        lineNumber: 1381,
+                                                        lineNumber: 1382,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "jsx-45a80fbd985ccec3" + " " + "text-right",
+                                                        className: "jsx-f4eca385f45045ad" + " " + "text-right",
                                                         children: [
                                                             place.rating && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                className: "jsx-45a80fbd985ccec3" + " " + "flex items-center gap-1 text-yellow-500 mb-1",
+                                                                className: "jsx-f4eca385f45045ad" + " " + "flex items-center gap-1 text-yellow-500 mb-1",
                                                                 children: [
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                        className: "jsx-45a80fbd985ccec3" + " " + "text-sm",
+                                                                        className: "jsx-f4eca385f45045ad" + " " + "text-sm",
                                                                         children: "⭐"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/map/page.tsx",
-                                                                        lineNumber: 1385,
+                                                                        lineNumber: 1386,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                        className: "jsx-45a80fbd985ccec3" + " " + "text-sm font-medium",
+                                                                        className: "jsx-f4eca385f45045ad" + " " + "text-sm font-medium",
                                                                         children: place.rating.toFixed(1)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/map/page.tsx",
-                                                                        lineNumber: 1386,
+                                                                        lineNumber: 1387,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/map/page.tsx",
-                                                                lineNumber: 1384,
+                                                                lineNumber: 1385,
                                                                 columnNumber: 25
                                                             }, this),
                                                             place.distance && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                className: "jsx-45a80fbd985ccec3" + " " + "text-xs text-gray-500",
+                                                                className: "jsx-f4eca385f45045ad" + " " + "text-xs text-gray-500",
                                                                 children: [
                                                                     "📏 ",
                                                                     (place.distance * 1000).toFixed(0),
@@ -2382,46 +2383,46 @@ function FoodMapPage() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/map/page.tsx",
-                                                                lineNumber: 1390,
+                                                                lineNumber: 1391,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/map/page.tsx",
-                                                        lineNumber: 1382,
+                                                        lineNumber: 1383,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1380,
+                                                lineNumber: 1381,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "jsx-45a80fbd985ccec3" + " " + "text-gray-600 text-sm mb-2",
+                                                className: "jsx-f4eca385f45045ad" + " " + "text-gray-600 text-sm mb-2",
                                                 children: place.category
                                             }, void 0, false, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1397,
+                                                lineNumber: 1398,
                                                 columnNumber: 19
                                             }, this),
                                             place.cuisine_type && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "jsx-45a80fbd985ccec3" + " " + "text-gray-500 text-xs mb-2",
+                                                className: "jsx-f4eca385f45045ad" + " " + "text-gray-500 text-xs mb-2",
                                                 children: place.cuisine_type
                                             }, void 0, false, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1400,
+                                                lineNumber: 1401,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "jsx-45a80fbd985ccec3" + " " + "flex items-center justify-between",
+                                                className: "jsx-f4eca385f45045ad" + " " + "flex items-center justify-between",
                                                 children: [
                                                     place.price_range && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                        className: "jsx-45a80fbd985ccec3" + " " + "text-green-600 font-medium text-sm",
+                                                        className: "jsx-f4eca385f45045ad" + " " + "text-green-600 font-medium text-sm",
                                                         children: place.price_range
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/map/page.tsx",
-                                                        lineNumber: 1405,
+                                                        lineNumber: 1406,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2435,97 +2436,120 @@ function FoodMapPage() {
                                                             setSelectedPlace(place);
                                                             setShowNearbyPlaces(false);
                                                         },
-                                                        className: "jsx-45a80fbd985ccec3" + " " + "text-[#8c52ff] text-sm font-medium hover:underline",
+                                                        className: "jsx-f4eca385f45045ad" + " " + "text-[#8c52ff] text-sm font-medium hover:underline",
                                                         children: "View on Map"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/map/page.tsx",
-                                                        lineNumber: 1407,
+                                                        lineNumber: 1408,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/map/page.tsx",
-                                                lineNumber: 1403,
+                                                lineNumber: 1404,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, place.id, true, {
                                         fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1370,
+                                        lineNumber: 1371,
                                         columnNumber: 17
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1368,
+                                lineNumber: 1369,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "jsx-45a80fbd985ccec3" + " " + "text-center py-12 bg-white rounded-lg border border-gray-200",
+                                className: "jsx-f4eca385f45045ad" + " " + "text-center py-12 bg-white rounded-lg border border-gray-200",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-6xl mb-4",
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-6xl mb-4",
                                         children: "🗺️"
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/map/page.tsx",
-                                        lineNumber: 1425,
-                                        columnNumber: 17
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-lg font-medium text-gray-900 mb-2",
-                                        children: "No food places found nearby"
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
                                         lineNumber: 1426,
                                         columnNumber: 17
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-gray-600",
-                                        children: "No food places found within 1km of the clicked location"
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-lg font-medium text-gray-900 mb-2",
+                                        children: "No food places found nearby"
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
                                         lineNumber: 1427,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "jsx-45a80fbd985ccec3" + " " + "text-sm text-gray-500 mt-2",
-                                        children: 'Try clicking on a different area or use the "Search Food Places" button to load more places'
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-gray-600",
+                                        children: "No food places found within 1km of the clicked location"
                                     }, void 0, false, {
                                         fileName: "[project]/app/map/page.tsx",
                                         lineNumber: 1428,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "jsx-f4eca385f45045ad" + " " + "text-sm text-gray-500 mt-2",
+                                        children: 'Try clicking on a different area or use the "Search Food Places" button to load more places'
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/map/page.tsx",
+                                        lineNumber: 1429,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/map/page.tsx",
-                                lineNumber: 1424,
+                                lineNumber: 1425,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/map/page.tsx",
-                        lineNumber: 1312,
+                        lineNumber: 1313,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/map/page.tsx",
-                lineNumber: 1105,
+                lineNumber: 1106,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/map/page.tsx",
-        lineNumber: 1055,
+        lineNumber: 1056,
         columnNumber: 5
     }, this);
 }
-_s(FoodMapPage, "dvWYPBWtg3x1uzn+bYEmZZa0TXs=", false, function() {
+_s(FoodMapPageInner, "dvWYPBWtg3x1uzn+bYEmZZa0TXs=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSearchParams"]
     ];
 });
-_c = FoodMapPage;
-var _c;
-__turbopack_context__.k.register(_c, "FoodMapPage");
+_c = FoodMapPageInner;
+function FoodMapPage() {
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Suspense"], {
+        fallback: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            className: "min-h-screen flex items-center justify-center",
+            children: "Loading map…"
+        }, void 0, false, {
+            fileName: "[project]/app/map/page.tsx",
+            lineNumber: 1444,
+            columnNumber: 25
+        }, void 0),
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(FoodMapPageInner, {}, void 0, false, {
+            fileName: "[project]/app/map/page.tsx",
+            lineNumber: 1445,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "[project]/app/map/page.tsx",
+        lineNumber: 1444,
+        columnNumber: 5
+    }, this);
+}
+_c1 = FoodMapPage;
+var _c, _c1;
+__turbopack_context__.k.register(_c, "FoodMapPageInner");
+__turbopack_context__.k.register(_c1, "FoodMapPage");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }

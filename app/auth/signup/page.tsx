@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
 
@@ -211,11 +212,11 @@ export default function SignupPage() {
               
               {message && <div className="mt-3 text-sm text-center">{message}</div>}
               <div className="mt-5 text-sm text-center">
-                Already have an account? <a href="/auth/login" className="underline underline-offset-4 text-[#8c52ff]">Log in</a>
+                Already have an account? <Link href="/auth/login" className="underline underline-offset-4 text-[#8c52ff]">Log in</Link>
               </div>
             </div>
             <div className="mt-6 text-sm text-center">
-              <a href="/" className="underline underline-offset-4">Back to home</a>
+              <Link href="/" className="underline underline-offset-4">Back to home</Link>
             </div>
           </div>
         </div>

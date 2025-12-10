@@ -1,14 +1,16 @@
+import Link from "next/link";
+
 export default function HowItWorks() {
   return (
     <div className="container py-12">
       <h1 className="h1 mb-3">How recommendations work</h1>
-      <p className="text-muted mb-8 max-w-2xl">We surface nearby restaurants, cafes, and events that match your preferences and context. To personalize results and save your preferences, you'll need an account. No payment is required.</p>
+      <p className="text-muted mb-8 max-w-2xl">We surface nearby restaurants, cafes, and events that match your preferences and context. To personalize results and save your preferences, you&apos;ll need an account. No payment is required.</p>
 
       <div className="grid md:grid-cols-3 gap-6 mb-10">
         <div className="p-5 rounded-lg border border-border/60 bg-background">
           <div className="text-xs font-mono text-muted mb-2">Step 1</div>
           <div className="h2 mb-1">Capture your vibe</div>
-          <p className="text-muted">Choose your preferences or describe what you're looking for. We encode this into intent signals.</p>
+          <p className="text-muted">Choose your preferences or describe what you&apos;re looking for. We encode this into intent signals.</p>
         </div>
         <div className="p-5 rounded-lg border border-border/60 bg-background">
           <div className="text-xs font-mono text-muted mb-2">Step 2</div>
@@ -50,8 +52,8 @@ export default function HowItWorks() {
         <div className="h2 mb-2">Accounts required</div>
         <p className="text-muted">Accounts let us personalize recommendations, sync your favorites, and improve suggestions over time. You can browse the demo without signing in, but to get recommendations tailored to you and save them, please create an account.</p>
         <div className="mt-4 flex gap-3">
-          <a href="/auth" className="h-10 px-4 rounded-md bg-brand text-white inline-flex items-center justify-center hover:bg-brand-600">Create an account</a>
-          <a href="/" className="h-10 px-4 rounded-md border border-border/60 inline-flex items-center justify-center">Back to home</a>
+          <Link href="/auth" className="h-10 px-4 rounded-md bg-brand text-white inline-flex items-center justify-center hover:bg-brand-600">Create an account</Link>
+          <Link href="/" className="h-10 px-4 rounded-md border border-border/60 inline-flex items-center justify-center">Back to home</Link>
         </div>
       </div>
     </div>

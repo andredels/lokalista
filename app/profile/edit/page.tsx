@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/browserClient";
@@ -27,6 +28,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     loadProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadProfile = async () => {

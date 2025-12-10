@@ -64,7 +64,7 @@ __turbopack_context__.s([
     ()=>Home
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2f$useScrollAnimation$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/hooks/useScrollAnimation.ts [app-client] (ecmascript)");
+/* eslint-disable @typescript-eslint/no-explicit-any, @next/next/no-img-element, react/no-unescaped-entities */ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2f$useScrollAnimation$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/hooks/useScrollAnimation.ts [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
@@ -114,10 +114,6 @@ function Home() {
         triggerOnce: true
     });
     const featuresRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2f$useScrollAnimation$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useScrollAnimation"])({
-        threshold: 0.1,
-        triggerOnce: true
-    });
-    const recommendationsRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2f$useScrollAnimation$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useScrollAnimation"])({
         threshold: 0.1,
         triggerOnce: true
     });
@@ -1079,9 +1075,8 @@ function Home() {
         columnNumber: 5
     }, this);
 }
-_s(Home, "331rwBbJcELcRXq6xrvKzVVc7HY=", false, function() {
+_s(Home, "L+kr7d5x9hN2shhy74j6Dc1JYDY=", false, function() {
     return [
-        __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2f$useScrollAnimation$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useScrollAnimation"],
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2f$useScrollAnimation$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useScrollAnimation"],
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2f$useScrollAnimation$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useScrollAnimation"]
     ];

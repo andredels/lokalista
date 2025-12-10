@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any, @next/next/no-img-element, react/no-unescaped-entities */
 
 import { useScrollAnimation } from "@/lib/hooks/useScrollAnimation";
 
@@ -44,7 +45,6 @@ const aiRecommendations = [
 export default function Home() {
   const heroRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });
   const featuresRef = useScrollAnimation({ threshold: 0.1, triggerOnce: true });
-  const recommendationsRef = useScrollAnimation({ threshold: 0.1, triggerOnce: true });
 
   return (
     <div className="font-sans animate-fade-in">

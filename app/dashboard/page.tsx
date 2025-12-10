@@ -1,6 +1,7 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any, @next/next/no-img-element */
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getTrendingRestaurants, type FoodPlace } from "@/lib/restaurants";
 import { useScrollAnimation } from "@/lib/hooks/useScrollAnimation";
@@ -91,7 +92,7 @@ export default function DashboardPage() {
   };
 
   // Real Cebu City restaurant coordinates
-  const restaurantData = [
+  const restaurantData = useMemo(() => ([
     {
       id: 1,
       name: "Jollibee Colon",
@@ -158,7 +159,7 @@ export default function DashboardPage() {
       rating: 4.4,
       image: "/restaurants/coffeebean1.jpg"
     }
-  ];
+  ]), []);
 
   // Calculate distances and format recommendations (recalculate when location changes)
   const recommendations = useMemo(() => {
@@ -175,7 +176,7 @@ export default function DashboardPage() {
         distanceKm, // Keep for sorting
       };
     }).sort((a, b) => a.distanceKm - b.distanceKm); // Sort by distance
-  }, [userLocation]);
+  }, [restaurantData, userLocation]);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 

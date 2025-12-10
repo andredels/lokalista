@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "userIds must be a non-empty array" }, { status: 400 });
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Get current user to verify they're authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -45,12 +45,14 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ metadata: metadataMap });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in users/metadata route:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: (error as Error)?.message || "Internal server error" },
       { status: 500 }
     );
   }
 }
+
+
 
